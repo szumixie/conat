@@ -1,13 +1,14 @@
 \begin{code}[hide]
-{-# OPTIONS --cubical --no-import-sorts #-}
+{-# OPTIONS --cubical --guardedness --no-import-sorts #-}
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Maybe using (Maybe)
 \end{code}
 
-Natural numbers are the least fixpoint of the $\mathbb{1} + {-}$ functor.
+Natural numbers are the initial object in the category of algebras over the
+$\mathbb{1} + {-}$ endofunctor.
 
-initial algebra
+In the Agda proof assistant, it can be represented as an inductive datatype:
 
 \begin{code}
 data ℕ : Type where
@@ -15,9 +16,10 @@ data ℕ : Type where
   suc   : ℕ → ℕ
 \end{code}
 
-Conatural numbers are the greatest fixpoint of the $\mathbb{1} + {-}$ functor.
+Dually, conatural numbers are the terminal object in the category of algebras
+over the $\mathbb{1} + {-}$ endofunctor.
 
-terminal coalgebra
+In Agda, it can be represented as a coinductive record type:
 
 \begin{code}
 record ℕ∞ : Type where
@@ -26,15 +28,27 @@ record ℕ∞ : Type where
     pred : Maybe ℕ∞
 \end{code}
 
-decreasing boolean sequence
-
 topological intuition
+
+\begin{figure}[h]
+  \begin{tikzpicture}[scale=8]
+    \draw
+      (0,0) node [shape=circle, fill] {}
+      (0.5,0) node [shape=circle, fill] {}
+      (0.75,0) node [shape=circle, fill] {}
+      (0.875,0) node [shape=circle, fill] {}
+      (0.9375,0) node [shape=circle, fill] {}
+      (1,0) node [shape=circle, fill] {};
+  \end{tikzpicture}
+\end{figure}
 
 failure of termination
 
 \subsection{Related work}
 
 sized types
+
+decreasing boolean sequences
 
 Naïm
 
