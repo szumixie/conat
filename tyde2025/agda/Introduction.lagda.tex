@@ -44,6 +44,14 @@ topological intuition
 
 failure of termination
 
+Agda uses guarded corecursion to check whether a defintion is productive or not.
+
+e.g.
+
+However, if we want to reuse the addition operation to define multiplication, we get a non-guarded definition, which Agda rejects.
+
+def. of \_*\_
+
 \subsection{Related work}
 
 sized types
