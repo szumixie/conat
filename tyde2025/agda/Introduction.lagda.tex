@@ -1,0 +1,41 @@
+\begin{code}[hide]
+{-# OPTIONS --cubical --no-import-sorts #-}
+
+open import Cubical.Foundations.Prelude
+open import Cubical.Data.Maybe using (Maybe)
+\end{code}
+
+Natural numbers are the least fixpoint of the $\mathbb{1} + {-}$ functor.
+
+initial algebra
+
+\begin{code}
+data ℕ : Type where
+  zero  : ℕ
+  suc   : ℕ → ℕ
+\end{code}
+
+Conatural numbers are the greatest fixpoint of the $\mathbb{1} + {-}$ functor.
+
+terminal coalgebra
+
+\begin{code}
+record ℕ∞ : Type where
+  coinductive
+  field
+    pred : Maybe ℕ∞
+\end{code}
+
+decreasing boolean sequence
+
+topological intuition
+
+failure of termination
+
+\subsection{Related work}
+
+sized types
+
+Naïm
+
+TypeTopology
