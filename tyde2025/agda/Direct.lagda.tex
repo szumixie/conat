@@ -47,10 +47,10 @@ mutual
 \end{code}
 
 \begin{code}
-infixl 6 _+ₗ_
-_+ₗ_ : ℕ → ℕ∞ → ℕ∞
-ℕ.zero +ₗ x = x
-ℕ.suc n +ₗ x = suc (n +ₗ x)
+infixl 6 _+L_
+_+L_ : ℕ → ℕ∞ → ℕ∞
+ℕ.zero +L x = x
+ℕ.suc n +L x = suc (n +L x)
 \end{code}
 
 \begin{code}[hide]
@@ -61,7 +61,7 @@ mutual
   +-comm x y = +-comm-helper₁ ℕ.zero x y refl refl
 
   +-comm-helper₁ :
-    ∀ n x y {l r} → l ≡ x + (n +ₗ y) → r ≡ y + (n +ₗ x) → l ≡ r
+    ∀ n x y {l r} → l ≡ x + (n +L y) → r ≡ y + (n +L x) → l ≡ r
   +-comm-helper₁ n x y le re i .pred =
     +-comm-helper₁-step n x (pred x) y (pred y)
       refl refl (cong pred le) (cong pred re) i
@@ -69,7 +69,7 @@ mutual
   +-comm-helper₁-step :
     ∀ n x x' y y' {l r} →
     pred x ≡ x' → pred y ≡ y' →
-    l ≡ +-step x' (n +ₗ y) → r ≡ +-step y' (n +ₗ x) →
+    l ≡ +-step x' (n +L y) → r ≡ +-step y' (n +L x) →
     l ≡ r
   +-comm-helper₁-step n x nothing y nothing px py le re = {!!}
   +-comm-helper₁-step n x nothing y (just y') px py le re = {!!}

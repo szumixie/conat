@@ -8,18 +8,72 @@ open import Cubical.Data.Maybe
 \end{code}
 
 \begin{code}
-mutual
-  record NExpr : Type where
-    coinductive
-    field
-      pred : Maybe Expr
+record NExpr : Type
+data Expr : Type
+suc : Expr → Expr
 
-  data Expr : Type where
-    a : Expr
-    b : Expr
-\end{code}
+record NExpr where
+  coinductive
+  field pred : Maybe Expr
 
-\begin{code}
-    c : Expr
-    d : Expr
+open NExpr public
+
+infixl 6 _+_
+infixl 7 _*_
+infixr 8 _^_
+data Expr where
+  isSetExpr : isSet Expr
+
+  _+_ : Expr → Expr → Expr
+  +-assoc : ∀ x y z → (x + y) + z ≡ x + (y + z)
+  +-comm : ∀ x y → x + y ≡ y + x
+
+  zero : Expr
+  +-idₗ : ∀ x → zero + x ≡ x
+
+  _*_ : Expr → Expr → Expr
+  *-assoc : ∀ x y z → (x * y) * z ≡ x * (y * z)
+  *-comm : ∀ x y → x * y ≡ y * x
+
+  one : Expr
+  *-idₗ : ∀ x → one * x ≡ x
+
+  *-distₗ-+ : ∀ x y z → (x + y) * z ≡ x * z + y * z
+  *-annihₗ : ∀ x → zero * x ≡ zero
+
+  _^_ : Expr → Expr → Expr
+  ^-assocᵣ-* : ∀ x y z → x ^ (y * z) ≡ (x ^ z) ^ y
+  ^-idᵣ : ∀ x → x ^ one ≡ x
+
+  ^-distᵣ-+ : ∀ x y z → x ^ (y + z) ≡ x ^ z * x ^ y
+  ^-annihᵣ : ∀ x → x ^ zero ≡ one
+
+  ^-distₗ-* : ∀ x y z → (x * y) ^ z ≡ x ^ z * y ^ z
+  ^-annihₗ : ∀ x → one ^ x ≡ one
+
+  block : Expr → Expr → Expr
+  block-assocᵣ-* : ∀ x y z → block x (y * z) ≡ block (block x z) y
+  block-idᵣ : ∀ x → block x one ≡ x
+
+  block-distᵣ-+ :
+    ∀ x y z → block x (y + z) ≡ block x y + block x z * suc x ^ y
+  block-annihᵣ : ∀ x → block x zero ≡ zero
+
+  block-distₗ-* :
+    ∀ x y z → block (y + x * suc y) z ≡ block y z + block x z * suc y ^ z
+  block-annihₗ : ∀ x → block zero x ≡ zero
+
+  ^-sucₗ : ∀ x y → suc x ^ y ≡ suc (block x y)
+
+  inf : Expr
+  +-annihₗ : ∀ x → inf + x ≡ inf
+  block-infᵣ : ∀ x → block (suc x) inf ≡ inf
+
+  trans : ∀ {x y z} → x ≡ y → y ≡ z → x ≡ z
+
+  embed : NExpr → Expr
+  embed-zero : ∀ x → x .pred ≡ nothing → embed x ≡ zero
+  embed-suc : ∀ x x-1 → x .pred ≡ just x-1 → embed x ≡ suc x-1
+
+suc = one +_
 \end{code}

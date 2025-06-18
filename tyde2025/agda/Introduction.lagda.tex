@@ -9,10 +9,12 @@ open import Cubical.Data.Maybe using (Maybe; nothing; just)
 postulate
   ADMIT : ∀ {ℓ} {A : Type ℓ} → A
 \end{code}
-Natural numbers are the initial object in the category of algebras over the
-$\mathbb{1} + {-}$ endofunctor.
 
-In the Agda proof assistant, it can be represented as an inductive datatype:
+Natural numbers are the initial object in the category of algebras
+over the $\mathbb{1} + {-}$ endofunctor.
+
+In the Agda proof assistant, it can be represented as an inductive
+datatype with two constructors:
 
 \begin{code}[hide]
 module _ where private
@@ -23,10 +25,20 @@ module _ where private
     suc   : ℕ → ℕ
 \end{code}
 
-Dually, conatural numbers are the terminal object in the category of coalgebras
-over the $\mathbb{1} + {-}$ endofunctor.
+Or equivalently, it is an inductive type with a single constructor
+containing a Maybe of itself:
 
-In Agda, it can be represented as a coinductive record type:
+\begin{code}[hide]
+module _ where private
+\end{code}
+\begin{code}
+  data ℕ : Type where
+    con : Maybe ℕ → ℕ
+\end{code}
+
+Dually, conatural numbers are the terminal object in the category of
+coalgebras over the $\mathbb{1} + {-}$ endofunctor, which in Agda is a
+coinductive record type with one destructor into Maybe of itself:
 
 \begin{code}
 record ℕ∞ : Type where
@@ -64,15 +76,21 @@ pred (pred-inj p i) = p i
 The conatural numbers, however, are not isomorphic to $\mathbb{1} + \mathbb{N}$. It is not the goal of the paper to prove that this fact stands. However, the following topological intuition should help to understand why this is the case:
 
 \begin{center}
-  \begin{tikzpicture}[scale=8]
-    \draw
-      (0,0) node [shape=circle, fill] {}
-      (0.5,0) node [shape=circle, fill] {}
-      (0.75,0) node [shape=circle, fill] {}
-      (0.875,0) node [shape=circle, fill] {}
-      (0.9375,0) node [shape=circle, fill] {}
-      (1,0) node [shape=circle, fill] {};
-  \end{tikzpicture}
+  \begin{tikzpicture}[
+    scale=8,
+    every node/.style={
+      circle,
+      fill,
+      inner sep=0pt,
+      minimum size=1mm,
+      label position=south,
+      label distance=1mm,
+    }
+  ]
+    \path
+      foreach \i in {0,...,7} {($({1-(2/3)^\i},0)$) node [label=\i] {}}
+      ($({1-(2/3)^7/2},0)$) node [fill=none] {\dots}
+      (1,0) node [label=∞] {};
 \end{center}
 
 Agda uses guarded corecursion to check whether a defintion is productive or not. A definition is \textit{productive} when the subsequent part of an infinite value can be computed in finitely many steps. A definition is \textit{guarded} when a corecursion happens directly in the definition or under only constructors. Guardedness is sufficient to prove productivity but it is not necessary.
