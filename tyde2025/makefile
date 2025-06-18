@@ -4,7 +4,7 @@ TEX_FILES := $(addprefix latex/,$(addsuffix .tex,$(basename $(basename $(notdir 
 
 all: paper.pdf
 
-paper.pdf: references.bib $(TEX_FILES)
+paper.pdf: paper.tex references.bib $(TEX_FILES)
 	latexmk --lualatex paper.tex
 
 latex/%.tex: agda/%.lagda.tex

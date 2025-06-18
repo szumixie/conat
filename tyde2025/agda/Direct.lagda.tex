@@ -1,0 +1,77 @@
+\begin{code}[hide]
+{-# OPTIONS --cubical --guardedness --no-import-sorts --no-postfix-projections --allow-unsolved-metas #-}
+
+module Direct where
+
+open import Cubical.Foundations.Prelude
+open import Cubical.Data.Maybe using (Maybe; nothing; just)
+import Cubical.Data.Nat as ℕ
+open ℕ using (ℕ)
+open import Introduction using (ℕ∞; pred; suc; _+_; +-step)
+\end{code}
+\begin{code}[hide]
+infixl 7 _×'_
+mutual
+\end{code}
+\begin{code}
+  _×'_ : ℕ∞ → ℕ∞ → ℕ∞
+  x ×' y = ×'-helper x y y
+
+  ×'-helper : ℕ∞ → ℕ∞ → ℕ∞ → ℕ∞
+  pred (×'-helper x y y₀) =
+    ×'-helper-step x (pred x) (pred y) y₀
+
+  ×'-helper-step :
+    ℕ∞ → Maybe ℕ∞ → Maybe ℕ∞ → ℕ∞ →
+    Maybe ℕ∞
+  ×'-helper-step x x' (just y') y₀ =
+    just (×'-helper x y' y₀)
+  ×'-helper-step x (just x') nothing y₀ =
+    just (×'-helper x' y₀ y₀)
+  ×'-helper-step x nothing nothing y₀ =
+    nothing
+\end{code}
+
+\begin{code}[hide]
+infixl 7 _×_
+mutual
+\end{code}
+\begin{code}
+  _×_ : ℕ∞ → ℕ∞ → ℕ∞
+  pred (x × y) = ×-step (pred x) (pred y)
+
+  ×-step : Maybe ℕ∞ → Maybe ℕ∞ → Maybe ℕ∞
+  ×-step nothing    y'         = nothing
+  ×-step (just x')  nothing    = nothing
+  ×-step (just x')  (just y')  = just (x' ×' y')
+\end{code}
+
+\begin{code}
+infixl 6 _+ₗ_
+_+ₗ_ : ℕ → ℕ∞ → ℕ∞
+ℕ.zero +ₗ x = x
+ℕ.suc n +ₗ x = suc (n +ₗ x)
+\end{code}
+
+\begin{code}[hide]
+mutual
+\end{code}
+\begin{code}
+  +-comm : ∀ x y → x + y ≡ y + x
+  +-comm x y = +-comm-helper₁ ℕ.zero x y refl refl
+
+  +-comm-helper₁ :
+    ∀ n x y {l r} → l ≡ x + (n +ₗ y) → r ≡ y + (n +ₗ x) → l ≡ r
+  +-comm-helper₁ n x y le re i .pred =
+    +-comm-helper₁-step n x (pred x) y (pred y)
+      refl refl (cong pred le) (cong pred re) i
+
+  +-comm-helper₁-step :
+    ∀ n x x' y y' {l r} →
+    pred x ≡ x' → pred y ≡ y' →
+    l ≡ +-step x' (n +ₗ y) → r ≡ +-step y' (n +ₗ x) →
+    l ≡ r
+  +-comm-helper₁-step n x nothing y nothing px py le re = {!!}
+  +-comm-helper₁-step n x nothing y (just y') px py le re = {!!}
+  +-comm-helper₁-step n x (just x') y y' px py le re = {!!}
+\end{code}

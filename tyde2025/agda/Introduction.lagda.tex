@@ -1,20 +1,20 @@
 \begin{code}[hide]
-{-# OPTIONS --cubical --guardedness --no-import-sorts #-}
+{-# OPTIONS --cubical --guardedness --no-import-sorts --no-postfix-projections #-}
+
+module Introduction where
 
 open import Cubical.Foundations.Prelude
-open import Cubical.Data.Maybe using (Maybe)
-\end{code}
+open import Cubical.Data.Maybe using (Maybe; nothing; just)
 
+postulate
+  ADMIT : ∀ {ℓ} {A : Type ℓ} → A
+\end{code}
 Natural numbers are the initial object in the category of algebras over the
 $\mathbb{1} + {-}$ endofunctor.
 
 In the Agda proof assistant, it can be represented as an inductive datatype:
 
-\begin{code}
-data ℕ : Type where
-  zero  : ℕ
-  suc   : ℕ → ℕ
-\end{code}
+\input{latex/Nat}
 
 Dually, conatural numbers are the terminal object in the category of algebras
 over the $\mathbb{1} + {-}$ endofunctor.
@@ -27,10 +27,29 @@ record ℕ∞ : Type where
   field
     pred : Maybe ℕ∞
 \end{code}
+\begin{code}[hide]
+open ℕ∞ public
+\end{code}
+
+\begin{code}
+zero : ℕ∞
+zero .pred = nothing
+
+suc : ℕ∞ → ℕ∞
+suc x .pred = just x
+
+inf : ℕ∞
+inf .pred = just inf
+
+pred-inj : ∀ {x y} → x .pred ≡ y .pred → x ≡ y
+pred-inj p i .pred = p i
+\end{code}
+
+not isomorphic to $\mathbb{N} + \mathbb{1}$
 
 topological intuition
 
-\begin{figure}[h]
+\begin{center}
   \begin{tikzpicture}[scale=8]
     \draw
       (0,0) node [shape=circle, fill] {}
@@ -40,17 +59,96 @@ topological intuition
       (0.9375,0) node [shape=circle, fill] {}
       (1,0) node [shape=circle, fill] {};
   \end{tikzpicture}
-\end{figure}
+\end{center}
 
 failure of termination
 
 Agda uses guarded corecursion to check whether a defintion is productive or not.
 
-e.g.
+e.g. addition
+
+\begin{code}[hide]
+infixl 6 _+_
+mutual
+\end{code}
+\begin{code}
+  _+_ : ℕ∞ → ℕ∞ → ℕ∞
+  pred (x + y) = +-step (pred x) y
+
+  +-step : Maybe ℕ∞ → ℕ∞ → Maybe ℕ∞
+  +-step nothing    y = pred y
+  +-step (just x')  y = just (x' + y)
+\end{code}
 
 However, if we want to reuse the addition operation to define multiplication, we get a non-guarded definition, which Agda rejects.
 
 def. of \_*\_
+
+\begin{code}[hide]
+infixl 7 _×_
+mutual
+\end{code}
+\begin{code}
+  {-# TERMINATING #-}
+  _×_ : ℕ∞ → ℕ∞ → ℕ∞
+  pred (x × y) = ×-step (pred x) y (pred y)
+
+  ×-step :
+    Maybe ℕ∞ → ℕ∞ → Maybe ℕ∞ → Maybe ℕ∞
+  ×-step nothing    y y'         = nothing
+  ×-step (just x')  y nothing    = nothing
+  ×-step (just x')  y (just y')  = just (y' + x' × y)
+\end{code}
+
+proofs
+
+\begin{code}[hide]
+mutual
+\end{code}
+\begin{code}
+  +-assoc : ∀ x y z → (x + y) + z ≡ x + (y + z)
+  pred (+-assoc x y z i) = +-assoc-step (pred x) y z i
+
+  +-assoc-step :
+    ∀ x' y z →
+    +-step (+-step x' y) z ≡ +-step x' (y + z)
+  +-assoc-step nothing    y z = refl
+  +-assoc-step (just x')  y z = cong just (+-assoc x' y z)
+\end{code}
+
+\begin{code}[hide]
+postulate
+\end{code}
+\begin{code}
+  +-suc : ∀ x y → x + suc y ≡ suc (x + y)
+\end{code}
+
+\begin{code}[hide]
+mutual
+\end{code}
+\begin{code}
+  {-# TERMINATING #-}
+  +-comm : ∀ x y → x + y ≡ y + x
+  pred (+-comm x y i) =
+    +-comm-step x (pred x) y (pred y) refl refl i
+
+  +-comm-step :
+    ∀ x x' y y' → pred x ≡ x' → pred y ≡ y' →
+    +-step x' y ≡ +-step y' x
+  +-comm-step x (just x') y (just y') px py =
+    cong just
+      ( x' + y         ≡⟨ cong (x' +_) (pred-inj py) ⟩
+        x' + suc y'    ≡⟨ +-suc x' y' ⟩
+        suc (x' + y')  ≡⟨ cong suc (+-comm x' y') ⟩
+        suc (y' + x')  ≡⟨ sym (+-suc y' x') ⟩
+        y' + suc x'    ≡⟨ cong (y' +_) (pred-inj (sym px)) ⟩
+        y' + x         ∎)
+\end{code}
+\begin{code}[hide]
+  +-comm-step x nothing y nothing p q = ADMIT
+  +-comm-step x nothing y (just y') p q = ADMIT
+  +-comm-step x (just x') y nothing p q = ADMIT
+\end{code}
 
 \subsection{Related work}
 

@@ -1,0 +1,25 @@
+\begin{code}[hide]
+{-# OPTIONS --cubical --guardedness --no-import-sorts #-}
+
+module Quotiented where
+
+open import Cubical.Foundations.Prelude
+open import Cubical.Data.Maybe
+\end{code}
+
+\begin{code}
+mutual
+  record NExpr : Type where
+    coinductive
+    field
+      pred : Maybe Expr
+
+  data Expr : Type where
+    a : Expr
+    b : Expr
+\end{code}
+
+\begin{code}
+    c : Expr
+    d : Expr
+\end{code}
