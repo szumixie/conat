@@ -14,7 +14,14 @@ $\mathbb{1} + {-}$ endofunctor.
 
 In the Agda proof assistant, it can be represented as an inductive datatype:
 
-\input{latex/Nat}
+\begin{code}[hide]
+module _ where private
+\end{code}
+\begin{code}
+  data ℕ : Type where
+    zero  : ℕ
+    suc   : ℕ → ℕ
+\end{code}
 
 Dually, conatural numbers are the terminal object in the category of algebras
 over the $\mathbb{1} + {-}$ endofunctor.

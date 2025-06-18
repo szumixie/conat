@@ -3,12 +3,63 @@
 *.ptb
 tyde2025/latex/*.tex
 
-# Created by https://www.toptal.com/developers/gitignore/api/agda,latex
-# Edit at https://www.toptal.com/developers/gitignore?templates=agda,latex
+# Created by https://www.toptal.com/developers/gitignore/api/agda,emacs,latex,visualstudiocode
+# Edit at https://www.toptal.com/developers/gitignore?templates=agda,emacs,latex,visualstudiocode
 
 ### Agda ###
 *.agdai
 MAlonzo/**
+
+### Emacs ###
+# -*- mode: gitignore; -*-
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Org-mode
+.org-id-locations
+*_archive
+
+# flymake-mode
+*_flymake.*
+
+# eshell files
+/eshell/history
+/eshell/lastdir
+
+# elpa packages
+/elpa/
+
+# reftex files
+*.rel
+
+# AUCTeX auto folder
+/auto/
+
+# cask packages
+.cask/
+dist/
+
+# Flycheck
+flycheck_*.el
+
+# server auth directory
+/server/
+
+# projectiles files
+.projectile
+
+# directory configuration
+.dir-locals.el
+
+# network security
+/network-security.data
+
 
 ### LaTeX ###
 ## Core latex/pdflatex auxiliary files:
@@ -320,4 +371,23 @@ TSWLatexianTemp*
 # glossaries
 *.glstex
 
-# End of https://www.toptal.com/developers/gitignore/api/agda,latex
+### VisualStudioCode ###
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+### VisualStudioCode Patch ###
+# Ignore all local history of files
+.history
+.ionide
+
+# End of https://www.toptal.com/developers/gitignore/api/agda,emacs,latex,visualstudiocode
