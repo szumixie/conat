@@ -23,7 +23,7 @@ module _ where private
     suc   : ℕ → ℕ
 \end{code}
 
-Dually, conatural numbers are the terminal object in the category of algebras
+Dually, conatural numbers are the terminal object in the category of coalgebras
 over the $\mathbb{1} + {-}$ endofunctor.
 
 In Agda, it can be represented as a coinductive record type:
@@ -39,6 +39,8 @@ record ℕ∞ : Type where
 open ℕ∞ public
 \end{code}
 
+We can define \AgdaFunction{zero}, \AgdaFunction{suc}, \AgdaFunction{∞} using copattern matching.
+
 \begin{code}
 zero : ℕ∞
 pred zero = nothing
@@ -48,14 +50,18 @@ pred (suc x) = just x
 
 ∞ : ℕ∞
 pred ∞ = just ∞
+\end{code}
 
+The goal of this paper is to prove that conatural numbers form an exponential semiring. Along the way we are going to show three different methods of starting out with the formalisation, showing some of the difficulties, problems. Finally, we show the last formalisation, which is the complete proof of conatural numbers being an exponential semiring.
+
+For our formalisation we are going to use Cubical Agda, so the bisimulation relation over conatural numbers coincide with equality. With that, for example, we can define the injectivity proof for the \AgdaFunction{pred} destructor the following way:
+
+\begin{code}
 pred-inj : ∀ {x y} → pred x ≡ pred y → x ≡ y
 pred (pred-inj p i) = p i
 \end{code}
 
-not isomorphic to $\mathbb{N} + \mathbb{1}$
-
-topological intuition
+The conatural numbers, however, are not isomorphic to $\mathbb{1} + \mathbb{N}$. It is not the goal of the paper to prove that this fact stands. However, the following topological intuition should help to understand why this is the case:
 
 \begin{center}
   \begin{tikzpicture}[scale=8]
@@ -69,11 +75,9 @@ topological intuition
   \end{tikzpicture}
 \end{center}
 
-failure of termination
+Agda uses guarded corecursion to check whether a defintion is productive or not. A definition is \textit{productive} when the subsequent part of an infinite value can be computed in finitely many steps. A definition is \textit{guarded} when a corecursion happens directly in the definition or under only constructors. Guardedness is sufficient to prove productivity but it is not necessary.
 
-Agda uses guarded corecursion to check whether a defintion is productive or not.
-
-e.g. addition
+For example the addition operation can be defined in Agda using guarded corecursion.
 
 \begin{code}[hide]
 infixl 6 _+_
@@ -89,8 +93,6 @@ mutual
 \end{code}
 
 However, if we want to reuse the addition operation to define multiplication, we get a non-guarded definition, which Agda rejects.
-
-def. of \_*\_
 
 \begin{code}[hide]
 infixl 7 _×_
@@ -108,7 +110,11 @@ mutual
   ×-step (just x')  y (just y')  = just (y' + x' × y)
 \end{code}
 
-proofs
+This definition ------------------------ !TODO
+
+Here the mention of the \texttt{TERMINATING} flag indicates that in its absence the definition would be rejected.
+
+We can prove some of the usual properties of addition over conatural numbers, like the associativity of the addition.
 
 \begin{code}[hide]
 mutual
@@ -123,6 +129,8 @@ mutual
   +-assoc-step nothing    y z = refl
   +-assoc-step (just x')  y z = cong just (+-assoc x' y z)
 \end{code}
+
+This is again a nice guarded corecusion and Agda happily accepts this as a proof. However, again for multiplication, this proof is rejected without the \texttt{TERMINATION} flag.
 
 \begin{code}[hide]
 postulate
@@ -157,6 +165,8 @@ mutual
   +-comm-step x nothing y (just y') p q = ADMIT
   +-comm-step x (just x') y nothing p q = ADMIT
 \end{code}
+
+This definition is productive but not guarded
 
 \subsection{Related work}
 
