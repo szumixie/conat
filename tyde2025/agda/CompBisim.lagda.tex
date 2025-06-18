@@ -1,0 +1,184 @@
+\begin{code}[hide]
+{-# OPTIONS --safe --guardedness #-}
+
+open import Agda.Primitive
+open import Agda.Builtin.Maybe
+open import Agda.Builtin.Sigma
+open import Agda.Builtin.Equality
+
+data Maybe~ {i}{j}{A : Set i} (A~ : A → A → Set j) : Maybe A → Maybe A → Set (i ⊔ j) where
+  instance nothing-refl : Maybe~ A~ nothing nothing
+  cong-just : ∀ {a₀ a₁} → A~ a₀ a₁ → Maybe~ A~ (just a₀) (just a₁)
+
+infixr 2 _×_
+_×_ : ∀{i j}(A : Set i)(B : Set j) → Set (i ⊔ j)
+A × B = Σ A (λ _ → B)
+
+infixr 4 _,'_
+_,'_ : ∀{a b}{A : Set a}{B : Set b} → A → B → A × B
+_,'_ = _,_
+
+record ℕ∞ : Set where
+  coinductive
+  constructor unpred
+  field
+    pred : Maybe ℕ∞
+
+open ℕ∞ public
+
+coite : ∀{i}{B : Set i} → (B → Maybe B) → B → ℕ∞
+pred (coite f b) with f b
+... | nothing = nothing
+... | just x  = just (coite f x)
+
+∞ : ℕ∞
+pred ∞ = just ∞
+
+infixr 1 _⊎_
+data _⊎_ {i}{j}(A : Set i)(B : Set j) : Set (i ⊔ j) where
+  inl : (a : A) → A ⊎ B
+  inr : (b : B) → A ⊎ B
+
++-aux : ℕ∞ → ℕ∞ ⊎ ℕ∞ → Maybe (ℕ∞ ⊎ ℕ∞)
++-aux k (inl n) with pred n
++-aux k (inl n) | just n' = just (inl n')
++-aux k (inl n) | nothing with pred k
++-aux k (inl n) | nothing | just k' = just (inr k')
++-aux k (inl n) | nothing | nothing = nothing
++-aux _ (inr k) with pred k
++-aux _ (inr k) | just k' = just (inr k')
++-aux _ (inr k) | nothing = nothing
+
+infixl 6 _+_
+_+_ : ℕ∞ → ℕ∞ → ℕ∞
+_+_ n k = coite (+-aux k) (inl n)
+
+*-aux : ℕ∞ → ℕ∞ × ℕ∞ → Maybe (ℕ∞ × ℕ∞)
+*-aux restore (e1 , e2) with pred e1
+... | nothing = nothing
+... | just e1' with pred e2
+... | nothing = just (e1' , restore)
+... | just e2' = just (e1 , e2')
+
+infixl 7 _*_
+_*_ : ℕ∞ → ℕ∞ → ℕ∞
+n * k with pred n
+... | nothing = unpred nothing
+... | just n' with pred k
+... | nothing = unpred nothing
+... | just k' = coite (*-aux k') (n , k')
+
+---------------------
+-- Bisim
+
+infix 4 _≈_ _≈′_
+
+record _≈_ (x y : ℕ∞) : Set where
+  coinductive
+  field prove : Maybe~ _≈_ (pred x) (pred y)
+
+open _≈_ public
+
+_≈′_ : Maybe ℕ∞ → Maybe ℕ∞ → Set
+x ≈′ y = Maybe~ _≈_ x y
+
+---------------------
+-- DSL
+
+infix 4 _`≋_ _≋_
+
+data _≋_ (n k : ℕ∞) : Set
+
+record _`≋_ (n k : ℕ∞) : Set where
+  coinductive
+  constructor bisim
+  field
+    `prove : Maybe~ _≋_ (pred n) (pred k)
+
+open _`≋_ public
+
+data _≋_ n k where
+  `step  : n `≋ k → n ≋ k
+  `refl  : n ≡ k → n ≋ k
+  `bisim : n ≈ k → n ≋ k
+  `sym   : k ≋ n → n ≋ k
+  `trans : ∀{m} → n ≋ m → m ≋ k → n ≋ k
+
+`pred : ∀{n k} → _≋_ n k → Maybe~ _≋_ (pred n) (pred k)
+`pred (`step x) = `prove x
+`pred {n} {k} (`refl refl) with pred n
+... | nothing = nothing-refl
+... | just n' = cong-just (`refl refl)
+`pred {n} {k} (`bisim x) with pred n | pred k | prove x
+... | nothing | nothing | _           = nothing-refl
+... | just n' | just k' | cong-just e = cong-just (`bisim e)
+`pred {n} {k} (`sym e) with pred n | pred k | `pred {k} {n} e
+... | nothing | nothing | _           = nothing-refl
+... | just n' | just k' | cong-just x = cong-just (`sym x)
+`pred {n} {k} (`trans {m} e1 e2) with pred n | pred m | pred k | `pred {n} {m} e1 | `pred {m} {k} e2
+... | nothing | nothing | nothing | _            |           _  = nothing-refl
+... | just n' | just m' | just k' | cong-just t1 | cong-just t2 = cong-just (`trans t1 t2)
+
+run : ∀{n k} → n `≋ k → n ≈ k
+runT : ∀{n k} → n ≋ k → n ≈ k
+prove (runT {n} {k} x) with pred n | pred k | `pred x
+... | nothing | nothing | _ = nothing-refl
+... | just n' | just k' | cong-just t = cong-just (runT t)
+run′ : ∀{n k} → Maybe~ _≋_ n k → Maybe~ _≈_ n k
+run′ {n} {k} nothing-refl = nothing-refl
+run′ {n} {k} (cong-just x) = cong-just (runT x)
+prove (run e) = run′ (`prove e)
+
+infixr 2 _`↺⟨_⟩_ _`↺⟨_⟨_ _`≈⟨_⟩_ _`≈⟨_⟨_ _`≡⟨_⟩_ _`≡⟨_⟨_ _`◾_
+infix  3 _`∎
+
+pattern _`◾_ e1 e2 = `trans e1 e2
+pattern _`↺⟨_⟩_ as as∼bs bs∼cs = `trans {as = as} (`step as∼bs) bs∼cs
+pattern _`↺⟨_⟨_ as bs∼as bs∼cs = `trans {as = as} (`sym (`step bs∼as)) bs∼cs
+pattern _`≈⟨_⟩_ as as∼bs bs∼cs = `trans {as = as} (`bisim as∼bs) bs∼cs
+pattern _`≈⟨_⟨_ as bs∼as bs∼cs = `trans {as = as} (`sym (`bisim bs∼as)) bs∼cs
+pattern _`≡⟨_⟩_ as as∼bs bs∼cs = `trans {as = as} (`refl as∼bs) bs∼cs
+pattern _`≡⟨_⟨_ as bs∼as bs∼cs = `trans {as = as} (`sym (`refl bs∼as)) bs∼cs
+pattern _`≡⟨⟩_  as as∼bs       = `trans {as = as} (`refl refl) as∼bs
+pattern _`∎     as             = `refl  {as = as} refl
+
+-----------------------------
+-- Some of the proofs
+
+-- Scaffolding
+cong : ∀{i j}{A : Set i}{B : Set j}(f : A → B){x y : A} → x ≡ y → f x ≡ f y
+cong f refl = refl
+
+succ : ℕ∞ → ℕ∞
+pred (succ a) = just a
+
+unpred∘just : ∀{n} → unpred (just n) ≈ succ n
+prove (unpred∘just {n}) = ?
+
+unpred∘pred : ∀{n} → unpred (pred n) ≈ n
+prove (unpred∘pred {n}) = ?
+
+-- Showcase
+`comm+ : (a b : ℕ∞) → a + b `≋ b + a
+`prove (`comm+ a b) with pred a in eq1
+`prove (`comm+ a b) | just a' with pred b in eq2
+`prove (`comm+ a b) | just a' | just b' = let succ∞a' = runT (`sym (`bisim (unpred∘pred {a})) `◾ `refl (cong unpred eq1) `◾ `bisim unpred∘just)
+                                              succ∞b' = runT (`sym (`bisim (unpred∘pred {b})) `◾ `refl (cong unpred eq2) `◾ `bisim unpred∘just)
+                                          in cong-just (`bisim (cong-+ₗ _ _ a' succ∞b')
+                                                    `◾ `step (`comm+ a' (succ b'))
+                                                    `◾ `bisim (sucl+ b' a')
+                                                    `◾ `bisim (symℕ∞ (sucr+ b' a'))
+                                                    `◾ `bisim (symℕ∞ (cong-+ₗ _ _ b' succ∞a')))
+`prove (`comm+ a b) | just a' | nothing rewrite eq1 = cong-just (`bisim (cong-+ₗ b (unpred zero∞) a' (runT (`sym (`bisim unpred∘pred) `◾ `refl (cong unpred eq2))))
+                                                           `◾ `bisim (idr+′ a')
+                                                           `◾ `bisim (symℕ∞ (+-aux-inr a a')))
+`prove (`comm+ a b) | nothing with just b
+`prove (`comm+ a b) | nothing | just b' = cong-just (`bisim (+-aux-inr b b')
+                                               `◾ `bisim (symℕ∞ (idr+′ b'))
+                                               `◾ `bisim (cong-+ₗ (unpred zero∞) a b' (runT (`refl (cong unpred (sym eq1)) `◾ `bisim unpred∘pred))))
+`prove (`comm+ a b) | zero∞ | zero∞ rewrite eq1 = nothing-refl
+
+comm+ : (a b : ℕ∞) → a + b ≈ℕ∞ b + a
+comm+ a b = run (`comm+ a b)
+
+\end{code}

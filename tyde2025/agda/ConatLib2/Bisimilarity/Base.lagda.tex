@@ -1,0 +1,94 @@
+\begin{code}
+{-# OPTIONS --safe --cubical --guardedness #-}
+{-# OPTIONS -WnoUnsupportedIndexedMatch #-}
+
+module ConatLib2.Bisimilarity.Base where
+
+open import Agda.Primitive
+
+open import Cubical.Data.Maybe
+open import Cubical.Foundations.Prelude
+
+open import Cubical.Data.Empty
+  renaming (rec to exfalso)
+
+open import ConatLib2.Type
+open import ConatLib2.Inspect
+
+data Maybe~ {i}{j}{A : Set i} (A~ : A → A → Set j) : Maybe A → Maybe A → Set (i ⊔ j) where
+  nothing-refl : Maybe~ A~ nothing nothing
+  cong-just : ∀ {a₀ a₁} → A~ a₀ a₁ → Maybe~ A~ (just a₀) (just a₁)
+
+infix 4 _`≋_ _≋_
+
+data _≋_ (n k : ℕ∞) : Set
+
+record _`≋_ (n k : ℕ∞) : Set where
+  coinductive
+  constructor bisim
+  field
+    `prove : Maybe~ _≋_ (pred n) (pred k)
+
+open _`≋_ public
+
+data _≋_ n k where
+  `step  : n `≋ k → n ≋ k
+  `path  : n ≡ k → n ≋ k
+  `sym   : k ≋ n → n ≋ k
+  `trans : ∀{m} → n ≋ m → m ≋ k → n ≋ k
+
+`pred : ∀{n k} → n ≋ k → Maybe~ _≋_ (pred n) (pred k)
+`pred (`step x) = `prove x
+`pred {n} {k} (`path x) with pred n | inspect pred n | pred k | inspect pred k
+... | just n' | reveal eq1 | just k' | reveal eq2 = cong-just (`path (just-inj _ _ (sym eq1 ∙ cong pred x ∙ eq2)))
+... | just n' | reveal eq1 | nothing | reveal eq2 = exfalso (¬just≡nothing (sym eq1 ∙ cong pred x ∙ eq2))
+... | nothing | reveal eq1 | just k' | reveal eq2 = exfalso (¬nothing≡just (sym eq1 ∙ cong pred x ∙ eq2))
+... | nothing | reveal eq1 | nothing | reveal eq2 = nothing-refl
+`pred {n} {k} (`sym e) with pred n | pred k | `pred {k} {n} e
+... | nothing  | nothing  | _ = nothing-refl
+... | .just n' | .just k' | cong-just x = cong-just (`sym x)
+`pred {n} {k} (`trans {m} e1 e2) with pred n | pred m | pred k | `pred {n} {m} e1 | `pred {m} {k} e2
+... | nothing  | nothing  | nothing  | _  | _  = nothing-refl
+... | .just n' | .just m' | .just k' | cong-just t1 | cong-just t2 = cong-just (`trans t1 t2)
+
+run : ∀{n k} → n `≋ k → n ≡ k
+runT : ∀{n k} → n ≋ k → n ≡ k
+pred (runT {n} {k} x i) with {pred n} | {pred k} | `pred x
+... | nothing-refl = nothing
+... | cong-just t = just (runT t i)
+run′ : ∀{n k} → Maybe~ _≋_ n k → n ≡ k
+run′ {n} {k} nothing-refl = refl
+run′ {n} {k} (cong-just x) i = just (runT x i)
+pred (run e i) = run′ (`prove e) i
+
+infixr 2 _`↺⟨_⟩_ _`↺⟨_⟨_ _`≡⟨_⟩_ _`≡⟨_⟨_ _`◾_
+infix  3 _`∎
+
+_`◾_ : {a b c : ℕ∞} → a ≋ b → b ≋ c → a ≋ c
+_`◾_ = `trans
+{-# INLINE _`◾_ #-}
+
+_`↺⟨_⟩_ : (a : ℕ∞){b c : ℕ∞} → a `≋ b → b ≋ c → a ≋ c
+a `↺⟨ a∼b ⟩ b∼c = `trans {a} (`step a∼b) b∼c
+{-# INLINE _`↺⟨_⟩_ #-}
+
+_`↺⟨_⟨_ : (a : ℕ∞){b c : ℕ∞} → b `≋ a → b ≋ c → a ≋ c
+a `↺⟨ b∼a ⟨ b∼c = `trans {a} (`sym (`step b∼a)) b∼c
+{-# INLINE _`↺⟨_⟨_ #-}
+
+_`≡⟨_⟩_ : (a : ℕ∞){b c : ℕ∞} → a ≡ b → b ≋ c → a ≋ c
+a `≡⟨ a∼b ⟩ b∼c = `trans {a} (`path a∼b) b∼c
+{-# INLINE _`≡⟨_⟩_ #-}
+
+_`≡⟨_⟨_ : (a : ℕ∞){b c : ℕ∞} → b ≡ a → b ≋ c → a ≋ c
+a `≡⟨ b∼a ⟨ b∼c = `trans {a} (`sym (`path b∼a)) b∼c
+{-# INLINE _`≡⟨_⟨_ #-}
+
+_`≡⟨⟩_ : (a : ℕ∞){b : ℕ∞} → a ≋ b → a ≋ b
+a `≡⟨⟩ a∼b = `trans {a} (`path refl) a∼b
+{-# INLINE _`≡⟨⟩_ #-}
+
+_`∎ : (a : ℕ∞) → a ≋ a
+a `∎ = `path  {a} refl
+{-# INLINE _`∎ #-}
+\end{code}

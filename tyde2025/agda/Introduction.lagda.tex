@@ -31,6 +31,7 @@ In Agda, it can be represented as a coinductive record type:
 \begin{code}
 record ℕ∞ : Type where
   coinductive
+  constructor unpred
   field
     pred : Maybe ℕ∞
 \end{code}
@@ -40,16 +41,16 @@ open ℕ∞ public
 
 \begin{code}
 zero : ℕ∞
-zero .pred = nothing
+pred zero = nothing
 
 suc : ℕ∞ → ℕ∞
-suc x .pred = just x
+pred (suc x) = just x
 
-inf : ℕ∞
-inf .pred = just inf
+∞ : ℕ∞
+pred ∞ = just ∞
 
-pred-inj : ∀ {x y} → x .pred ≡ y .pred → x ≡ y
-pred-inj p i .pred = p i
+pred-inj : ∀ {x y} → pred x ≡ pred y → x ≡ y
+pred (pred-inj p i) = p i
 \end{code}
 
 not isomorphic to $\mathbb{N} + \mathbb{1}$
