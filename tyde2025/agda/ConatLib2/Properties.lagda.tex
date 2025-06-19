@@ -1,5 +1,5 @@
-\begin{code}
-{-# OPTIONS --safe --guardedness --cubical --no-postfix-projection #-}
+\begin{code}[hide]
+{-# OPTIONS --safe --guardedness --cubical --no-postfix-projections #-}
 
 module ConatLib2.Properties where
 
@@ -20,7 +20,6 @@ open import Cubical.Data.Unit
 
 unpred∘pred : ∀{n} → unpred (pred n) ≡ n
 pred (unpred∘pred {n} i) = pred n
-
 
 unpred∘just : ∀{n} → unpred (just n) ≡ suc n
 pred (unpred∘just {n} i) = just n

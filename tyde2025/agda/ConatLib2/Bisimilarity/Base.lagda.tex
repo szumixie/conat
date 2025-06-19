@@ -1,4 +1,4 @@
-\begin{code}
+\begin{code}[hide]
 {-# OPTIONS --safe --cubical --guardedness #-}
 {-# OPTIONS -WnoUnsupportedIndexedMatch #-}
 
@@ -14,30 +14,51 @@ open import Cubical.Data.Empty
 
 open import ConatLib2.Type
 open import ConatLib2.Inspect
+\end{code}
 
-data Maybe~ {i}{j}{A : Set i} (A~ : A → A → Set j) : Maybe A → Maybe A → Set (i ⊔ j) where
+The second method defines a domain specific language (via <cite Nils>) to make
+the equational reasoning possible again by making the reflexivity, symmetry and
+transitivity properties constructors of this language including the possibility
+to use corecursive steps in a proof.
+
+\begin{code}
+data Maybe~ {A : Set} (A~ : A → A → Set) : Maybe A → Maybe A → Set where
   nothing-refl : Maybe~ A~ nothing nothing
   cong-just : ∀ {a₀ a₁} → A~ a₀ a₁ → Maybe~ A~ (just a₀) (just a₁)
-
+\end{code}
+\begin{code}[hide]
 infix 4 _`≋_ _≋_
-
+\end{code}
+\begin{code}
 data _≋_ (n k : ℕ∞) : Set
 
 record _`≋_ (n k : ℕ∞) : Set where
   coinductive
+\end{code}
+\begin{code}[hide]
   constructor bisim
+\end{code}
+\begin{code}
   field
     `prove : Maybe~ _≋_ (pred n) (pred k)
-
+\end{code}
+\begin{code}[hide]
 open _`≋_ public
-
+\end{code}
+\begin{code}
 data _≋_ n k where
   `step  : n `≋ k → n ≋ k
   `path  : n ≡ k → n ≋ k
   `sym   : k ≋ n → n ≋ k
   `trans : ∀{m} → n ≋ m → m ≋ k → n ≋ k
+\end{code}
 
+We define the predecessor over the new \AgdaFunction{_≋_} relation.
+
+\begin{code}
 `pred : ∀{n k} → n ≋ k → Maybe~ _≋_ (pred n) (pred k)
+\end{code}
+\begin{code}[hide]
 `pred (`step x) = `prove x
 `pred {n} {k} (`path x) with pred n | inspect pred n | pred k | inspect pred k
 ... | just n' | reveal eq1 | just k' | reveal eq2 = cong-just (`path (just-inj _ _ (sym eq1 ∙ cong pred x ∙ eq2)))
@@ -50,7 +71,11 @@ data _≋_ n k where
 `pred {n} {k} (`trans {m} e1 e2) with pred n | pred m | pred k | `pred {n} {m} e1 | `pred {m} {k} e2
 ... | nothing  | nothing  | nothing  | _  | _  = nothing-refl
 ... | .just n' | .just m' | .just k' | cong-just t1 | cong-just t2 = cong-just (`trans t1 t2)
+\end{code}
 
+With that we can easily show that our new language coincides with the equality over conatural numbers.
+
+\begin{code}
 run : ∀{n k} → n `≋ k → n ≡ k
 runT : ∀{n k} → n ≋ k → n ≡ k
 pred (runT {n} {k} x i) with {pred n} | {pred k} | `pred x
@@ -60,29 +85,20 @@ run′ : ∀{n k} → Maybe~ _≋_ n k → n ≡ k
 run′ {n} {k} nothing-refl = refl
 run′ {n} {k} (cong-just x) i = just (runT x i)
 pred (run e i) = run′ (`prove e) i
+\end{code}
 
-infixr 2 _`↺⟨_⟩_ _`↺⟨_⟨_ _`≡⟨_⟩_ _`≡⟨_⟨_ _`◾_
+Let us set up the usual notation for equational reasoning.
+
+\begin{code}[hide]
+infixr 2 _`↺⟨_⟩_ _`↺⟨_⟨_ _`≡⟨_⟩_ _`≡⟨_⟨_ _`◾_ _`≡⟨⟩_
 infix  3 _`∎
-
-_`◾_ : {a b c : ℕ∞} → a ≋ b → b ≋ c → a ≋ c
-_`◾_ = `trans
-{-# INLINE _`◾_ #-}
-
-_`↺⟨_⟩_ : (a : ℕ∞){b c : ℕ∞} → a `≋ b → b ≋ c → a ≋ c
-a `↺⟨ a∼b ⟩ b∼c = `trans {a} (`step a∼b) b∼c
-{-# INLINE _`↺⟨_⟩_ #-}
-
-_`↺⟨_⟨_ : (a : ℕ∞){b c : ℕ∞} → b `≋ a → b ≋ c → a ≋ c
-a `↺⟨ b∼a ⟨ b∼c = `trans {a} (`sym (`step b∼a)) b∼c
-{-# INLINE _`↺⟨_⟨_ #-}
-
-_`≡⟨_⟩_ : (a : ℕ∞){b c : ℕ∞} → a ≡ b → b ≋ c → a ≋ c
-a `≡⟨ a∼b ⟩ b∼c = `trans {a} (`path a∼b) b∼c
-{-# INLINE _`≡⟨_⟩_ #-}
-
-_`≡⟨_⟨_ : (a : ℕ∞){b c : ℕ∞} → b ≡ a → b ≋ c → a ≋ c
-a `≡⟨ b∼a ⟨ b∼c = `trans {a} (`sym (`path b∼a)) b∼c
-{-# INLINE _`≡⟨_⟨_ #-}
+\end{code}
+\begin{code}
+pattern _`◾_ = `trans
+pattern _`↺⟨_⟩_ a a∼b b∼c = `trans {a} (`step a∼b) b∼c
+pattern _`↺⟨_⟨_ a b∼a b∼c = `trans {a} (`sym (`step b∼a)) b∼c
+pattern _`≡⟨_⟩_ a a∼b b∼c = `trans {a} (`path a∼b) b∼c
+pattern _`≡⟨_⟨_ a b∼a b∼c = `trans {a} (`sym (`path b∼a)) b∼c
 
 _`≡⟨⟩_ : (a : ℕ∞){b : ℕ∞} → a ≋ b → a ≋ b
 a `≡⟨⟩ a∼b = `trans {a} (`path refl) a∼b
@@ -92,3 +108,9 @@ _`∎ : (a : ℕ∞) → a ≋ a
 a `∎ = `path  {a} refl
 {-# INLINE _`∎ #-}
 \end{code}
+
+Note that these last two definitions could not be made \texttt{pattern}s
+as they both use the \AgdaFunction{refl} function which is not a constructor
+in Cubical Agda, just a regular function. However, if we inline their definitions,
+since they are not recursive, nor corecursive, Agda sees them as guarded definitions
+and it is going to accept their usage.
