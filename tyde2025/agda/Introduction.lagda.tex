@@ -128,9 +128,7 @@ mutual
   ×-step (just x')  y (just y')  = just (y' + x' × y)
 \end{code}
 
-This definition ------------------------ !TODO
-
-Here the mention of the \texttt{TERMINATING} flag indicates that in its absence the definition would be rejected.
+This definition is productive but it is not guarded, since it uses the \AgdaFunction{_+_}'s definition, which is not a constructor. To make Agda accept this definition, we had to turn off the productivity checker using the \texttt{TERMINATING} flag. However, it is not advisable to use it, because Agda leaves us all on our own to make sure the definition terminates.
 
 We can prove some of the usual properties of addition over conatural numbers, like the associativity of the addition.
 
@@ -148,7 +146,7 @@ mutual
   +-assoc-step (just x')  y z = cong just (+-assoc x' y z)
 \end{code}
 
-This is again a nice guarded corecusion and Agda happily accepts this as a proof. However, again for multiplication, this proof is rejected without the \texttt{TERMINATION} flag.
+This is again a nice guarded corecusion and Agda happily accepts this as a proof. However, the proof of commutativity of addition below is rejected without the \texttt{TERMINATING} flag.
 
 \begin{code}[hide]
 postulate
@@ -184,7 +182,7 @@ mutual
   +-comm-step x (just x') y nothing p q = ADMIT
 \end{code}
 
-This definition is productive but not guarded
+Same problem again, the definition is productive but not guarded.
 
 \subsection{Related work}
 
