@@ -14,6 +14,11 @@ open import Cubical.Data.Empty
 
 open import ConatLib2.Type
 open import ConatLib2.Inspect
+
+private variable
+  A : Set
+  a₀ a₁ : A
+  n k : A
 \end{code}
 
 The second method defines a domain specific language (via <cite Nils>) to make
@@ -22,9 +27,10 @@ transitivity properties constructors of this language including the possibility
 to use corecursive steps in a proof.
 
 \begin{code}
-data Maybe~ {A : Set} (A~ : A → A → Set) : Maybe A → Maybe A → Set where
+data Maybe~ (A~ : A → A → Set) :
+  Maybe A → Maybe A → Set where
   nothing-refl : Maybe~ A~ nothing nothing
-  cong-just : ∀ {a₀ a₁} → A~ a₀ a₁ → Maybe~ A~ (just a₀) (just a₁)
+  cong-just : A~ a₀ a₁ → Maybe~ A~ (just a₀) (just a₁)
 \end{code}
 \begin{code}[hide]
 infix 4 _`≋_ _≋_
@@ -56,7 +62,7 @@ data _≋_ n k where
 We define the predecessor over the new \AgdaFunction{_≋_} relation.
 
 \begin{code}
-`pred : ∀{n k} → n ≋ k → Maybe~ _≋_ (pred n) (pred k)
+`pred : n ≋ k → Maybe~ _≋_ (pred n) (pred k)
 \end{code}
 \begin{code}[hide]
 `pred (`step x) = `prove x
@@ -76,25 +82,25 @@ We define the predecessor over the new \AgdaFunction{_≋_} relation.
 With that we can easily show that our new language coincides with the equality over conatural numbers.
 
 \begin{code}
-run : ∀{n k} → n `≋ k → n ≡ k
-runT : ∀{n k} → n ≋ k → n ≡ k
+run : n `≋ k → n ≡ k
+runT : n ≋ k → n ≡ k
 pred (runT {n} {k} x i) with {pred n} | {pred k} | `pred x
 ... | nothing-refl = nothing
 ... | cong-just t = just (runT t i)
-run′ : ∀{n k} → Maybe~ _≋_ n k → n ≡ k
-run′ {n} {k} nothing-refl = refl
-run′ {n} {k} (cong-just x) i = just (runT x i)
+run′ : Maybe~ _≋_ n k → n ≡ k
+run′ nothing-refl = refl
+run′ (cong-just x) i = just (runT x i)
 pred (run e i) = run′ (`prove e) i
 \end{code}
 
 Let us set up the usual notation for equational reasoning.
 
 \begin{code}[hide]
-infixr 2 _`↺⟨_⟩_ _`↺⟨_⟨_ _`≡⟨_⟩_ _`≡⟨_⟨_ _`◾_ _`≡⟨⟩_
+infixr 2 _`↺⟨_⟩_ _`↺⟨_⟨_ _`≡⟨_⟩_ _`≡⟨_⟨_ _`∙_ _`≡⟨⟩_
 infix  3 _`∎
 \end{code}
 \begin{code}
-pattern _`◾_ {a} a~b b~c = `trans {a} a~b b~c
+pattern _`∙_  {a} a~b b~c = `trans {a} a~b b~c
 pattern _`↺⟨_⟩_ a a∼b b∼c = `trans {a} (`step a∼b) b∼c
 pattern _`↺⟨_⟨_ a b∼a b∼c = `trans {a} (`sym (`step b∼a)) b∼c
 pattern _`≡⟨_⟩_ a a∼b b∼c = `trans {a} (`path a∼b) b∼c
@@ -105,7 +111,7 @@ a `≡⟨⟩ a∼b = `trans {a} (`path refl) a∼b
 {-# INLINE _`≡⟨⟩_ #-}
 
 _`∎ : (a : ℕ∞) → a ≋ a
-a `∎ = `path  {a} refl
+a `∎ = `path {a} refl
 {-# INLINE _`∎ #-}
 \end{code}
 

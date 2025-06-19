@@ -78,8 +78,8 @@ pred (cong-+ₗ a b c e i) | just c' | _ = just (cong-+ₗ a b c' e i)
 
 `sucr+ : ∀ n k → n + suc k `≋ suc (n + k)
 `prove (`sucr+ n k) with pred n | inspect pred n
-... | nothing | reveal eq1 = cong-just (`sym (`path (cong-+ᵣ _ _ k (runT (`sym (`path (unpred∘pred {n})) `◾ `path (cong unpred eq1)))) `◾ `path (idl+ k) `◾ `sym (`path (+-aux-inr _ _))))
-... | just x  | reveal eq1 = cong-just (`step (`sucr+ x k) `◾ `sym (`path (sucl+ x k)) `◾ `path (cong-+ᵣ (suc x) n k (runT (`sym (`path unpred∘just) `◾ `path (cong unpred (sym eq1)) `◾ `path (unpred∘pred)))))
+... | nothing | reveal eq1 = cong-just (`sym (`path (cong-+ᵣ _ _ k (runT (`sym (`path (unpred∘pred {n})) `∙ `path (cong unpred eq1)))) `∙ `path (idl+ k) `∙ `sym (`path (+-aux-inr _ _))))
+... | just x  | reveal eq1 = cong-just (`step (`sucr+ x k) `∙ `sym (`path (sucl+ x k)) `∙ `path (cong-+ᵣ (suc x) n k (runT (`sym (`path unpred∘just) `∙ `path (cong unpred (sym eq1)) `∙ `path (unpred∘pred)))))
 
 sucr+ : ∀ n k → n + suc k ≡ suc (n + k)
 sucr+ n k = run (`sucr+ n k)
@@ -97,23 +97,23 @@ pred (assoc+ a b c i) with pred a
 `prove (`comm+ a b) with pred a | inspect pred a
 `prove (`comm+ a b) | just a' | _ with pred b | inspect pred b
 `prove (`comm+ a b) | just a' | reveal eq1 | just b' | reveal eq2 =
-  let succ∞a' = runT (`sym (`path (unpred∘pred {a})) `◾ `path (cong unpred eq1) `◾ `path unpred∘just)
-      succ∞b' = runT (`sym (`path (unpred∘pred {b})) `◾ `path (cong unpred eq2) `◾ `path unpred∘just)
+  let succ∞a' = runT (`sym (`path (unpred∘pred {a})) `∙ `path (cong unpred eq1) `∙ `path unpred∘just)
+      succ∞b' = runT (`sym (`path (unpred∘pred {b})) `∙ `path (cong unpred eq2) `∙ `path unpred∘just)
   in cong-just (`path (cong-+ₗ _ _ a' succ∞b')
- `◾ `step (`comm+ a' (suc b'))
- `◾ `path (sucl+ b' a')
- `◾ `sym (`path (sucr+ b' a'))
- `◾ `sym (`path (cong-+ₗ _ _ b' succ∞a')))
+ `∙ `step (`comm+ a' (suc b'))
+ `∙ `path (sucl+ b' a')
+ `∙ `sym (`path (sucr+ b' a'))
+ `∙ `sym (`path (cong-+ₗ _ _ b' succ∞a')))
 `prove (`comm+ a b) | just a' | reveal eq1 | nothing | reveal eq2 with pred a
 `prove (`comm+ a b) | just a' | reveal eq1 | nothing | reveal eq2 | nothing = exfalso (¬nothing≡just eq1)
 `prove (`comm+ a b) | just a' | reveal eq1 | nothing | reveal eq2 | just x = cong-just
-  (`path (cong-+ₗ b (unpred nothing) a' (runT (`sym (`path unpred∘pred) `◾ `path (cong unpred eq2))))
-  `◾ `path (idr+ a')
-  `◾ `sym (`path (+-aux-inr a x ∙ just-inj _ _ eq1)))
+  (`path (cong-+ₗ b (unpred nothing) a' (runT (`sym (`path unpred∘pred) `∙ `path (cong unpred eq2))))
+  `∙ `path (idr+ a')
+  `∙ `sym (`path (+-aux-inr a x ∙ just-inj _ _ eq1)))
 `prove (`comm+ a b) | nothing | _ with pred b
 `prove (`comm+ a b) | nothing | reveal eq1 | just b' = cong-just (`path (+-aux-inr b b')
-                                               `◾ `sym (`path (idr+ b'))
-                                               `◾ `path (cong-+ₗ (unpred nothing) a b' (runT (`path (cong unpred (sym eq1)) `◾ `path unpred∘pred))))
+                                               `∙ `sym (`path (idr+ b'))
+                                               `∙ `path (cong-+ₗ (unpred nothing) a b' (runT (`path (cong unpred (sym eq1)) `∙ `path unpred∘pred))))
 `prove (`comm+ a b) | nothing | reveal eq1 | nothing with pred a
 ... | nothing = nothing-refl
 ... | just x = exfalso (¬nothing≡just (sym eq1))
