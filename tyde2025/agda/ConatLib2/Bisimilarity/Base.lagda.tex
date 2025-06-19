@@ -21,16 +21,17 @@ private variable
   n k : A
 \end{code}
 
-The second method defines a domain specific language (via <cite Nils>) to make
+The second method defines a domain specific language (via \cite{danielsson-beating}) to make
 the equational reasoning possible again by making the reflexivity, symmetry and
 transitivity properties constructors of this language including the possibility
 to use corecursive steps in a proof.
 
 \begin{code}
 data Maybe~ (A~ : A → A → Set) :
-  Maybe A → Maybe A → Set where
-  nothing-refl : Maybe~ A~ nothing nothing
-  cong-just : A~ a₀ a₁ → Maybe~ A~ (just a₀) (just a₁)
+  Maybe A → Maybe A → Set
+  where
+    nothing-refl : Maybe~ A~ nothing nothing
+    cong-just : A~ a₀ a₁ → Maybe~ A~ (just a₀) (just a₁)
 \end{code}
 \begin{code}[hide]
 infix 4 _`≋_ _≋_
@@ -59,7 +60,7 @@ data _≋_ n k where
   `trans : ∀{m} → n ≋ m → m ≋ k → n ≋ k
 \end{code}
 
-We define the predecessor over the new \AgdaFunction{_≋_} relation.
+We define the predecessor over the new \AgdaFunction{\_≋\_} relation.
 
 \begin{code}
 `pred : n ≋ k → Maybe~ _≋_ (pred n) (pred k)

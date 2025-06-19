@@ -106,20 +106,18 @@ follows:
 As a result of this restriction, we cannot define a function that decides if an
 element is equal to \AgdaFunction{∞}.
 
-For example the addition operation can be defined in Agda using guarded
-corecursion.
-
+We can define addition of conatural numbers by guarded corecursion.
 \begin{code}[hide]
 infixl 6 _+_
 mutual
 \end{code}
 \begin{code}
   _+_ : ℕ∞ → ℕ∞ → ℕ∞
-  pred (x + y) = +-step (pred x) y
+  pred (x + y) = +-match (pred x) y
 
-  +-step : Maybe ℕ∞ → ℕ∞ → Maybe ℕ∞
-  +-step nothing    y = pred y
-  +-step (just x')  y = just (x' + y)
+  +-match : Maybe ℕ∞ → ℕ∞ → Maybe ℕ∞
+  +-match nothing    y = pred y
+  +-match (just x')  y = just (x' + y)
 \end{code}
 
 However, if we want to reuse the addition operation to define multiplication, we
@@ -132,13 +130,13 @@ mutual
 \begin{code}
   {-# TERMINATING #-}
   _×_ : ℕ∞ → ℕ∞ → ℕ∞
-  pred (x × y) = ×-step (pred x) y (pred y)
+  pred (x × y) = ×-match (pred x) y (pred y)
 
-  ×-step :
+  ×-match :
     Maybe ℕ∞ → ℕ∞ → Maybe ℕ∞ → Maybe ℕ∞
-  ×-step nothing    y y'         = nothing
-  ×-step (just x')  y nothing    = nothing
-  ×-step (just x')  y (just y')  = just (y' + x' × y)
+  ×-match nothing    y y'         = nothing
+  ×-match (just x')  y nothing    = nothing
+  ×-match (just x')  y (just y')  = just (y' + x' × y)
 \end{code}
 
 This definition is productive but it is not guarded, since it uses the
@@ -155,13 +153,13 @@ mutual
 \end{code}
 \begin{code}
   +-assoc : ∀ x y z → (x + y) + z ≡ x + (y + z)
-  pred (+-assoc x y z i) = +-assoc-step (pred x) y z i
+  pred (+-assoc x y z i) = +-assoc-match (pred x) y z i
 
-  +-assoc-step :
+  +-assoc-match :
     ∀ x' y z →
-    +-step (+-step x' y) z ≡ +-step x' (y + z)
-  +-assoc-step nothing    y z = refl
-  +-assoc-step (just x')  y z = cong just (+-assoc x' y z)
+    +-match (+-match x' y) z ≡ +-match x' (y + z)
+  +-assoc-match nothing    y z = refl
+  +-assoc-match (just x')  y z = cong just (+-assoc x' y z)
 \end{code}
 
 This is again a nice guarded corecusion and Agda happily accepts this as a
@@ -183,12 +181,12 @@ mutual
   {-# TERMINATING #-}
   +-comm : ∀ x y → x + y ≡ y + x
   pred (+-comm x y i) =
-    +-comm-step x (pred x) y (pred y) refl refl i
+    +-comm-match x (pred x) y (pred y) refl refl i
 
-  +-comm-step :
+  +-comm-match :
     ∀ x x' y y' → pred x ≡ x' → pred y ≡ y' →
-    +-step x' y ≡ +-step y' x
-  +-comm-step x (just x') y (just y') px py =
+    +-match x' y ≡ +-match y' x
+  +-comm-match x (just x') y (just y') px py =
     cong just
       ( x' + y         ≡⟨ cong (x' +_) (pred-inj py) ⟩
         x' + suc y'    ≡⟨ +-suc x' y' ⟩
@@ -198,9 +196,9 @@ mutual
         y' + x         ∎)
 \end{code}
 \begin{code}[hide]
-  +-comm-step x nothing y nothing p q = ADMIT
-  +-comm-step x nothing y (just y') p q = ADMIT
-  +-comm-step x (just x') y nothing p q = ADMIT
+  +-comm-match x nothing y nothing p q = ADMIT
+  +-comm-match x nothing y (just y') p q = ADMIT
+  +-comm-match x (just x') y nothing p q = ADMIT
 \end{code}
 
 Same problem again, the definition is productive but not guarded, since the

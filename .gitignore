@@ -1,7 +1,7 @@
 **/.vscode/*
 *.pdf
 *.ptb
-tyde2025/latex/*.tex
+tyde2025/latex/**/*.tex
 
 # Created by https://www.toptal.com/developers/gitignore/api/agda,emacs,latex,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=agda,emacs,latex,visualstudiocode

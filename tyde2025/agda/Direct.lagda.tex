@@ -7,7 +7,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Data.Maybe using (Maybe; nothing; just)
 import Cubical.Data.Nat as ℕ
 open ℕ using (ℕ)
-open import Introduction using (ℕ∞; pred; suc; _+_; +-step)
+open import Introduction using (ℕ∞; pred; suc; _+_; +-match)
 \end{code}
 \begin{code}[hide]
 infixl 7 _×'_
@@ -19,16 +19,16 @@ mutual
 
   ×'-helper : ℕ∞ → ℕ∞ → ℕ∞ → ℕ∞
   pred (×'-helper x y y₀) =
-    ×'-helper-step x (pred x) (pred y) y₀
+    ×'-helper-match x (pred x) (pred y) y₀
 
-  ×'-helper-step :
+  ×'-helper-match :
     ℕ∞ → Maybe ℕ∞ → Maybe ℕ∞ → ℕ∞ →
     Maybe ℕ∞
-  ×'-helper-step x x' (just y') y₀ =
+  ×'-helper-match x x' (just y') y₀ =
     just (×'-helper x y' y₀)
-  ×'-helper-step x (just x') nothing y₀ =
+  ×'-helper-match x (just x') nothing y₀ =
     just (×'-helper x' y₀ y₀)
-  ×'-helper-step x nothing nothing y₀ =
+  ×'-helper-match x nothing nothing y₀ =
     nothing
 \end{code}
 
@@ -38,12 +38,12 @@ mutual
 \end{code}
 \begin{code}
   _×_ : ℕ∞ → ℕ∞ → ℕ∞
-  pred (x × y) = ×-step (pred x) (pred y)
+  pred (x × y) = ×-match (pred x) (pred y)
 
-  ×-step : Maybe ℕ∞ → Maybe ℕ∞ → Maybe ℕ∞
-  ×-step nothing    y'         = nothing
-  ×-step (just x')  nothing    = nothing
-  ×-step (just x')  (just y')  = just (x' ×' y')
+  ×-match : Maybe ℕ∞ → Maybe ℕ∞ → Maybe ℕ∞
+  ×-match nothing    y'         = nothing
+  ×-match (just x')  nothing    = nothing
+  ×-match (just x')  (just y')  = just (x' ×' y')
 \end{code}
 
 \begin{code}
@@ -63,15 +63,15 @@ mutual
   +-comm-helper₁ :
     ∀ n x y {l r} → l ≡ x + (n +L y) → r ≡ y + (n +L x) → l ≡ r
   +-comm-helper₁ n x y le re i .pred =
-    +-comm-helper₁-step n x (pred x) y (pred y)
+    +-comm-helper₁-match n x (pred x) y (pred y)
       refl refl (cong pred le) (cong pred re) i
 
-  +-comm-helper₁-step :
+  +-comm-helper₁-match :
     ∀ n x x' y y' {l r} →
     pred x ≡ x' → pred y ≡ y' →
-    l ≡ +-step x' (n +L y) → r ≡ +-step y' (n +L x) →
+    l ≡ +-match x' (n +L y) → r ≡ +-match y' (n +L x) →
     l ≡ r
-  +-comm-helper₁-step n x nothing y nothing px py le re = {!!}
-  +-comm-helper₁-step n x nothing y (just y') px py le re = {!!}
-  +-comm-helper₁-step n x (just x') y y' px py le re = {!!}
+  +-comm-helper₁-match n x nothing y nothing px py le re = {!!}
+  +-comm-helper₁-match n x nothing y (just y') px py le re = {!!}
+  +-comm-helper₁-match n x (just x') y y' px py le re = {!!}
 \end{code}

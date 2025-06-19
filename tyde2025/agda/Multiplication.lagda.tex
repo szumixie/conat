@@ -1,0 +1,59 @@
+\begin{code}
+{-# OPTIONS --cubical --guardedness --no-postfix-projections #-}
+
+open import Cubical.Foundations.Prelude
+open import Cubical.Data.Maybe using (Maybe; nothing; just)
+open import Introduction using (ℕ∞; pred)
+
+infixl 6 _+_
+mutual
+  data Expr : Type where
+    embedℕ∞ : ℕ∞ → Expr
+    embed : NExpr → Expr
+    _+_ : Expr → Expr → Expr
+
+  record NExpr : Type where
+    coinductive
+    field
+      pred : Maybe Expr
+
+open NExpr public
+
+infixl 7 _*'_
+mutual
+  _*'_ : ℕ∞ → ℕ∞ → Expr
+  x *' y = embed (x *'ᴺ y)
+
+  _*'ᴺ_ : ℕ∞ → ℕ∞ → NExpr
+  pred (x *'ᴺ y) = *'-match (pred x) y (pred y)
+
+  *'-match : Maybe ℕ∞ → ℕ∞ → Maybe ℕ∞ → Maybe Expr
+  *'-match nothing y y' = nothing
+  *'-match (just x') y nothing = nothing
+  *'-match (just x') y (just y') = just (embedℕ∞ y' + x' *' y)
+
+mutual
+  predᴱ : Expr → Maybe Expr
+  predᴱ (embedℕ∞ x) = predᴱ-embedℕ∞-match (pred x)
+  predᴱ (embed x) = pred x
+  predᴱ (x + y) = predᴱ-+-match (predᴱ x) y
+
+  predᴱ-embedℕ∞-match : Maybe ℕ∞ → Maybe Expr
+  predᴱ-embedℕ∞-match nothing = nothing
+  predᴱ-embedℕ∞-match (just x') = just (embedℕ∞ x')
+
+  predᴱ-+-match : Maybe Expr → Expr → Maybe Expr
+  predᴱ-+-match nothing y = predᴱ y
+  predᴱ-+-match (just x') y = just (x' + y)
+
+mutual
+  interp : Expr → ℕ∞
+  pred (interp x) = interp-match (predᴱ x)
+
+  interp-match : Maybe Expr → Maybe ℕ∞
+  interp-match nothing = nothing
+  interp-match (just x') = just (interp x')
+
+_*_ : ℕ∞ → ℕ∞ → ℕ∞
+x * y = interp (x *' y)
+\end{code}
