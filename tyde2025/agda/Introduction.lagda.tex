@@ -52,7 +52,7 @@ This destructor is the predecessor function which either fails or gives us
 another conatural number.
 
 We can define elements of \AgdaDatatype{ℕ∞} by copattern matching, that is, we
-specify what the predecessor is for a particular element. As examples, zero does
+specify what the predecessor is for a particular element. As examples, \AgdaFunction{zero} does
 not have a predecessor:
 \begin{code}
 zero : ℕ∞
@@ -81,7 +81,7 @@ regard.
 The conatural numbers can represent all natural numbers and an extra element for
 infinity, however, it is not constructively isomorphic to $\mathbb{N} +
 \mathbb{1}$, because all functions out of the conatural numbers must be
-continuous. Computationally, finite amount output can only depend on finite
+continuous. Computationally, finite amount of output can only depend on finite
 amount of input. Topologically, \AgdaFunction{∞} is the limit of $0, 1, 2,
 \dots$, which must be preserved. We can visualize the topological space as
 follows:
@@ -106,7 +106,9 @@ follows:
 As a result of this restriction, we cannot define a function that decides if an
 element is equal to \AgdaFunction{∞}.
 
-We can define addition of conatural numbers by guarded corecursion.
+We can define addition of conatural numbers by guarded corecursion, using a
+helper function \AgdaFunction{+-match} to pattern match on the predecessor of
+$x$:
 \begin{code}[hide]
 infixl 6 _+_
 mutual
@@ -119,10 +121,12 @@ mutual
   +-match nothing    y = pred y
   +-match (just x')  y = just (x' + y)
 \end{code}
+In the first case, we say that the predecessor of $0 + y$ is the predecessor of
+$y$. In the second case, which is when $x$ is non-zero, we say that the
+predecessor of $x + y$ is $x' + y$ where $x'$ is the predecessor of $x$.
 
-However, if we want to reuse the addition operation to define multiplication, we
-get a non-guarded definition, which Agda rejects.
-
+If we naïvely try define multiplication by using addition, then Agda will reject
+it, unless we use the unsafe \AgdaKeyword{TERMINATING} pragma:
 \begin{code}[hide]
 infixl 7 _×_
 mutual
@@ -138,16 +142,13 @@ mutual
   ×-match (just x')  y nothing    = nothing
   ×-match (just x')  y (just y')  = just (y' + x' × y)
 \end{code}
+Here we match on both $x$ and $y$. If neither are zero, then the predecessor of
+$x × y$ is $y' + x' × y$, where $x - 1 = x'$ and $y - 1 = y'$. This definition
+is productive but not guarded, as the recursive call to \AgdaFunction{\_×\_} is
+under \AgdaFunction{\_+\_}, which is not a constructor.
 
-This definition is productive but it is not guarded, since it uses the
-\AgdaFunction{\_+\_}'s definition, which is not a constructor. To make Agda
-accept this definition, we had to turn off the productivity checker using the
-\texttt{TERMINATING} flag. However, it is not advisable to use it, because Agda
-leaves us all on our own to make sure the definition terminates.
-
-We can prove some of the usual properties of addition over conatural numbers,
-like the associativity of the addition.
-
+We can prove some of the usual properties of addition over the conatural
+numbers, like the associativity of the addition.
 \begin{code}[hide]
 mutual
 \end{code}
@@ -161,12 +162,10 @@ mutual
   +-assoc-match nothing    y z = refl
   +-assoc-match (just x')  y z = cong just (+-assoc x' y z)
 \end{code}
-
 This is again a nice guarded corecusion and Agda happily accepts this as a
 proof. However, the proof of commutativity of addition below is rejected without
-the \AgdaKeyword{TERMINATING} flag. Let us assume we have this equation
+the \AgdaKeyword{TERMINATING} pragma. Let us assume we have this equation
 available to use in the proof of commutativity.
-
 \begin{code}[hide]
 postulate
 \end{code}
@@ -188,28 +187,27 @@ mutual
     +-match x' y ≡ +-match y' x
   +-comm-match x (just x') y (just y') px py =
     cong just
-      ( x' + y         ≡⟨ cong (x' +_) (pred-inj py) ⟩
-        x' + suc y'    ≡⟨ +-suc x' y' ⟩
-        suc (x' + y')  ≡⟨ cong suc (+-comm x' y') ⟩
-        suc (y' + x')  ≡⟨ sym (+-suc y' x') ⟩
-        y' + suc x'    ≡⟨ cong (y' +_) (pred-inj (sym px)) ⟩
-        y' + x         ∎)
+      (  x' + y         ≡⟨ cong (x' +_) (pred-inj py) ⟩
+         x' + suc y'    ≡⟨ +-suc x' y' ⟩
+         suc (x' + y')  ≡⟨ cong suc (+-comm x' y') ⟩
+         suc (y' + x')  ≡⟨ sym (+-suc y' x') ⟩
+         y' + suc x'    ≡⟨ cong (y' +_) (pred-inj (sym px)) ⟩
+         y' + x         ∎)
 \end{code}
 \begin{code}[hide]
   +-comm-match x nothing y nothing p q = ADMIT
   +-comm-match x nothing y (just y') p q = ADMIT
   +-comm-match x (just x') y nothing p q = ADMIT
 \end{code}
-
-Same problem again, the definition is productive but not guarded, since the
-equational reasoning contains the transitivity operation which is not a
-constructor.
+Same problem as the definition of multiplication above, the definition is
+productive but not guarded, since the equational reasoning contains the
+transitivity operation which is not a constructor.
 
 Our contribution in this paper is to prove that the conatural numbers form an
-exponential semiring by corecursion and coinduction. Along the way, we show
-three different methods starting out with the formalisation, showcasing some of
-the difficulties and problems. The last method we show is the one we use to
-prove that the conatural numbers form an exponential semiring.
+exponential semiring by guarded corecursion. Along the way, we show three
+different methods starting out with the formalisation, showcasing some of the
+difficulties and problems. The last method we show is the one we use to prove
+that the conatural numbers form an exponential semiring.
 
 Section 2 ...
 
@@ -221,7 +219,7 @@ Section 4 ...
 
 For our formalisation we are going to use Cubical Agda, so the bisimulation
 relation over conatural numbers coincide with equality. With that, for example,
-we can define the injectivity proof for the \AgdaFunction{pred} destructor the
+we can define the injectivity proof for the \AgdaField{pred} destructor the
 following way:
 
 \subsection{Related work}
