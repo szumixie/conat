@@ -14,22 +14,18 @@ pred (coite f b) with f b
 ... | nothing = nothing
 ... | just x  = just (coite f x)
 
+zero : ℕ∞
+zero = unpred nothing
+
 suc : ℕ∞ → ℕ∞
 pred (suc a) = just a
 
-+-aux : ℕ∞ → ℕ∞ ⊎ ℕ∞ → Maybe (ℕ∞ ⊎ ℕ∞)
-+-aux k (inl n) with pred n
-+-aux k (inl n) | just n' = just (inl n')
-+-aux k (inl n) | nothing with pred k
-+-aux k (inl n) | nothing | just k' = just (inr k')
-+-aux k (inl n) | nothing | nothing = nothing
-+-aux _ (inr k) with pred k
-+-aux _ (inr k) | just k' = just (inr k')
-+-aux _ (inr k) | nothing = nothing
-
 infixl 6 _+_
 _+_ : ℕ∞ → ℕ∞ → ℕ∞
-_+_ n k = coite (+-aux k) (inl n)
++-match : Maybe ℕ∞ → ℕ∞ → Maybe ℕ∞
++-match nothing    y = pred y
++-match (just x')  y = just (x' + y)
+pred (x + y) = +-match (pred x) y
 
 *-aux : ℕ∞ → ℕ∞ × ℕ∞ → Maybe (ℕ∞ × ℕ∞)
 *-aux restore (e1 , e2) with pred e1

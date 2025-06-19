@@ -17,35 +17,24 @@ open import Cubical.Data.Sigma
 open import Cubical.Data.Empty
   renaming (rec to exfalso)
 open import Cubical.Data.Unit
+\end{code}
 
+In this section we show
+
+\begin{code}[hide]
 unpred∘pred : ∀{n} → unpred (pred n) ≡ n
 pred (unpred∘pred {n} i) = pred n
 
 unpred∘just : ∀{n} → unpred (just n) ≡ suc n
 pred (unpred∘just {n} i) = just n
 
-∞+1≡∞ : suc ∞ ≡ ∞
-pred (∞+1≡∞ i) = just ∞
+pred-inj : ∀{n k} → pred n ≡ pred k → n ≡ k
+pred (pred-inj e i) = e i
 
-+-aux-inr : ∀ w k → coite (+-aux w) (inr k) ≡ k
-pred (+-aux-inr w k i) with pred k
-... | nothing = nothing
-... | just k' = just (+-aux-inr w k' i)
+idl+ : (n : ℕ∞) → zero + n ≡ n
+pred (idl+ n i) = pred n
 
-_+∞≡∞ : ∀ n → n + ∞ ≡ ∞
-pred ((n +∞≡∞) i) with pred n
-... | nothing = just (+-aux-inr ∞ ∞ i)
-... | just x = just ((x +∞≡∞) i)
-
-∞+_≡∞ : ∀ n → ∞ + n ≡ ∞
-pred (∞+ n ≡∞ i) = just (∞+ n ≡∞ i)
-
-idl+ : (n : ℕ∞) → unpred nothing + n ≡ n
-pred (idl+ n i) with pred n
-... | nothing = nothing
-... | just n' = just (+-aux-inr n n' i)
-
-idr+ : ∀ n → n + unpred nothing ≡ n
+idr+ : ∀ n → n + zero ≡ n
 pred (idr+ n i) with pred n
 ... | nothing = nothing
 ... | just n' = just (idr+ n' i)
@@ -53,71 +42,49 @@ pred (idr+ n i) with pred n
 sucl+ : ∀ n k → suc n + k ≡ suc (n + k)
 pred (sucl+ n k i) = just (n + k)
 
-cong-+ᵣ : (a b c : ℕ∞) → a ≡ b → a + c ≡ b + c
-pred (cong-+ᵣ a b c e i) with pred a | inspect pred a | pred b | inspect pred b
-pred (cong-+ᵣ a b c e i) | nothing | eq1 | nothing | eq2 with pred c
-pred (cong-+ᵣ a b c e i) | nothing | _   | nothing | _   | nothing = nothing
-pred (cong-+ᵣ a b c e i) | nothing | eq1 | nothing | eq2 | just x = just (coite (+-aux c) (inr x))
-pred (cong-+ᵣ a b c e i) | nothing | reveal eq1 | just b' | reveal eq2 with ¬nothing≡just (sym eq1 ∙ cong pred e ∙ eq2)
-... | ()
-pred (cong-+ᵣ a b c e i) | just a' | reveal eq1 | nothing | reveal eq2 with ¬nothing≡just (sym eq2 ∙ cong pred (sym e) ∙ eq1)
-... | ()
-pred (cong-+ᵣ a b c e i) | just a' | reveal eq1 | just b' | reveal eq2 = just (cong-+ᵣ a' b' c (just-inj _ _ (sym eq1 ∙ cong pred e ∙ eq2)) i)
-
-cong-+ₗ : (a b c : ℕ∞) → a ≡ b → c + a ≡ c + b
-pred (cong-+ₗ a b c e i) with pred c | inspect pred c
-pred (cong-+ₗ a b c e i) | nothing | eq-c with pred a | inspect pred a | pred b | inspect pred b
-pred (cong-+ₗ a b c e i) | nothing | _           | nothing | _           | nothing | _ = nothing
-pred (cong-+ₗ a b c e i) | nothing | reveal eq-c | nothing | reveal eq-a | just b' | reveal eq-b with ¬nothing≡just (sym eq-a ∙ cong pred e ∙ eq-b)
-... | ()
-pred (cong-+ₗ a b c e i) | nothing | _ | just a' | reveal eq-a | nothing | reveal eq-b with ¬just≡nothing (sym eq-a ∙ cong pred e ∙ eq-b)
-... | ()
-pred (cong-+ₗ a b c e i) | nothing | _ | just a' | reveal eq-a | just b' | reveal eq-b with sym eq-a ∙ cong pred e ∙ eq-b
-... | e' = just ((+-aux-inr a a' ∙ just-inj _ _ e' ∙ sym (+-aux-inr b b')) i)
-pred (cong-+ₗ a b c e i) | just c' | _ = just (cong-+ₗ a b c' e i)
-
 `sucr+ : ∀ n k → n + suc k `≋ suc (n + k)
 `prove (`sucr+ n k) with pred n | inspect pred n
-... | nothing | reveal eq1 = cong-just (`sym (`path (cong-+ᵣ _ _ k (runT (`sym (`path (unpred∘pred {n})) `∙ `path (cong unpred eq1)))) `∙ `path (idl+ k) `∙ `sym (`path (+-aux-inr _ _))))
-... | just x  | reveal eq1 = cong-just (`step (`sucr+ x k) `∙ `sym (`path (sucl+ x k)) `∙ `path (cong-+ᵣ (suc x) n k (runT (`sym (`path unpred∘just) `∙ `path (cong unpred (sym eq1)) `∙ `path (unpred∘pred)))))
-
+... | nothing | reveal eq1 = cong-just (
+  k
+    `≡⟨ idl+ k ⟨
+  zero + k
+    `≡⟨ cong (_+ k) (pred-inj eq1) ⟨
+  n + k `∎
+  )
+... | just x  | reveal eq1 = cong-just (
+  x + suc k
+    `↺⟨ `sucr+ x k ⟩
+  suc (x + k)
+    `≡⟨ sucl+ x k ⟨
+  suc x + k
+    `≡⟨ cong (_+ k) (sym (pred-inj eq1)) ⟩
+  n + k `∎
+  )
 sucr+ : ∀ n k → n + suc k ≡ suc (n + k)
 sucr+ n k = run (`sucr+ n k)
 
 assoc+ : (a b c : ℕ∞) → (a + b) + c ≡ a + (b + c)
 pred (assoc+ a b c i) with pred a
 ... | just x = just (assoc+ x b c i)
-... | nothing with pred b
-... | just x = just ((cong-+ᵣ (coite (+-aux b) (inr x)) x c (+-aux-inr b x) ∙ sym (+-aux-inr (b + c) (x + c))) i)
-... | nothing with pred c
-... | just x = just ((+-aux-inr c x ∙ sym (+-aux-inr (b + c) _ ∙ +-aux-inr c _)) i)
-... | nothing = nothing
+... | nothing = +-match (pred b) c
 
 `comm+ : (a b : ℕ∞) → a + b `≋ b + a
-`prove (`comm+ a b) with pred a | inspect pred a
-`prove (`comm+ a b) | just a' | _ with pred b | inspect pred b
-`prove (`comm+ a b) | just a' | reveal eq1 | just b' | reveal eq2 =
-  let succ∞a' = runT (`sym (`path (unpred∘pred {a})) `∙ `path (cong unpred eq1) `∙ `path unpred∘just)
-      succ∞b' = runT (`sym (`path (unpred∘pred {b})) `∙ `path (cong unpred eq2) `∙ `path unpred∘just)
-  in cong-just (`path (cong-+ₗ _ _ a' succ∞b')
- `∙ `step (`comm+ a' (suc b'))
- `∙ `path (sucl+ b' a')
- `∙ `sym (`path (sucr+ b' a'))
- `∙ `sym (`path (cong-+ₗ _ _ b' succ∞a')))
-`prove (`comm+ a b) | just a' | reveal eq1 | nothing | reveal eq2 with pred a
-`prove (`comm+ a b) | just a' | reveal eq1 | nothing | reveal eq2 | nothing = exfalso (¬nothing≡just eq1)
-`prove (`comm+ a b) | just a' | reveal eq1 | nothing | reveal eq2 | just x = cong-just
-  (`path (cong-+ₗ b (unpred nothing) a' (runT (`sym (`path unpred∘pred) `∙ `path (cong unpred eq2))))
-  `∙ `path (idr+ a')
-  `∙ `sym (`path (+-aux-inr a x ∙ just-inj _ _ eq1)))
-`prove (`comm+ a b) | nothing | _ with pred b
-`prove (`comm+ a b) | nothing | reveal eq1 | just b' = cong-just (`path (+-aux-inr b b')
-                                               `∙ `sym (`path (idr+ b'))
-                                               `∙ `path (cong-+ₗ (unpred nothing) a b' (runT (`path (cong unpred (sym eq1)) `∙ `path unpred∘pred))))
-`prove (`comm+ a b) | nothing | reveal eq1 | nothing with pred a
-... | nothing = nothing-refl
-... | just x = exfalso (¬nothing≡just (sym eq1))
-
-comm+ : (a b : ℕ∞) → a + b ≡ b + a
-comm+ a b = run (`comm+ a b)
+`comm+-match : ∀ a a' b b' → a' ≡ pred a → b' ≡ pred b → Maybe~ _≋_ (+-match a' b) (+-match b' a)
+`comm+-match a nothing b nothing eq1 eq2 = subst2 (Maybe~ _≋_) eq2 eq1 nothing-refl
+`comm+-match a nothing b (just b') eq1 eq2 = subst (λ x → Maybe~ _≋_ x (just (b' + a))) eq2 (cong-just (`path (sym (idr+ b')) `∙ `path (cong (b' +_) (pred-inj eq1))))
+`comm+-match a (just a') b nothing eq1 eq2 = subst (Maybe~ _≋_ (just (a' + b))) eq1 (cong-just (`path (cong (a' +_) (pred-inj (sym eq2))) `∙ `path (idr+ a')))
+`comm+-match a (just a') b (just b') eq1 eq2 = cong-just (
+  a' + b
+    `≡⟨ cong (a' +_) (pred-inj (sym eq2)) ⟩
+  a' + suc b'
+    `↺⟨ `comm+ a' (suc b') ⟩
+  suc b' + a'
+    `≡⟨ sucl+ b' a' ⟩
+  suc (b' + a')
+    `≡⟨ sym (sucr+ b' a') ⟩
+  b' + suc a'
+    `≡⟨ cong (b' +_) (pred-inj eq1) ⟩
+  b' + a `∎
+  )
+`prove (`comm+ a b) = `comm+-match a (pred a) b (pred b) refl refl
 \end{code}

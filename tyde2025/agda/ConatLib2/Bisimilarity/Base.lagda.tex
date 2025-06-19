@@ -97,13 +97,15 @@ pred (run e i) = run′ (`prove e) i
 Let us set up the usual notation for equational reasoning.
 
 \begin{code}[hide]
-infixr 2 _`↺⟨_⟩_ _`↺⟨_⟨_ _`≡⟨_⟩_ _`≡⟨_⟨_ _`∙_ _`≡⟨⟩_
+infixr 2 _`↺⟨_⟩_ _`↺⟨_⟨_ _`≡⟨_⟩_ _`≡⟨_⟨_ _`≋⟨_⟩_ _`≋⟨_⟨_ _`∙_ _`≡⟨⟩_
 infix  3 _`∎
 \end{code}
 \begin{code}
 pattern _`∙_  {a} a~b b~c = `trans {a} a~b b~c
 pattern _`↺⟨_⟩_ a a∼b b∼c = `trans {a} (`step a∼b) b∼c
 pattern _`↺⟨_⟨_ a b∼a b∼c = `trans {a} (`sym (`step b∼a)) b∼c
+pattern _`≋⟨_⟩_ a a∼b b∼c = `trans {a} a∼b b∼c
+pattern _`≋⟨_⟨_ a b∼a b∼c = `trans {a} (`sym b∼a) b∼c
 pattern _`≡⟨_⟩_ a a∼b b∼c = `trans {a} (`path a∼b) b∼c
 pattern _`≡⟨_⟨_ a b∼a b∼c = `trans {a} (`sym (`path b∼a)) b∼c
 
