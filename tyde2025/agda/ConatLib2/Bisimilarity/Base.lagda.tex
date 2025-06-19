@@ -60,7 +60,7 @@ data _≋_ n k where
   `trans : ∀{m} → n ≋ m → m ≋ k → n ≋ k
 \end{code}
 
-We define the predecessor over the new \AgdaFunction{\_≋\_} relation.
+We define the predecessor over the new \AgdaDatatype{\_≋\_} relation.
 
 \begin{code}
 `pred : n ≋ k → Maybe~ _≋_ (pred n) (pred k)
@@ -116,7 +116,7 @@ a `∎ = `path {a} refl
 {-# INLINE _`∎ #-}
 \end{code}
 
-Note that these last two definitions could not be made \texttt{pattern}s
+Note that these last two definitions could not be made \AgdaKeyword{pattern}s
 as they both use the \AgdaFunction{refl} function which is not a constructor
 in Cubical Agda, just a regular function. However, if we inline their definitions,
 since they are not recursive, nor corecursive, Agda sees them as guarded definitions
