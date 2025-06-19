@@ -9,13 +9,9 @@ open import Cubical.Data.Maybe using (Maybe; nothing; just)
 postulate
   ADMIT : ∀ {ℓ} {A : Type ℓ} → A
 \end{code}
-
-Natural numbers are the initial object in the category of algebras
-over the $\mathbb{1} + {-}$ endofunctor.
-
-In the Agda proof assistant, it can be represented as an inductive
-datatype with two constructors:
-
+In dependent type theory, natural numbers are represented as an inductive type
+with two constructors, one for zero and the other for the successor of a natural
+number. In the Agda proof assistant, we write it as follows:
 \begin{code}[hide]
 module _ where private
 \end{code}
@@ -24,10 +20,10 @@ module _ where private
     zero  : ℕ
     suc   : ℕ → ℕ
 \end{code}
-
-Or equivalently, it is an inductive type with a single constructor
-containing a Maybe of itself:
-
+Categorically, natural numbers are the initial object in the category of
+algebras over the $\mathbb{1} + {-}$ (or the ``Maybe'') endofunctor. So an
+equivalent representation of natural numbers is an inductive type with a single
+constructor containing a Maybe of a natural number:
 \begin{code}[hide]
 module _ where private
 \end{code}
@@ -36,66 +32,82 @@ module _ where private
     con : Maybe ℕ → ℕ
 \end{code}
 
-Dually, conatural numbers are the terminal object in the category of
-coalgebras over the $\mathbb{1} + {-}$ endofunctor, which in Agda is a
-coinductive record type with one destructor into Maybe of itself:
-
+We can dualize natural numbers to get \emph{conatural numbers}, which are the
+terminal object in the category of coalgebras over the $\mathbb{1} + {-}$
+endofunctor. In Agda, it is a coinductive record type with one destructor into
+Maybe of conatural numbers:
 \begin{code}
 record ℕ∞ : Type where
   coinductive
-  constructor unpred
   field
     pred : Maybe ℕ∞
 \end{code}
 \begin{code}[hide]
 open ℕ∞ public
-\end{code}
 
-We can define \AgdaFunction{zero}, \AgdaFunction{suc}, \AgdaFunction{∞} using copattern matching.
-
-\begin{code}
-zero : ℕ∞
-pred zero = nothing
-
-suc : ℕ∞ → ℕ∞
-pred (suc x) = just x
-
-∞ : ℕ∞
-pred ∞ = just ∞
-\end{code}
-
-The goal of this paper is to prove that conatural numbers form an exponential semiring. Along the way we are going to show three different methods of starting out with the formalisation, showing some of the difficulties, problems. Finally, we show the last formalisation, which is the complete proof of conatural numbers being an exponential semiring.
-
-For our formalisation we are going to use Cubical Agda, so the bisimulation relation over conatural numbers coincide with equality. With that, for example, we can define the injectivity proof for the \AgdaFunction{pred} destructor the following way:
-
-\begin{code}
 pred-inj : ∀ {x y} → pred x ≡ pred y → x ≡ y
 pred (pred-inj p i) = p i
 \end{code}
+This destructor is the predecessor function which either fails or gives us
+another conatural number.
 
-The conatural numbers, however, are not isomorphic to $\mathbb{1} + \mathbb{N}$. It is not the goal of the paper to prove that this fact stands. However, the following topological intuition should help to understand why this is the case:
+We can define elements of \AgdaDatatype{ℕ∞} by copattern matching, that is, we
+specify what the predecessor is for a particular element. As examples, zero does
+not have a predecessor:
+\begin{code}
+zero : ℕ∞
+pred zero = nothing
+\end{code}
+The predecessor of a successor of a number is just that number:
+\begin{code}
+suc : ℕ∞ → ℕ∞
+pred (suc x) = just x
+\end{code}
+The predecessor of infinity is just infinity:
+\begin{code}
+∞ : ℕ∞
+pred ∞ = just ∞
+\end{code}
+The above definition for \AgdaFunction{∞} is not structurally recursive, but it
+is \emph{guarded}, that is, the recursive occurrence is after an instance of
+copattern matching (\AgdaField{pred}), under only constructors
+(\AgdaInductiveConstructor{just}). Agda uses guardedness to check whether a
+corecursive defintion is productive. A definition is \emph{productive} when one
+can compute the application of any finite amount of destructors on a corecursive
+value in a finite amount of steps. Guardedness is sufficient to prove
+productivity but it is not necessary, so Agda is too conservative in that
+regard.
 
+The conatural numbers can represent all natural numbers and an extra element for
+infinity, however, it is not constructively isomorphic to $\mathbb{N} +
+\mathbb{1}$, because all functions out of the conatural numbers must be
+continuous. Computationally, finite amount output can only depend on finite
+amount of input. Topologically, \AgdaFunction{∞} is the limit of $0, 1, 2,
+\dots$, which must be preserved. We can visualize the topological space as
+follows:
 \begin{center}
   \begin{tikzpicture}[
-    scale=8,
-    every node/.style={
-      circle,
-      fill,
-      inner sep=0pt,
-      minimum size=1mm,
-      label position=south,
-      label distance=1mm,
-    }
-  ]
+      scale=8,
+      every node/.style={
+        circle,
+        fill,
+        inner sep=0pt,
+        minimum size=1mm,
+        label position=south,
+        label distance=1mm,
+      }
+    ]
     \path
-      foreach \i in {0,...,7} {($({1-(2/3)^\i},0)$) node [label=\i] {}}
-      ($({1-(2/3)^7/2},0)$) node [fill=none] {\dots}
-      (1,0) node [label=∞] {};
+    foreach \i in {0,...,7} {($({1-(2/3)^\i},0)$) node [label=\i] {}}
+    ($({1-(2/3)^7/2},0)$) node [fill=none] {\dots}
+    (1,0) node [label=∞] {};
+  \end{tikzpicture}
 \end{center}
+As a result of this restriction, we cannot define a function that decides if an
+element is equal to \AgdaFunction{∞}.
 
-Agda uses guarded corecursion to check whether a defintion is productive or not. A definition is \textit{productive} when the subsequent part of an infinite value can be computed in finitely many steps. A definition is \textit{guarded} when a corecursion happens directly in the definition or under only constructors. Guardedness is sufficient to prove productivity but it is not necessary.
-
-For example the addition operation can be defined in Agda using guarded corecursion.
+For example the addition operation can be defined in Agda using guarded
+corecursion.
 
 \begin{code}[hide]
 infixl 6 _+_
@@ -110,7 +122,8 @@ mutual
   +-step (just x')  y = just (x' + y)
 \end{code}
 
-However, if we want to reuse the addition operation to define multiplication, we get a non-guarded definition, which Agda rejects.
+However, if we want to reuse the addition operation to define multiplication, we
+get a non-guarded definition, which Agda rejects.
 
 \begin{code}[hide]
 infixl 7 _×_
@@ -128,9 +141,14 @@ mutual
   ×-step (just x')  y (just y')  = just (y' + x' × y)
 \end{code}
 
-This definition is productive but it is not guarded, since it uses the \AgdaFunction{_+_}'s definition, which is not a constructor. To make Agda accept this definition, we had to turn off the productivity checker using the \texttt{TERMINATING} flag. However, it is not advisable to use it, because Agda leaves us all on our own to make sure the definition terminates.
+This definition is productive but it is not guarded, since it uses the
+\AgdaFunction{\_+\_}'s definition, which is not a constructor. To make Agda
+accept this definition, we had to turn off the productivity checker using the
+\texttt{TERMINATING} flag. However, it is not advisable to use it, because Agda
+leaves us all on our own to make sure the definition terminates.
 
-We can prove some of the usual properties of addition over conatural numbers, like the associativity of the addition.
+We can prove some of the usual properties of addition over conatural numbers,
+like the associativity of the addition.
 
 \begin{code}[hide]
 mutual
@@ -146,7 +164,10 @@ mutual
   +-assoc-step (just x')  y z = cong just (+-assoc x' y z)
 \end{code}
 
-This is again a nice guarded corecusion and Agda happily accepts this as a proof. However, the proof of commutativity of addition below is rejected without the \texttt{TERMINATING} flag.
+This is again a nice guarded corecusion and Agda happily accepts this as a
+proof. However, the proof of commutativity of addition below is rejected without
+the \AgdaKeyword{TERMINATING} flag. Let us assume we have this equation
+available to use in the proof of commutativity.
 
 \begin{code}[hide]
 postulate
@@ -182,7 +203,28 @@ mutual
   +-comm-step x (just x') y nothing p q = ADMIT
 \end{code}
 
-Same problem again, the definition is productive but not guarded.
+Same problem again, the definition is productive but not guarded, since the
+equational reasoning contains the transitivity operation which is not a
+constructor.
+
+Our contribution in this paper is to prove that the conatural numbers form an
+exponential semiring by corecursion and coinduction. Along the way, we show
+three different methods starting out with the formalisation, showcasing some of
+the difficulties and problems. The last method we show is the one we use to
+prove that the conatural numbers form an exponential semiring.
+
+Section 2 ...
+
+Section 3 ...
+
+Section 4 ...
+
+\subsection{Formalization}
+
+For our formalisation we are going to use Cubical Agda, so the bisimulation
+relation over conatural numbers coincide with equality. With that, for example,
+we can define the injectivity proof for the \AgdaFunction{pred} destructor the
+following way:
 
 \subsection{Related work}
 
