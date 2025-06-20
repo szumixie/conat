@@ -22,7 +22,7 @@ open import Cubical.Data.Unit
 In this section we show the usage of the domain specific language and
 equational reasoning to prove the commutativity property of addition
 over conatural numbers. Using the definition of \AgdaFunction{\_+\_}
-defined in the Introduction \textbf{HIVATKOZÁST BESZÚRNI RÁ?}, the following properties can be proven
+defined in Section \ref{sec:problem}, the following properties can be proven
 directly without the language.
 
 \begin{code}[hide]
@@ -85,7 +85,8 @@ we are going to have to use our language.
   )
 \end{code}
 
-For brevity we omit the proofs here. However, they are formalised and available in our repository. \textbf{??? LINK A REPÓRA?}
+For brevity we omit the proofs here. However, they are formalised and available in our repository.
+\textbf{??? LINK A REPÓRA?}
 
 After proving \AgdaFunction{`sucr+}, we still need to obtain the proof over equality.
 This is simply done by using the \AgdaFunction{run} function to turn the language's proof
@@ -104,7 +105,7 @@ pred (assoc+ a b c i) with pred a
 
 With everything set up, we are now able to prove commutativity. One of the advantages
 of this method is that the proof is going to have nearly the same structure as the proof
-for the same property in Introduction \textbf{HIVATKOZÁST BESZÚRNI RÁ?}. However, now the definition is going to
+for the same property in Section \ref{sec:problem}. However, now the definition is going to
 compile without any unsafe flags. We omit the uninteresting branches of the proof, namely when either
 \AgdaBound{a} or \AgdaBound{b} is \AgdaFunction{zero}.
 
@@ -134,7 +135,7 @@ compile without any unsafe flags. We omit the uninteresting branches of the proo
 `prove (`comm+ a b) = `comm+-match a (pred a) b (pred b) refl refl
 \end{code}
 
-The only change in this proof with respect to the one in the Introduction is that
+The only change in this proof with respect to the one in Section \ref{sec:problem} is that
 we need to switch up two steps. First, we need to use commutativity first to switch the
 operands of \AgdaFunction{\_+\_} before making \AgdaFunction{suc} the outermost function.
 This is because we do not have the \AgdaFunction{cong} property in our language.
@@ -149,3 +150,5 @@ way as we did with the \AgdaFunction{sucr+} property.
 comm+ : ∀ a b → a + b ≡ b + a
 comm+ a b = run (`comm+ a b)
 \end{code}
+
+This way Agda sees the equational reasoning as being guarded, hence it accepts those proofs.

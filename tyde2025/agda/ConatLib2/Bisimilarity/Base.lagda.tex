@@ -82,7 +82,9 @@ in our repository.
 ... | .just n' | .just m' | .just k' | cong-just t1 | cong-just t2 = cong-just (`trans t1 t2)
 \end{code}
 
-With that we can easily show that our new language coincides with the equality over conatural numbers.
+With that we can easily show that our new proof language coincides with the equality over conatural numbers
+by defining the \AgdaFunction{run} function that interprets the proofs from our langauge to
+proofs in Cubical Agda.
 
 \begin{code}
 run : n `≋ k → n ≡ k
@@ -96,7 +98,8 @@ run′ (cong-just x) i = just (runT x i)
 pred (run e i) = run′ (`prove e) i
 \end{code}
 
-Let us set up the usual notation for equational reasoning.
+Let us set up the notation for equational reasoning using
+Agda's standard library's notation \cite{agda-stdlib}.
 
 \begin{code}[hide]
 infixr 2 _`↺⟨_⟩_ _`↺⟨_⟨_ _`≡⟨_⟩_ _`≡⟨_⟨_ _`≋⟨_⟩_ _`≋⟨_⟨_ _`∙_ _`≡⟨⟩_

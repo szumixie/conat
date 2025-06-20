@@ -101,4 +101,6 @@ _×_ : ℕ∞ → ℕ∞ → ℕ∞
 x × y = interp (x ×' y)
 \end{code}
 
-However, defining another operation such as exponentiation using this technique results in 
+However, we can already see in the definition of \AgdaFunction{predᴱ} and \AgdaFunction{predᴱ-+-match}, that we had to
+duplicate the \AgdaFunction{\_+\_} function's definition, so using this technique
+results in possible definition duplications.

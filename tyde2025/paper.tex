@@ -1,4 +1,4 @@
-\documentclass[sigplan, screen, review]{acmart}
+\documentclass[sigplan, screen, natbib=false, review]{acmart}
 %%
 %% \BibTeX command to typeset BibTeX logo in the docs
 \AtBeginDocument{%
@@ -48,15 +48,21 @@ conference title from your rights confirmation email}{June 03--05,
 
 %%
 %% The majority of ACM publications use numbered citations and
-%% references.  The command \citestyle{authoryear} switches to the
-%% "author year" style.
+%% references, obtained by selecting the acmnumeric BibLaTeX style.
+%% The acmauthoryear BibLaTeX style switches to the "author year" style.
 %%
 %% If you are preparing content for an event
-%% sponsored by ACM SIGGRAPH, you must use the "author year" style of
+%% sponsored by ACM SIGGRAPH, you must use the acmauthoryear style of
 %% citations and references.
-%% Uncommenting
-%% the next command will enable that style.
-%%\citestyle{acmauthoryear}
+%%
+%% Bibliography style
+\RequirePackage[
+  datamodel=acmdatamodel,
+  style=acmnumeric,
+]{biblatex}
+
+%% Declare bibliography sources (one \addbibresource command per source)
+\addbibresource{references.bib}
 
 \usepackage{latex/agda}
 \usepackage{tikz}
@@ -182,7 +188,7 @@ conference title from your rights confirmation email}{June 03--05,
 \input{latex/CompBisim}
 
 % Compositionality
-% Neil's method: Define a DSL to make proving compositional.
+% Nils' method: Define a DSL to make proving compositional.
 
 \section{Good version}\label{sec:quotiented}
 \input{latex/Quotiented}
@@ -199,10 +205,9 @@ modularity
 hyperoperations
 
 %%
-%% The next two lines define the bibliography style to be used, and
-%% the bibliography file.
-\bibliographystyle{ACM-Reference-Format}
-\bibliography{references}
+%% Print the bibliography
+%%
+\printbibliography
 
 \end{document}
 \endinput

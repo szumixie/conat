@@ -22,7 +22,7 @@ open import Cubical.Data.Maybe
 -- exponential commutative semiring + a bit more
 record ConatStr (A : Type) : Type where
   infixl 6 _+_
-  infixl 7 _*_
+  infixl 7 _×_
   field
     isSetA : isSet A
 
@@ -33,15 +33,15 @@ record ConatStr (A : Type) : Type where
     zero : A
     +-idₗ : ∀ x → zero + x ≡ x
 
-    _*_ : A → A → A
-    *-assoc : ∀ x y z → (x * y) * z ≡ x * (y * z)
-    *-comm : ∀ x y → x * y ≡ y * x
+    _×_ : A → A → A
+    ×-assoc : ∀ x y z → (x × y) × z ≡ x × (y × z)
+    ×-comm : ∀ x y → x × y ≡ y × x
 
     one : A
-    *-idₗ : ∀ x → one * x ≡ x
+    ×-idₗ : ∀ x → one × x ≡ x
 
-    *-distₗ-+ : ∀ x y z → (x + y) * z ≡ x * z + y * z
-    *-annihₗ : ∀ x → zero * x ≡ zero
+    ×-distₗ-+ : ∀ x y z → (x + y) × z ≡ x × z + y × z
+    ×-annihₗ : ∀ x → zero × x ≡ zero
 
   suc : A → A
   suc = one +_
@@ -49,27 +49,27 @@ record ConatStr (A : Type) : Type where
   infixr 8 _^_
   field
     _^_ : A → A → A
-    ^-assocᵣ-* : ∀ x y z → x ^ (y * z) ≡ (x ^ z) ^ y
+    ^-assocᵣ-× : ∀ x y z → x ^ (y × z) ≡ (x ^ z) ^ y
     ^-idᵣ : ∀ x → x ^ one ≡ x
 
-    ^-distᵣ-+ : ∀ x y z → x ^ (y + z) ≡ x ^ z * x ^ y
+    ^-distᵣ-+ : ∀ x y z → x ^ (y + z) ≡ x ^ z × x ^ y
     ^-annihᵣ : ∀ x → x ^ zero ≡ one
 
-    ^-distₗ-* : ∀ x y z → (x * y) ^ z ≡ x ^ z * y ^ z
+    ^-distₗ-× : ∀ x y z → (x × y) ^ z ≡ x ^ z × y ^ z
     ^-annihₗ : ∀ x → one ^ x ≡ one
 
-    -- block x y = ∑_(0≤i<y) x*(1+x)^i = (1+x)^y - 1
-    -- e.g.: block 9 3 = 9*10^0 + 9*10^1 + 9*10^2 = 10^3 - 1 = 999
+    -- block x y = ∑_(0≤i<y) x×(1+x)^i = (1+x)^y - 1
+    -- e.g.: block 9 3 = 9×10^0 + 9×10^1 + 9×10^2 = 10^3 - 1 = 999
     block : A → A → A
-    block-assocᵣ-* : ∀ x y z → block x (y * z) ≡ block (block x z) y
+    block-assocᵣ-× : ∀ x y z → block x (y × z) ≡ block (block x z) y
     block-idᵣ : ∀ x → block x one ≡ x
 
     block-distᵣ-+ :
-      ∀ x y z → block x (y + z) ≡ block x y + block x z * suc x ^ y
+      ∀ x y z → block x (y + z) ≡ block x y + block x z × suc x ^ y
     block-annihᵣ : ∀ x → block x zero ≡ zero
 
-    block-distₗ-* :
-      ∀ x y z → block (y + x * suc y) z ≡ block y z + block x z * suc y ^ z
+    block-distₗ-× :
+      ∀ x y z → block (y + x × suc y) z ≡ block y z + block x z × suc y ^ z
     block-annihₗ : ∀ x → block zero x ≡ zero
 
     ^-sucₗ : ∀ x y → suc x ^ y ≡ suc (block x y)
@@ -138,64 +138,64 @@ record ConatStr (A : Type) : Type where
       suc (y + x) ≡⟨ cong suc (+-comm _ _) ⟩
       suc (x + y) ∎
 
-    infixl 7 _⟩*⟨_
-    _⟩*⟨_ : ∀ {x x' y y'} → x ≡ x' → y ≡ y' → x * y ≡ x' * y'
-    p ⟩*⟨ q = cong₂ _*_ p q
+    infixl 7 _⟩×⟨_
+    _⟩×⟨_ : ∀ {x x' y y'} → x ≡ x' → y ≡ y' → x × y ≡ x' × y'
+    p ⟩×⟨ q = cong₂ _×_ p q
 
-    *-idᵣ : ∀ x → x * one ≡ x
-    *-idᵣ x =
-      x * one ≡⟨ *-comm _ _ ⟩
-      one * x ≡⟨ *-idₗ _ ⟩
+    ×-idᵣ : ∀ x → x × one ≡ x
+    ×-idᵣ x =
+      x × one ≡⟨ ×-comm _ _ ⟩
+      one × x ≡⟨ ×-idₗ _ ⟩
       x       ∎
 
-    module _ {a x y z} (p : x * y ≡ z) where
-      *-pullᵣ : a * x * y ≡ a * z
-      *-pullᵣ =
-        a * x * y   ≡⟨ *-assoc _ _ _ ⟩
-        a * (x * y) ≡⟨ refl ⟩*⟨ p ⟩
-        a * z       ∎
+    module _ {a x y z} (p : x × y ≡ z) where
+      ×-pullᵣ : a × x × y ≡ a × z
+      ×-pullᵣ =
+        a × x × y   ≡⟨ ×-assoc _ _ _ ⟩
+        a × (x × y) ≡⟨ refl ⟩×⟨ p ⟩
+        a × z       ∎
 
-    module _ {a x y z} (p : x ≡ y * z) where
-      *-pushᵣ : a * x ≡ a * y * z
-      *-pushᵣ = sym (*-pullᵣ (sym p))
+    module _ {a x y z} (p : x ≡ y × z) where
+      ×-pushᵣ : a × x ≡ a × y × z
+      ×-pushᵣ = sym (×-pullᵣ (sym p))
 
     module _ {a x} (p : one ≡ x) where
-      *-introᵣ : a ≡ a * x
-      *-introᵣ =
-        a       ≡⟨ sym (*-idᵣ _) ⟩
-        a * one ≡⟨ refl ⟩*⟨ p ⟩
-        a * x   ∎
+      ×-introᵣ : a ≡ a × x
+      ×-introᵣ =
+        a       ≡⟨ sym (×-idᵣ _) ⟩
+        a × one ≡⟨ refl ⟩×⟨ p ⟩
+        a × x   ∎
 
     module _ {a x} (p : x ≡ one) where
-      *-elimᵣ : a * x ≡ a
-      *-elimᵣ = sym (*-introᵣ (sym p))
+      ×-elimᵣ : a × x ≡ a
+      ×-elimᵣ = sym (×-introᵣ (sym p))
 
-    module _ {a x y z w} (p : x * y ≡ z * w) where
-      *-extendᵣ : a * x * y ≡ a * z * w
-      *-extendᵣ =
-        a * x * y   ≡⟨ *-assoc _ _ _ ⟩
-        a * (x * y) ≡⟨ refl ⟩*⟨ p ⟩
-        a * (z * w) ≡⟨ sym (*-assoc _ _ _) ⟩
-        a * z * w   ∎
+    module _ {a x y z w} (p : x × y ≡ z × w) where
+      ×-extendᵣ : a × x × y ≡ a × z × w
+      ×-extendᵣ =
+        a × x × y   ≡⟨ ×-assoc _ _ _ ⟩
+        a × (x × y) ≡⟨ refl ⟩×⟨ p ⟩
+        a × (z × w) ≡⟨ sym (×-assoc _ _ _) ⟩
+        a × z × w   ∎
 
-    *-annihᵣ : ∀ x → x * zero ≡ zero
-    *-annihᵣ x =
-      x * zero ≡⟨ *-comm _ _ ⟩
-      zero * x ≡⟨ *-annihₗ _ ⟩
+    ×-annihᵣ : ∀ x → x × zero ≡ zero
+    ×-annihᵣ x =
+      x × zero ≡⟨ ×-comm _ _ ⟩
+      zero × x ≡⟨ ×-annihₗ _ ⟩
       zero     ∎
 
-    *-sucₗ : ∀ x y → suc x * y ≡ y + x * y
-    *-sucₗ x y =
-      (one + x) * y   ≡⟨ *-distₗ-+ _ _ _ ⟩
-      one * y + x * y ≡⟨ *-idₗ _ ⟩+⟨ refl ⟩
-      y + x * y       ∎
+    ×-sucₗ : ∀ x y → suc x × y ≡ y + x × y
+    ×-sucₗ x y =
+      (one + x) × y   ≡⟨ ×-distₗ-+ _ _ _ ⟩
+      one × y + x × y ≡⟨ ×-idₗ _ ⟩+⟨ refl ⟩
+      y + x × y       ∎
 
-    *-sucᵣ : ∀ x y → x * suc y ≡ x + x * y
-    *-sucᵣ x y =
-      x * suc y ≡⟨ *-comm _ _ ⟩
-      suc y * x ≡⟨ *-sucₗ _ _ ⟩
-      x + y * x ≡⟨ refl ⟩+⟨ *-comm _ _ ⟩
-      x + x * y ∎
+    ×-sucᵣ : ∀ x y → x × suc y ≡ x + x × y
+    ×-sucᵣ x y =
+      x × suc y ≡⟨ ×-comm _ _ ⟩
+      suc y × x ≡⟨ ×-sucₗ _ _ ⟩
+      x + y × x ≡⟨ refl ⟩+⟨ ×-comm _ _ ⟩
+      x + x × y ∎
 
     one-suc : one ≡ suc zero
     one-suc = sym (+-idᵣ _)
@@ -204,17 +204,17 @@ record ConatStr (A : Type) : Type where
     _⟩^⟨_ : ∀ {x x' y y'} → x ≡ x' → y ≡ y' → x ^ y ≡ x' ^ y'
     p ⟩^⟨ q = cong₂ _^_ p q
 
-    ^-sucᵣ : ∀ x y → x ^ suc y ≡ x ^ y * x
+    ^-sucᵣ : ∀ x y → x ^ suc y ≡ x ^ y × x
     ^-sucᵣ x y =
       x ^ (one + y)   ≡⟨ ^-distᵣ-+ _ _ _ ⟩
-      x ^ y * x ^ one ≡⟨ refl ⟩*⟨ ^-idᵣ _ ⟩
-      x ^ y * x       ∎
+      x ^ y × x ^ one ≡⟨ refl ⟩×⟨ ^-idᵣ _ ⟩
+      x ^ y × x       ∎
 
-    block-sucᵣ : ∀ x y → block x (suc y) ≡ x + block x y * suc x
+    block-sucᵣ : ∀ x y → block x (suc y) ≡ x + block x y × suc x
     block-sucᵣ x y =
       block x (one + y)                     ≡⟨ block-distᵣ-+ _ _ _ ⟩
-      block x one + block x y * suc x ^ one ≡⟨ block-idᵣ _ ⟩+⟨ refl ⟩*⟨ ^-idᵣ _ ⟩
-      x + block x y * suc x                 ∎
+      block x one + block x y × suc x ^ one ≡⟨ block-idᵣ _ ⟩+⟨ refl ⟩×⟨ ^-idᵣ _ ⟩
+      x + block x y × suc x                 ∎
 
     +-annihᵣ : ∀ x → x + inf ≡ inf
     +-annihᵣ x =
@@ -230,7 +230,7 @@ record ConatStr (A : Type) : Type where
 
     unpred : Maybe A → A
     unpred nothing = zero
-    unpred (just x-1) = suc x-1
+    unpred (just x') = suc x'
 
 record ConatStrPred (A : Type) (pred : A → Maybe A) : Type where
   field
@@ -265,7 +265,7 @@ module E where
   suc : Expr → Expr
 
   infixl 6 _+_
-  infixl 7 _*_
+  infixl 7 _×_
   infixr 8 _^_
 \end{code}
 \begin{code}
@@ -279,40 +279,40 @@ module E where
     zero : Expr
     +-idₗ : ∀ x → zero + x ≡ x
 
-    _*_ : Expr → Expr → Expr
-    *-assoc : ∀ x y z → (x * y) * z ≡ x * (y * z)
-    *-comm : ∀ x y → x * y ≡ y * x
+    _×_ : Expr → Expr → Expr
+    ×-assoc : ∀ x y z → (x × y) × z ≡ x × (y × z)
+    ×-comm : ∀ x y → x × y ≡ y × x
 
     one : Expr
-    *-idₗ : ∀ x → one * x ≡ x
+    ×-idₗ : ∀ x → one × x ≡ x
 
-    *-distₗ-+ : ∀ x y z → (x + y) * z ≡ x * z + y * z
-    *-annihₗ : ∀ x → zero * x ≡ zero
+    ×-distₗ-+ : ∀ x y z → (x + y) × z ≡ x × z + y × z
+    ×-annihₗ : ∀ x → zero × x ≡ zero
 
     _^_ : Expr → Expr → Expr
-    ^-assocᵣ-* : ∀ x y z → x ^ (y * z) ≡ (x ^ z) ^ y
+    ^-assocᵣ-× : ∀ x y z → x ^ (y × z) ≡ (x ^ z) ^ y
     ^-idᵣ : ∀ x → x ^ one ≡ x
 
-    ^-distᵣ-+ : ∀ x y z → x ^ (y + z) ≡ x ^ z * x ^ y
+    ^-distᵣ-+ : ∀ x y z → x ^ (y + z) ≡ x ^ z × x ^ y
     ^-annihᵣ : ∀ x → x ^ zero ≡ one
 
-    ^-distₗ-* : ∀ x y z → (x * y) ^ z ≡ x ^ z * y ^ z
+    ^-distₗ-× : ∀ x y z → (x × y) ^ z ≡ x ^ z × y ^ z
     ^-annihₗ : ∀ x → one ^ x ≡ one
 
     block : Expr → Expr → Expr
-    block-assocᵣ-* :
-      ∀ x y z → block x (y * z) ≡ block (block x z) y
+    block-assocᵣ-× :
+      ∀ x y z → block x (y × z) ≡ block (block x z) y
     block-idᵣ : ∀ x → block x one ≡ x
 
     block-distᵣ-+ :
       ∀ x y z →
-      block x (y + z) ≡ block x y + block x z * suc x ^ y
+      block x (y + z) ≡ block x y + block x z × suc x ^ y
     block-annihᵣ : ∀ x → block x zero ≡ zero
 
-    block-distₗ-* :
+    block-distₗ-× :
       ∀ x y z →
-      block (y + x * suc y) z ≡
-      block y z + block x z * suc y ^ z
+      block (y + x × suc y) z ≡
+      block y z + block x z × suc y ^ z
     block-annihₗ : ∀ x → block zero x ≡ zero
 
     ^-sucₗ : ∀ x y → suc x ^ y ≡ suc (block x y)
@@ -339,31 +339,31 @@ module E where
 
   data IsPred : Maybe Expr → Expr → Type where
     nothing : IsPred nothing zero
-    just : ∀ x-1 → IsPred (just x-1) (suc x-1)
+    just : ∀ x' → IsPred (just x') (suc x')
 
   isPropIsPred-zero :
-    ∀ {x-1 x} (p : nothing ≡ x-1) (q : zero ≡ x) r →
+    ∀ {x' x} (p : nothing ≡ x') (q : zero ≡ x) r →
     PathP (λ i → IsPred (p i) (q i)) nothing r
   isPropIsPred-zero p q nothing =
     subst2 (λ e₁ e₂ → PathP (λ i → IsPred (e₁ i) (e₂ i)) nothing nothing)
       (isOfHLevelMaybe 0 isSetExpr _ _ refl p)
       (isSetExpr _ _ refl q)
       refl
-  isPropIsPred-zero p q (just x-1) = ⊥.rec (¬nothing≡just p)
+  isPropIsPred-zero p q (just x') = ⊥.rec (¬nothing≡just p)
 
   isPropIsPred-suc :
-    ∀ {x-1 x} x-1′ (p : just x-1′ ≡ x-1) (q : suc x-1′ ≡ x) r →
-    PathP (λ i → IsPred (p i) (q i)) (just x-1′) r
-  isPropIsPred-suc x-1′ p q nothing = ⊥.rec (¬just≡nothing p)
-  isPropIsPred-suc x-1′ p q (just x-1) =
-    subst2 (λ e₁ e₂ → PathP (λ i → IsPred (e₁ i) (e₂ i)) (just x-1′) (just x-1))
+    ∀ {x' x} x'′ (p : just x'′ ≡ x') (q : suc x'′ ≡ x) r →
+    PathP (λ i → IsPred (p i) (q i)) (just x'′) r
+  isPropIsPred-suc x'′ p q nothing = ⊥.rec (¬just≡nothing p)
+  isPropIsPred-suc x'′ p q (just x') =
+    subst2 (λ e₁ e₂ → PathP (λ i → IsPred (e₁ i) (e₂ i)) (just x'′) (just x'))
       (isOfHLevelMaybe 0 isSetExpr _ _ (cong just (just-inj _ _ p)) p)
       (isSetExpr _ _ (cong suc (just-inj _ _ p)) q)
       (cong IsPred.just (just-inj _ _ p))
 
-  isPropIsPred : ∀ x-1 x → isProp (IsPred x-1 x)
+  isPropIsPred : ∀ x' x → isProp (IsPred x' x)
   isPropIsPred _ _ nothing q = isPropIsPred-zero refl refl q
-  isPropIsPred _ _ (just x-1) q = isPropIsPred-suc x-1 refl refl q
+  isPropIsPred _ _ (just x') q = isPropIsPred-suc x' refl refl q
 \end{code}
 \begin{code}
   record Pred (x : Expr) : Type where
@@ -385,19 +385,19 @@ module E where
   isSetPred : ∀ x → isSet (Pred x)
   isSetPred x =
     isOfHLevelRetractFromIso 2 PredIsoΣ
-      (isSetΣ (isOfHLevelMaybe 0 isSetExpr) λ x-1 →
+      (isSetΣ (isOfHLevelMaybe 0 isSetExpr) λ x' →
         isProp→isSet (isPropIsPred _ _))
 
   +-pred : Maybe Expr → Expr → Maybe Expr → Maybe Expr
-  +-pred nothing y y-1 = y-1
-  +-pred (just x-1) y y-1 = just (x-1 + y)
+  +-pred nothing y y' = y'
+  +-pred (just x') y y' = just (x' + y)
 
   +-isPred :
-    ∀ {x x-1 y y-1} →
-    IsPred x-1 x → IsPred y-1 y → IsPred (+-pred x-1 y y-1) (x + y)
+    ∀ {x x' y y'} →
+    IsPred x' x → IsPred y' y → IsPred (+-pred x' y y') (x + y)
   +-isPred {y} nothing p = subst (IsPred _) (sym (+-idₗ _)) p
-  +-isPred {y} (just x-1) p =
-    subst (IsPred _) (sym (+-sucₗ _ _)) (just (x-1 + y))
+  +-isPred {y} (just x') p =
+    subst (IsPred _) (sym (+-sucₗ _ _)) (just (x' + y))
 
   infixl 6 _+ᴾ_
   _+ᴾ_ : ∀ {x y} → Pred x → Pred y → Pred (x + y)
@@ -405,10 +405,10 @@ module E where
   (xᴾ +ᴾ yᴾ) .isPred = +-isPred (xᴾ .isPred) (yᴾ .isPred)
 
   +-assoc-pred :
-    ∀ x-1 y y-1 z z-1 →
-    +-pred (+-pred x-1 y y-1) z z-1 ≡ +-pred x-1 (y + z) (+-pred y-1 z z-1)
-  +-assoc-pred nothing y y-1 z z-1 = refl
-  +-assoc-pred (just x-1) y y-1 z z-1 = congS just (+-assoc _ _ _)
+    ∀ x' y y' z z' →
+    +-pred (+-pred x' y y') z z' ≡ +-pred x' (y + z) (+-pred y' z z')
+  +-assoc-pred nothing y y' z z' = refl
+  +-assoc-pred (just x') y y' z z' = congS just (+-assoc _ _ _)
 
   +-assocᴾ :
     ∀ {x y z} xᴾ yᴾ zᴾ →
@@ -418,17 +418,21 @@ module E where
 \end{code}
 \begin{code}
   +-comm-pred :
-    ∀ {x x-1 y y-1} → IsPred x-1 x → IsPred y-1 y →
-    +-pred x-1 y y-1 ≡ +-pred y-1 x x-1
+    ∀ {x x' y y'} → IsPred x' x → IsPred y' y →
+    +-pred x' y y' ≡ +-pred y' x x'
+\end{code}
+\begin{code}[hide]
   +-comm-pred nothing nothing = refl
-  +-comm-pred nothing (just y-1) = congS just (sym (+-idᵣ _))
-  +-comm-pred (just x-1) nothing = congS just (+-idᵣ _)
-  +-comm-pred (just x-1) (just y-1) =
+  +-comm-pred nothing (just y') = congS just (sym (+-idᵣ _))
+  +-comm-pred (just x') nothing = congS just (+-idᵣ _)
+\end{code}
+\begin{code}
+  +-comm-pred (just x') (just y') =
     congS just
-      ( x-1 + suc y-1   ≡⟨ +-sucᵣ _ _ ⟩
-        suc (x-1 + y-1) ≡⟨ cong suc (+-comm _ _) ⟩
-        suc (y-1 + x-1) ≡⟨ sym (+-sucᵣ _ _) ⟩
-        y-1 + suc x-1   ∎)
+      (  x' + suc y'    ≡⟨ +-sucᵣ _ _ ⟩
+         suc (x' + y')  ≡⟨ cong suc (+-comm _ _) ⟩
+         suc (y' + x')  ≡⟨ sym (+-sucᵣ _ _) ⟩
+         y' + suc x'    ∎)
 \end{code}
 \begin{code}[hide]
   +-commᴾ :
@@ -442,367 +446,367 @@ module E where
   +-idₗᴾ : ∀ {x} xᴾ → PathP (λ i → Pred (+-idₗ x i)) (zeroᴾ +ᴾ xᴾ) xᴾ
   +-idₗᴾ xᴾ = Pred-path refl
 
-  *-pred : Maybe Expr → Expr → Maybe Expr → Maybe Expr
-  *-pred nothing y y-1 = nothing
-  *-pred (just x-1) y nothing = nothing
-  *-pred (just x-1) y (just y-1) = just (y-1 + x-1 * y)
+  ×-pred : Maybe Expr → Expr → Maybe Expr → Maybe Expr
+  ×-pred nothing y y' = nothing
+  ×-pred (just x') y nothing = nothing
+  ×-pred (just x') y (just y') = just (y' + x' × y)
 
-  *-isPred :
-    ∀ {x x-1 y y-1} →
-    IsPred x-1 x → IsPred y-1 y → IsPred (*-pred x-1 y y-1) (x * y)
-  *-isPred nothing p = subst (IsPred _) (sym (*-annihₗ _)) nothing
-  *-isPred (just x-1) nothing = subst (IsPred _) (sym (*-annihᵣ _)) nothing
-  *-isPred {y} (just x-1) (just y-1) =
+  ×-isPred :
+    ∀ {x x' y y'} →
+    IsPred x' x → IsPred y' y → IsPred (×-pred x' y y') (x × y)
+  ×-isPred nothing p = subst (IsPred _) (sym (×-annihₗ _)) nothing
+  ×-isPred (just x') nothing = subst (IsPred _) (sym (×-annihᵣ _)) nothing
+  ×-isPred {y} (just x') (just y') =
     subst (IsPred _)
-      ( suc (y-1 + x-1 * y) ≡⟨ sym (+-sucₗ _ _) ⟩
-        suc y-1 + x-1 * y   ≡⟨⟩
-        y + x-1 * y         ≡⟨ sym (*-sucₗ _ _) ⟩
-        suc x-1 * y         ∎)
-      (just (y-1 + x-1 * y))
+      ( suc (y' + x' × y) ≡⟨ sym (+-sucₗ _ _) ⟩
+        suc y' + x' × y   ≡⟨⟩
+        y + x' × y        ≡⟨ sym (×-sucₗ _ _) ⟩
+        suc x' × y        ∎)
+      (just (y' + x' × y))
 
-  infixl 7 _*ᴾ_
-  _*ᴾ_ : ∀ {x y} → Pred x → Pred y → Pred (x * y)
-  _*ᴾ_ {y} xᴾ yᴾ .pred = *-pred (xᴾ .pred) y (yᴾ .pred)
-  (xᴾ *ᴾ yᴾ) .isPred = *-isPred (xᴾ .isPred) (yᴾ .isPred)
+  infixl 7 _×ᴾ_
+  _×ᴾ_ : ∀ {x y} → Pred x → Pred y → Pred (x × y)
+  _×ᴾ_ {y} xᴾ yᴾ .pred = ×-pred (xᴾ .pred) y (yᴾ .pred)
+  (xᴾ ×ᴾ yᴾ) .isPred = ×-isPred (xᴾ .isPred) (yᴾ .isPred)
 
-  *-assoc-pred :
-    ∀ x-1 y y-1 z z-1 →
-    *-pred (*-pred x-1 y y-1) z z-1 ≡ *-pred x-1 (y * z) (*-pred y-1 z z-1)
-  *-assoc-pred nothing y y-1 z z-1 = refl
-  *-assoc-pred (just x-1) y nothing z z-1 = refl
-  *-assoc-pred (just x-1) y (just y-1) z nothing = refl
-  *-assoc-pred (just x-1) y (just y-1) z (just z-1) =
+  ×-assoc-pred :
+    ∀ x' y y' z z' →
+    ×-pred (×-pred x' y y') z z' ≡ ×-pred x' (y × z) (×-pred y' z z')
+  ×-assoc-pred nothing y y' z z' = refl
+  ×-assoc-pred (just x') y nothing z z' = refl
+  ×-assoc-pred (just x') y (just y') z nothing = refl
+  ×-assoc-pred (just x') y (just y') z (just z') =
     congS just
-      ( z-1 + (y-1 + x-1 * y) * z     ≡⟨ +-pushᵣ (*-distₗ-+ _ _ _) ⟩
-        z-1 + y-1 * z + x-1 * y * z   ≡⟨ refl ⟩+⟨ *-assoc _ _ _ ⟩
-        z-1 + y-1 * z + x-1 * (y * z) ∎)
+      ( z' + (y' + x' × y) × z     ≡⟨ +-pushᵣ (×-distₗ-+ _ _ _) ⟩
+        z' + y' × z + x' × y × z   ≡⟨ refl ⟩+⟨ ×-assoc _ _ _ ⟩
+        z' + y' × z + x' × (y × z) ∎)
 
-  *-assocᴾ : ∀ {x y z} xᴾ yᴾ zᴾ →
-    PathP (λ i → Pred (*-assoc x y z i)) ((xᴾ *ᴾ yᴾ) *ᴾ zᴾ) (xᴾ *ᴾ (yᴾ *ᴾ zᴾ))
-  *-assocᴾ {x} {y} {z} xᴾ yᴾ zᴾ =
-    Pred-path (*-assoc-pred (xᴾ .pred) y (yᴾ .pred) z (zᴾ .pred))
+  ×-assocᴾ : ∀ {x y z} xᴾ yᴾ zᴾ →
+    PathP (λ i → Pred (×-assoc x y z i)) ((xᴾ ×ᴾ yᴾ) ×ᴾ zᴾ) (xᴾ ×ᴾ (yᴾ ×ᴾ zᴾ))
+  ×-assocᴾ {x} {y} {z} xᴾ yᴾ zᴾ =
+    Pred-path (×-assoc-pred (xᴾ .pred) y (yᴾ .pred) z (zᴾ .pred))
 
-  *-comm-pred :
-    ∀ {x x-1 y y-1} → IsPred x-1 x → IsPred y-1 y →
-    *-pred x-1 y y-1 ≡ *-pred y-1 x x-1
-  *-comm-pred nothing nothing = refl
-  *-comm-pred nothing (just y-1) = refl
-  *-comm-pred (just x-1) nothing = refl
-  *-comm-pred (just x-1) (just y-1) =
+  ×-comm-pred :
+    ∀ {x x' y y'} → IsPred x' x → IsPred y' y →
+    ×-pred x' y y' ≡ ×-pred y' x x'
+  ×-comm-pred nothing nothing = refl
+  ×-comm-pred nothing (just y') = refl
+  ×-comm-pred (just x') nothing = refl
+  ×-comm-pred (just x') (just y') =
     congS just
-      ( y-1 + x-1 * suc y-1   ≡⟨ +-pushᵣ (*-sucᵣ _ _) ⟩
-        y-1 + x-1 + x-1 * y-1 ≡⟨ +-comm _ _ ⟩+⟨ *-comm _ _ ⟩
-        x-1 + y-1 + y-1 * x-1 ≡⟨ +-pullᵣ (sym (*-sucᵣ _ _)) ⟩
-        x-1 + y-1 * suc x-1 ∎)
+      ( y' + x' × suc y'  ≡⟨ +-pushᵣ (×-sucᵣ _ _) ⟩
+        y' + x' + x' × y' ≡⟨ +-comm _ _ ⟩+⟨ ×-comm _ _ ⟩
+        x' + y' + y' × x' ≡⟨ +-pullᵣ (sym (×-sucᵣ _ _)) ⟩
+        x' + y' × suc x'  ∎)
 
-  *-commᴾ :
-    ∀ {x y} xᴾ yᴾ → PathP (λ i → Pred (*-comm x y i)) (xᴾ *ᴾ yᴾ) (yᴾ *ᴾ xᴾ)
-  *-commᴾ xᴾ yᴾ = Pred-path (*-comm-pred (xᴾ .isPred) (yᴾ .isPred))
+  ×-commᴾ :
+    ∀ {x y} xᴾ yᴾ → PathP (λ i → Pred (×-comm x y i)) (xᴾ ×ᴾ yᴾ) (yᴾ ×ᴾ xᴾ)
+  ×-commᴾ xᴾ yᴾ = Pred-path (×-comm-pred (xᴾ .isPred) (yᴾ .isPred))
 
   oneᴾ : Pred one
   oneᴾ .pred = just zero
   oneᴾ .isPred = subst (IsPred _) (sym one-suc) (just zero)
 
-  *-idₗ-pred : ∀ x x-1 → *-pred (just zero) x x-1 ≡ x-1
-  *-idₗ-pred x nothing = refl
-  *-idₗ-pred x (just x-1) = congS just (+-elimᵣ (*-annihₗ _))
+  ×-idₗ-pred : ∀ x x' → ×-pred (just zero) x x' ≡ x'
+  ×-idₗ-pred x nothing = refl
+  ×-idₗ-pred x (just x') = congS just (+-elimᵣ (×-annihₗ _))
 
-  *-idₗᴾ : ∀ {x} xᴾ → PathP (λ i → Pred (*-idₗ x i)) (oneᴾ *ᴾ xᴾ) xᴾ
-  *-idₗᴾ {x} xᴾ = Pred-path (*-idₗ-pred x (xᴾ .pred))
+  ×-idₗᴾ : ∀ {x} xᴾ → PathP (λ i → Pred (×-idₗ x i)) (oneᴾ ×ᴾ xᴾ) xᴾ
+  ×-idₗᴾ {x} xᴾ = Pred-path (×-idₗ-pred x (xᴾ .pred))
 
-  *-distₗ-+-pred :
-    ∀ x-1 y y-1 z z-1 →
-    *-pred (+-pred x-1 y y-1) z z-1 ≡
-    +-pred (*-pred x-1 z z-1) (y * z) (*-pred y-1 z z-1)
-  *-distₗ-+-pred nothing y y-1 z z-1 = refl
-  *-distₗ-+-pred (just x) y y-1 z (just z-1) =
-    congS just (+-pushᵣ (*-distₗ-+ _ _ _))
-  *-distₗ-+-pred (just x) y nothing z nothing = refl
-  *-distₗ-+-pred (just x) y (just y-1) z nothing = refl
+  ×-distₗ-+-pred :
+    ∀ x' y y' z z' →
+    ×-pred (+-pred x' y y') z z' ≡
+    +-pred (×-pred x' z z') (y × z) (×-pred y' z z')
+  ×-distₗ-+-pred nothing y y' z z' = refl
+  ×-distₗ-+-pred (just x) y y' z (just z') =
+    congS just (+-pushᵣ (×-distₗ-+ _ _ _))
+  ×-distₗ-+-pred (just x) y nothing z nothing = refl
+  ×-distₗ-+-pred (just x) y (just y') z nothing = refl
 
-  *-distₗ-+ᴾ :
+  ×-distₗ-+ᴾ :
     ∀ {x y z} xᴾ yᴾ zᴾ →
-    PathP (λ i → Pred (*-distₗ-+ x y z i))
-      ((xᴾ +ᴾ yᴾ) *ᴾ zᴾ) (xᴾ *ᴾ zᴾ +ᴾ yᴾ *ᴾ zᴾ)
-  *-distₗ-+ᴾ {y} {z} xᴾ yᴾ zᴾ =
-    Pred-path (*-distₗ-+-pred (xᴾ .pred) y (yᴾ .pred) z (zᴾ .pred))
+    PathP (λ i → Pred (×-distₗ-+ x y z i))
+      ((xᴾ +ᴾ yᴾ) ×ᴾ zᴾ) (xᴾ ×ᴾ zᴾ +ᴾ yᴾ ×ᴾ zᴾ)
+  ×-distₗ-+ᴾ {y} {z} xᴾ yᴾ zᴾ =
+    Pred-path (×-distₗ-+-pred (xᴾ .pred) y (yᴾ .pred) z (zᴾ .pred))
 
-  *-annihₗᴾ : ∀ {x} xᴾ → PathP (λ i → Pred (*-annihₗ x i)) (zeroᴾ *ᴾ xᴾ) zeroᴾ
-  *-annihₗᴾ xᴾ = Pred-path refl
+  ×-annihₗᴾ : ∀ {x} xᴾ → PathP (λ i → Pred (×-annihₗ x i)) (zeroᴾ ×ᴾ xᴾ) zeroᴾ
+  ×-annihₗᴾ xᴾ = Pred-path refl
 
   sucᴾ : ∀ {x} → Pred x → Pred (suc x)
   sucᴾ = oneᴾ +ᴾ_
 
   ^-pred : Maybe Expr → Expr → Maybe Expr → Maybe Expr
-  ^-pred x-1 y nothing = just zero
-  ^-pred nothing y (just y-1) = nothing
-  ^-pred (just x-1) y (just y-1) = just (block x-1 y)
+  ^-pred x' y nothing = just zero
+  ^-pred nothing y (just y') = nothing
+  ^-pred (just x') y (just y') = just (block x' y)
 
   ^-isPred :
-    ∀ {x x-1 y y-1} →
-    IsPred x-1 x → IsPred y-1 y → IsPred (^-pred x-1 y y-1) (x ^ y)
+    ∀ {x x' y y'} →
+    IsPred x' x → IsPred y' y → IsPred (^-pred x' y y') (x ^ y)
   ^-isPred {x} p nothing =
     subst (IsPred _)
       ( suc zero ≡⟨ sym one-suc ⟩
         one      ≡⟨ sym (^-annihᵣ _) ⟩
         x ^ zero ∎)
       (just zero)
-  ^-isPred nothing (just y-1) =
+  ^-isPred nothing (just y') =
     subst (IsPred _)
-      ( zero              ≡⟨ sym (*-annihᵣ _) ⟩
-        zero ^ y-1 * zero ≡⟨ sym (^-sucᵣ _ _) ⟩
-        zero ^ suc y-1    ∎)
+      ( zero             ≡⟨ sym (×-annihᵣ _) ⟩
+        zero ^ y' × zero ≡⟨ sym (^-sucᵣ _ _) ⟩
+        zero ^ suc y'    ∎)
       nothing
-  ^-isPred {y} (just x-1) (just y-1) =
-    subst (IsPred _) (sym (^-sucₗ _ _)) (just (block x-1 y))
+  ^-isPred {y} (just x') (just y') =
+    subst (IsPred _) (sym (^-sucₗ _ _)) (just (block x' y))
 
   infixr 8 _^ᴾ_
   _^ᴾ_ : ∀ {x y} → Pred x → Pred y → Pred (x ^ y)
   _^ᴾ_ {y} xᴾ yᴾ .pred = ^-pred (xᴾ .pred) y (yᴾ .pred)
   (xᴾ ^ᴾ yᴾ) .isPred = ^-isPred (xᴾ .isPred) (yᴾ .isPred)
 
-  ^-assocᵣ-*-pred :
-    ∀ x-1 y y-1 z z-1 →
-    ^-pred x-1 (y * z) (*-pred y-1 z z-1) ≡ ^-pred (^-pred x-1 z z-1) y y-1
-  ^-assocᵣ-*-pred x-1 y nothing z z-1 = refl
-  ^-assocᵣ-*-pred x-1 y (just y-1) z nothing = congS just (sym (block-annihₗ _))
-  ^-assocᵣ-*-pred nothing y (just y-1) z (just z-1) = refl
-  ^-assocᵣ-*-pred (just x-1) y (just y-1) z (just z-1) =
-    congS just (block-assocᵣ-* _ _ _)
+  ^-assocᵣ-×-pred :
+    ∀ x' y y' z z' →
+    ^-pred x' (y × z) (×-pred y' z z') ≡ ^-pred (^-pred x' z z') y y'
+  ^-assocᵣ-×-pred x' y nothing z z' = refl
+  ^-assocᵣ-×-pred x' y (just y') z nothing = congS just (sym (block-annihₗ _))
+  ^-assocᵣ-×-pred nothing y (just y') z (just z') = refl
+  ^-assocᵣ-×-pred (just x') y (just y') z (just z') =
+    congS just (block-assocᵣ-× _ _ _)
 
-  ^-assocᵣ-*ᴾ :
+  ^-assocᵣ-×ᴾ :
     ∀ {x y z} xᴾ yᴾ zᴾ →
-    PathP (λ i → Pred (^-assocᵣ-* x y z i))
-      (xᴾ ^ᴾ (yᴾ *ᴾ zᴾ)) ((xᴾ ^ᴾ zᴾ) ^ᴾ yᴾ)
-  ^-assocᵣ-*ᴾ {x} {y} {z} xᴾ yᴾ zᴾ =
-    Pred-path (^-assocᵣ-*-pred (xᴾ .pred) y (yᴾ .pred) z (zᴾ .pred))
+    PathP (λ i → Pred (^-assocᵣ-× x y z i))
+      (xᴾ ^ᴾ (yᴾ ×ᴾ zᴾ)) ((xᴾ ^ᴾ zᴾ) ^ᴾ yᴾ)
+  ^-assocᵣ-×ᴾ {x} {y} {z} xᴾ yᴾ zᴾ =
+    Pred-path (^-assocᵣ-×-pred (xᴾ .pred) y (yᴾ .pred) z (zᴾ .pred))
 
-  ^-idᵣ-pred : ∀ x-1 → ^-pred x-1 one (just zero) ≡ x-1
+  ^-idᵣ-pred : ∀ x' → ^-pred x' one (just zero) ≡ x'
   ^-idᵣ-pred nothing = refl
-  ^-idᵣ-pred (just x-1) = congS just (block-idᵣ _)
+  ^-idᵣ-pred (just x') = congS just (block-idᵣ _)
 
   ^-idᵣᴾ : ∀ {x} xᴾ → PathP (λ i → Pred (^-idᵣ x i)) (xᴾ ^ᴾ oneᴾ) xᴾ
   ^-idᵣᴾ xᴾ = Pred-path (^-idᵣ-pred (xᴾ .pred))
 
   ^-distᵣ-+-pred :
-    ∀ {x x-1 y y-1 z z-1} → IsPred x-1 x → IsPred y-1 y → IsPred z-1 z →
-    ^-pred x-1 (y + z) (+-pred y-1 z z-1) ≡
-    *-pred (^-pred x-1 z z-1) (x ^ y) (^-pred x-1 y y-1)
+    ∀ {x x' y y' z z'} → IsPred x' x → IsPred y' y → IsPred z' z →
+    ^-pred x' (y + z) (+-pred y' z z') ≡
+    ×-pred (^-pred x' z z') (x ^ y) (^-pred x' y y')
   ^-distᵣ-+-pred p nothing nothing =
-    congS just (+-introᵣ (sym (*-annihₗ _)))
-  ^-distᵣ-+-pred nothing nothing (just z-1) = refl
-  ^-distᵣ-+-pred {x} {z} (just x-1) nothing (just z-1) =
+    congS just (+-introᵣ (sym (×-annihₗ _)))
+  ^-distᵣ-+-pred nothing nothing (just z') = refl
+  ^-distᵣ-+-pred {x} {z} (just x') nothing (just z') =
     congS just
-      ( block x-1 (zero + z)          ≡⟨ cong₂ block refl (+-idₗ _) ⟩
-        block x-1 z                   ≡⟨ *-introᵣ (sym (^-annihᵣ _)) ⟩
-        block x-1 z * x ^ zero        ≡⟨ sym (+-idₗ _) ⟩
-        zero + block x-1 z * x ^ zero ∎)
-  ^-distᵣ-+-pred nothing (just y-1) nothing = refl
-  ^-distᵣ-+-pred nothing (just y-1) (just x-1) = refl
-  ^-distᵣ-+-pred {x} {y} (just x-1) (just y-1) nothing =
+      ( block x' (zero + z)          ≡⟨ cong₂ block refl (+-idₗ _) ⟩
+        block x' z                   ≡⟨ ×-introᵣ (sym (^-annihᵣ _)) ⟩
+        block x' z × x ^ zero        ≡⟨ sym (+-idₗ _) ⟩
+        zero + block x' z × x ^ zero ∎)
+  ^-distᵣ-+-pred nothing (just y') nothing = refl
+  ^-distᵣ-+-pred nothing (just y') (just x') = refl
+  ^-distᵣ-+-pred {x} {y} (just x') (just y') nothing =
     congS just
-      ( block x-1 (y + zero)       ≡⟨ cong₂ block refl (+-idᵣ _) ⟩
-        block x-1 y                ≡⟨ +-introᵣ (sym (*-annihₗ _)) ⟩
-        block x-1 y + zero * x ^ y ∎)
-  ^-distᵣ-+-pred (just x-1) (just y-1) (just z-1) =
+      ( block x' (y + zero)       ≡⟨ cong₂ block refl (+-idᵣ _) ⟩
+        block x' y                ≡⟨ +-introᵣ (sym (×-annihₗ _)) ⟩
+        block x' y + zero × x ^ y ∎)
+  ^-distᵣ-+-pred (just x') (just y') (just z') =
     congS just (block-distᵣ-+ _ _ _)
 
   ^-distᵣ-+ᴾ :
     ∀ {x y z} xᴾ yᴾ zᴾ →
     PathP (λ i → Pred (^-distᵣ-+ x y z i))
-      (xᴾ ^ᴾ (yᴾ +ᴾ zᴾ)) (xᴾ ^ᴾ zᴾ *ᴾ xᴾ ^ᴾ yᴾ)
+      (xᴾ ^ᴾ (yᴾ +ᴾ zᴾ)) (xᴾ ^ᴾ zᴾ ×ᴾ xᴾ ^ᴾ yᴾ)
   ^-distᵣ-+ᴾ xᴾ yᴾ zᴾ =
     Pred-path (^-distᵣ-+-pred (xᴾ .isPred) (yᴾ .isPred) (zᴾ .isPred))
 
   ^-annihᵣᴾ : ∀ {x} xᴾ → PathP (λ i → Pred (^-annihᵣ x i)) (xᴾ ^ᴾ zeroᴾ) oneᴾ
   ^-annihᵣᴾ xᴾ = Pred-path refl
 
-  ^-distₗ-*-pred :
-    ∀ {y y-1} x-1 → IsPred y-1 y → ∀ z z-1 →
-    ^-pred (*-pred x-1 y y-1) z z-1 ≡
-    *-pred (^-pred x-1 z z-1) (y ^ z) (^-pred y-1 z z-1)
-  ^-distₗ-*-pred x-1 p z nothing = congS just (+-introᵣ (sym (*-annihₗ _)))
-  ^-distₗ-*-pred nothing p z (just z-1) = refl
-  ^-distₗ-*-pred (just x-1) nothing z (just z-1) = refl
-  ^-distₗ-*-pred {y} (just x-1) (just y-1) z (just z-1) =
-    congS just (block-distₗ-* _ _ _)
+  ^-distₗ-×-pred :
+    ∀ {y y'} x' → IsPred y' y → ∀ z z' →
+    ^-pred (×-pred x' y y') z z' ≡
+    ×-pred (^-pred x' z z') (y ^ z) (^-pred y' z z')
+  ^-distₗ-×-pred x' p z nothing = congS just (+-introᵣ (sym (×-annihₗ _)))
+  ^-distₗ-×-pred nothing p z (just z') = refl
+  ^-distₗ-×-pred (just x') nothing z (just z') = refl
+  ^-distₗ-×-pred {y} (just x') (just y') z (just z') =
+    congS just (block-distₗ-× _ _ _)
 
-  ^-distₗ-*ᴾ :
+  ^-distₗ-×ᴾ :
     ∀ {x y z} xᴾ yᴾ zᴾ →
-    PathP (λ i → Pred (^-distₗ-* x y z i))
-      ((xᴾ *ᴾ yᴾ) ^ᴾ zᴾ) (xᴾ ^ᴾ zᴾ *ᴾ yᴾ ^ᴾ zᴾ)
-  ^-distₗ-*ᴾ {z} xᴾ yᴾ zᴾ =
-    Pred-path (^-distₗ-*-pred (xᴾ .pred) (yᴾ .isPred) z (zᴾ .pred))
+    PathP (λ i → Pred (^-distₗ-× x y z i))
+      ((xᴾ ×ᴾ yᴾ) ^ᴾ zᴾ) (xᴾ ^ᴾ zᴾ ×ᴾ yᴾ ^ᴾ zᴾ)
+  ^-distₗ-×ᴾ {z} xᴾ yᴾ zᴾ =
+    Pred-path (^-distₗ-×-pred (xᴾ .pred) (yᴾ .isPred) z (zᴾ .pred))
 
-  ^-annihₗ-pred : ∀ x x-1 → ^-pred (just zero) x x-1 ≡ just zero
+  ^-annihₗ-pred : ∀ x x' → ^-pred (just zero) x x' ≡ just zero
   ^-annihₗ-pred x nothing = refl
-  ^-annihₗ-pred x (just x-1) = congS just (block-annihₗ _)
+  ^-annihₗ-pred x (just x') = congS just (block-annihₗ _)
 
   ^-annihₗᴾ : ∀ {x} xᴾ → PathP (λ i → Pred (^-annihₗ x i)) (oneᴾ ^ᴾ xᴾ) oneᴾ
   ^-annihₗᴾ {x} xᴾ = Pred-path (^-annihₗ-pred x (xᴾ .pred))
 
   block-pred : Expr → Maybe Expr → Maybe Expr → Maybe Expr
-  block-pred x nothing y-1 = nothing
-  block-pred x (just x-1) nothing = nothing
-  block-pred x (just x-1) (just y-1) = just (x-1 + block x y-1 * suc x)
+  block-pred x nothing y' = nothing
+  block-pred x (just x') nothing = nothing
+  block-pred x (just x') (just y') = just (x' + block x y' × suc x)
 
   block-isPred :
-    ∀ {x x-1 y y-1} → IsPred x-1 x → IsPred y-1 y →
-    IsPred (block-pred x x-1 y-1) (block x y)
+    ∀ {x x' y y'} → IsPred x' x → IsPred y' y →
+    IsPred (block-pred x x' y') (block x y)
   block-isPred nothing p = subst (IsPred _) (sym (block-annihₗ _)) nothing
-  block-isPred (just x-1) nothing =
+  block-isPred (just x') nothing =
     subst (IsPred _) (sym (block-annihᵣ _)) nothing
-  block-isPred {x} (just x-1) (just y-1) =
+  block-isPred {x} (just x') (just y') =
     subst (IsPred _)
-      ( suc (x-1 + block x y-1 * suc x) ≡⟨ sym (+-sucₗ _ _) ⟩
-        suc x-1 + block x y-1 * suc x   ≡⟨⟩
-        x + block x y-1 * suc x         ≡⟨ sym (block-sucᵣ _ _) ⟩
-        block x (suc y-1)               ∎)
-      (just (x-1 + block x y-1 * suc x))
+      ( suc (x' + block x y' × suc x) ≡⟨ sym (+-sucₗ _ _) ⟩
+        suc x' + block x y' × suc x   ≡⟨⟩
+        x + block x y' × suc x        ≡⟨ sym (block-sucᵣ _ _) ⟩
+        block x (suc y')              ∎)
+      (just (x' + block x y' × suc x))
 
   blockᴾ : ∀ {x y} → Pred x → Pred y → Pred (block x y)
   blockᴾ {x} xᴾ yᴾ .pred = block-pred x (xᴾ .pred) (yᴾ .pred)
   blockᴾ xᴾ yᴾ .isPred = block-isPred (xᴾ .isPred) (yᴾ .isPred)
 
-  block-assocᵣ-*-pred :
-    ∀ {z z-1} x x-1 y-1 → IsPred z-1 z →
-    block-pred x x-1 (*-pred y-1 z z-1) ≡
-    block-pred (block x z) (block-pred x x-1 z-1) y-1
-  block-assocᵣ-*-pred x nothing y-1 p = refl
-  block-assocᵣ-*-pred x (just x-1) nothing nothing = refl
-  block-assocᵣ-*-pred x (just x-1) nothing (just z-1) = refl
-  block-assocᵣ-*-pred x (just x-1) (just y-1) nothing = refl
-  block-assocᵣ-*-pred {z} x (just x-1) (just y-1) (just z-1) =
+  block-assocᵣ-×-pred :
+    ∀ {z z'} x x' y' → IsPred z' z →
+    block-pred x x' (×-pred y' z z') ≡
+    block-pred (block x z) (block-pred x x' z') y'
+  block-assocᵣ-×-pred x nothing y' p = refl
+  block-assocᵣ-×-pred x (just x') nothing nothing = refl
+  block-assocᵣ-×-pred x (just x') nothing (just z') = refl
+  block-assocᵣ-×-pred x (just x') (just y') nothing = refl
+  block-assocᵣ-×-pred {z} x (just x') (just y') (just z') =
     congS just
-      ( x-1 + block x (z-1 + y-1 * z) * suc x                                       ≡⟨ refl ⟩+⟨ block-distᵣ-+ _ _ _ ⟩*⟨ refl ⟩
-        x-1 + (block x z-1 + block x (y-1 * z) * suc x ^ z-1) * suc x               ≡⟨ +-pushᵣ (*-distₗ-+ _ _ _) ⟩
-        x-1 + block x z-1 * suc x + block x (y-1 * z) * suc x ^ z-1 * suc x         ≡⟨ refl ⟩+⟨ *-pullᵣ (sym (^-sucᵣ _ _)) ⟩
-        x-1 + block x z-1 * suc x + block x (y-1 * z) * suc x ^ suc z-1             ≡⟨ refl ⟩+⟨ block-assocᵣ-* _ _ _ ⟩*⟨ ^-sucₗ _ _ ⟩
-        x-1 + block x z-1 * suc x + block (block x z) y-1 * suc (block x (suc z-1)) ∎)
+      ( x' + block x (z' + y' × z) × suc x                                      ≡⟨ refl ⟩+⟨ block-distᵣ-+ _ _ _ ⟩×⟨ refl ⟩
+        x' + (block x z' + block x (y' × z) × suc x ^ z') × suc x               ≡⟨ +-pushᵣ (×-distₗ-+ _ _ _) ⟩
+        x' + block x z' × suc x + block x (y' × z) × suc x ^ z' × suc x         ≡⟨ refl ⟩+⟨ ×-pullᵣ (sym (^-sucᵣ _ _)) ⟩
+        x' + block x z' × suc x + block x (y' × z) × suc x ^ suc z'             ≡⟨ refl ⟩+⟨ block-assocᵣ-× _ _ _ ⟩×⟨ ^-sucₗ _ _ ⟩
+        x' + block x z' × suc x + block (block x z) y' × suc (block x (suc z')) ∎)
 
-  block-assocᵣ-*ᴾ :
+  block-assocᵣ-×ᴾ :
     ∀ {x y z} xᴾ yᴾ zᴾ →
-    PathP (λ i → Pred (block-assocᵣ-* x y z i))
-      (blockᴾ xᴾ (yᴾ *ᴾ zᴾ)) (blockᴾ (blockᴾ xᴾ zᴾ) yᴾ)
-  block-assocᵣ-*ᴾ {x} xᴾ yᴾ zᴾ =
-    Pred-path (block-assocᵣ-*-pred x (xᴾ .pred) (yᴾ .pred) (zᴾ .isPred) )
+    PathP (λ i → Pred (block-assocᵣ-× x y z i))
+      (blockᴾ xᴾ (yᴾ ×ᴾ zᴾ)) (blockᴾ (blockᴾ xᴾ zᴾ) yᴾ)
+  block-assocᵣ-×ᴾ {x} xᴾ yᴾ zᴾ =
+    Pred-path (block-assocᵣ-×-pred x (xᴾ .pred) (yᴾ .pred) (zᴾ .isPred) )
 
-  block-idᵣ-pred : ∀ x x-1 → block-pred x x-1 (just zero) ≡ x-1
+  block-idᵣ-pred : ∀ x x' → block-pred x x' (just zero) ≡ x'
   block-idᵣ-pred x nothing = refl
-  block-idᵣ-pred x (just x-1) =
+  block-idᵣ-pred x (just x') =
     congS just
-      ( x-1 + block x zero * suc x ≡⟨ refl ⟩+⟨ block-annihᵣ _ ⟩*⟨ refl ⟩
-        x-1 + zero * suc x         ≡⟨ +-elimᵣ (*-annihₗ _) ⟩
-        x-1                        ∎)
+      ( x' + block x zero × suc x ≡⟨ refl ⟩+⟨ block-annihᵣ _ ⟩×⟨ refl ⟩
+        x' + zero × suc x         ≡⟨ +-elimᵣ (×-annihₗ _) ⟩
+        x'                        ∎)
 
   block-idᵣᴾ : ∀ {x} xᴾ → PathP (λ i → Pred (block-idᵣ x i)) (blockᴾ xᴾ oneᴾ) xᴾ
   block-idᵣᴾ {x} xᴾ = Pred-path (block-idᵣ-pred x (xᴾ .pred))
 
   block-distᵣ-+-pred :
-    ∀ {y y-1} x x-1 → IsPred y-1 y → ∀ z z-1 →
-    block-pred x x-1 (+-pred y-1 z z-1) ≡
+    ∀ {y y'} x x' → IsPred y' y → ∀ z z' →
+    block-pred x x' (+-pred y' z z') ≡
     +-pred
-      (block-pred x x-1 y-1)
-      (block x z * suc x ^ y)
-      (*-pred
-        (block-pred x x-1 z-1)
+      (block-pred x x' y')
+      (block x z × suc x ^ y)
+      (×-pred
+        (block-pred x x' z')
         (suc x ^ y)
-        (^-pred (just (zero + x)) y y-1))
-  block-distᵣ-+-pred x nothing y-1 z z-1 = refl
-  block-distᵣ-+-pred x (just x-1) nothing z nothing = refl
-  block-distᵣ-+-pred x (just x-1) nothing z (just z-1) =
+        (^-pred (just (zero + x)) y y'))
+  block-distᵣ-+-pred x nothing y' z z' = refl
+  block-distᵣ-+-pred x (just x') nothing z nothing = refl
+  block-distᵣ-+-pred x (just x') nothing z (just z') =
     congS just
-      ( x-1 + block x z-1 * suc x                         ≡⟨ *-introᵣ (sym (^-annihᵣ _)) ⟩
-        (x-1 + block x z-1 * suc x) * suc x ^ zero        ≡⟨ sym (+-idₗ _) ⟩
-        zero + (x-1 + block x z-1 * suc x) * suc x ^ zero ∎)
-  block-distᵣ-+-pred x (just x-1) (just y-1) z z-1 =
+      ( x' + block x z' × suc x                         ≡⟨ ×-introᵣ (sym (^-annihᵣ _)) ⟩
+        (x' + block x z' × suc x) × suc x ^ zero        ≡⟨ sym (+-idₗ _) ⟩
+        zero + (x' + block x z' × suc x) × suc x ^ zero ∎)
+  block-distᵣ-+-pred x (just x') (just y') z z' =
     congS just
-      ( x-1 + block x (y-1 + z) * suc x                             ≡⟨ refl ⟩+⟨ block-distᵣ-+ _ _ _ ⟩*⟨ refl ⟩
-        x-1 + (block x y-1 + block x z * suc x ^ y-1) * suc x       ≡⟨ +-pushᵣ (*-distₗ-+ _ _ _) ⟩
-        x-1 + block x y-1 * suc x + block x z * suc x ^ y-1 * suc x ≡⟨ refl ⟩+⟨ *-pullᵣ (sym (^-sucᵣ _ _)) ⟩
-        x-1 + block x y-1 * suc x + block x z * suc x ^ suc y-1     ∎)
+      ( x' + block x (y' + z) × suc x                            ≡⟨ refl ⟩+⟨ block-distᵣ-+ _ _ _ ⟩×⟨ refl ⟩
+        x' + (block x y' + block x z × suc x ^ y') × suc x       ≡⟨ +-pushᵣ (×-distₗ-+ _ _ _) ⟩
+        x' + block x y' × suc x + block x z × suc x ^ y' × suc x ≡⟨ refl ⟩+⟨ ×-pullᵣ (sym (^-sucᵣ _ _)) ⟩
+        x' + block x y' × suc x + block x z × suc x ^ suc y'     ∎)
 
   block-distᵣ-+ᴾ :
     ∀ {x y z} xᴾ yᴾ zᴾ →
     PathP (λ i → Pred (block-distᵣ-+ x y z i))
-      (blockᴾ xᴾ (yᴾ +ᴾ zᴾ)) (blockᴾ xᴾ yᴾ +ᴾ blockᴾ xᴾ zᴾ *ᴾ sucᴾ xᴾ ^ᴾ yᴾ)
+      (blockᴾ xᴾ (yᴾ +ᴾ zᴾ)) (blockᴾ xᴾ yᴾ +ᴾ blockᴾ xᴾ zᴾ ×ᴾ sucᴾ xᴾ ^ᴾ yᴾ)
   block-distᵣ-+ᴾ {x} {z} xᴾ yᴾ zᴾ =
     Pred-path (block-distᵣ-+-pred x (xᴾ .pred) (yᴾ .isPred) z (zᴾ .pred))
 
-  block-annihᵣ-pred : ∀ x x-1 → block-pred x x-1 nothing ≡ nothing
+  block-annihᵣ-pred : ∀ x x' → block-pred x x' nothing ≡ nothing
   block-annihᵣ-pred x nothing = refl
-  block-annihᵣ-pred x (just x-1) = refl
+  block-annihᵣ-pred x (just x') = refl
 
   block-annihᵣᴾ :
     ∀ {x} xᴾ → PathP (λ i → Pred (block-annihᵣ x i)) (blockᴾ xᴾ zeroᴾ) zeroᴾ
   block-annihᵣᴾ {x} xᴾ = Pred-path (block-annihᵣ-pred x (xᴾ .pred))
 
-  block-distₗ-*-pred :
-    ∀ {y y-1 z z-1} x x-1 → IsPred y-1 y → IsPred z-1 z →
+  block-distₗ-×-pred :
+    ∀ {y y' z z'} x x' → IsPred y' y → IsPred z' z →
     block-pred
-      (y + x * suc y)
-      (+-pred y-1 (x * suc y) (*-pred x-1 (suc y) (just (zero + y))))
-      z-1 ≡
+      (y + x × suc y)
+      (+-pred y' (x × suc y) (×-pred x' (suc y) (just (zero + y))))
+      z' ≡
     +-pred
-      (block-pred y y-1 z-1)
-      (block x z * suc y ^ z)
-      (*-pred
-        (block-pred x x-1 z-1)
+      (block-pred y y' z')
+      (block x z × suc y ^ z)
+      (×-pred
+        (block-pred x x' z')
         (suc y ^ z)
-        (^-pred (just (zero + y)) z z-1))
-  block-distₗ-*-pred {y} x x-1 (just y-1) (just z-1) =
+        (^-pred (just (zero + y)) z z'))
+  block-distₗ-×-pred {y} x x' (just y') (just z') =
     congS just
-      ( y-1 + x * suc y + block (y + x * suc y) z-1 * suc (y + x * suc y)                                   ≡⟨ refl ⟩+⟨ refl ⟩*⟨ sym (+-sucₗ _ _) ⟩
-        y-1 + x * suc y + block (y + x * suc y) z-1 * (suc y + x * suc y)                                   ≡⟨ refl ⟩+⟨ *-pushᵣ (sym (*-sucₗ _ _)) ⟩
-        y-1 + x * suc y + block (y + x * suc y) z-1 * suc x * suc y                                         ≡⟨ refl ⟩+⟨ block-distₗ-* _ _ _ ⟩*⟨ refl ⟩*⟨ refl ⟩
-        y-1 + x * suc y + (block y z-1 + block x z-1 * suc y ^ z-1) * suc x * suc y                         ≡⟨ refl ⟩+⟨ (refl ⟩+⟨ refl ⟩*⟨ ^-sucₗ _ _) ⟩*⟨ refl ⟩*⟨ refl ⟩
-        y-1 + x * suc y + (block y z-1 + block x z-1 * suc (block y z-1)) * suc x * suc y                   ≡⟨ +-extendᵣ (q _ _ _ _) ⟩
-        y-1 + (x + block y z-1 + block y z-1 * x) * suc y + block x z-1 * suc (block y z-1) * suc x * suc y ≡⟨ refl ⟩+⟨ (+-comm _ _ ⟩+⟨ *-comm _ _) ⟩*⟨ refl ⟩+⟨ *-extendᵣ (*-comm _ _) ⟩*⟨ refl ⟩
-        y-1 + (block y z-1 + x + x * block y z-1) * suc y + block x z-1 * suc x * suc (block y z-1) * suc y ≡⟨ +-extendᵣ (sym (q _ _ _ _)) ⟩
-        y-1 + block y z-1 * suc y + (x + block x z-1 * suc x) * suc (block y z-1) * suc y                   ≡⟨ refl ⟩+⟨ sym (block-sucᵣ _ _) ⟩*⟨ sym (^-sucₗ _ _) ⟩*⟨ refl ⟩
-        y-1 + block y z-1 * suc y + block x (suc z-1) * suc y ^ z-1 * suc y                                 ≡⟨ refl ⟩+⟨ *-pullᵣ (sym (^-sucᵣ _ _)) ⟩
-        y-1 + block y z-1 * suc y + block x (suc z-1) * suc y ^ suc z-1                                     ∎)
+      ( y' + x × suc y + block (y + x × suc y) z' × suc (y + x × suc y)                                ≡⟨ refl ⟩+⟨ refl ⟩×⟨ sym (+-sucₗ _ _) ⟩
+        y' + x × suc y + block (y + x × suc y) z' × (suc y + x × suc y)                                ≡⟨ refl ⟩+⟨ ×-pushᵣ (sym (×-sucₗ _ _)) ⟩
+        y' + x × suc y + block (y + x × suc y) z' × suc x × suc y                                      ≡⟨ refl ⟩+⟨ block-distₗ-× _ _ _ ⟩×⟨ refl ⟩×⟨ refl ⟩
+        y' + x × suc y + (block y z' + block x z' × suc y ^ z') × suc x × suc y                        ≡⟨ refl ⟩+⟨ (refl ⟩+⟨ refl ⟩×⟨ ^-sucₗ _ _) ⟩×⟨ refl ⟩×⟨ refl ⟩
+        y' + x × suc y + (block y z' + block x z' × suc (block y z')) × suc x × suc y                  ≡⟨ +-extendᵣ (q _ _ _ _) ⟩
+        y' + (x + block y z' + block y z' × x) × suc y + block x z' × suc (block y z') × suc x × suc y ≡⟨ refl ⟩+⟨ (+-comm _ _ ⟩+⟨ ×-comm _ _) ⟩×⟨ refl ⟩+⟨ ×-extendᵣ (×-comm _ _) ⟩×⟨ refl ⟩
+        y' + (block y z' + x + x × block y z') × suc y + block x z' × suc x × suc (block y z') × suc y ≡⟨ +-extendᵣ (sym (q _ _ _ _)) ⟩
+        y' + block y z' × suc y + (x + block x z' × suc x) × suc (block y z') × suc y                  ≡⟨ refl ⟩+⟨ sym (block-sucᵣ _ _) ⟩×⟨ sym (^-sucₗ _ _) ⟩×⟨ refl ⟩
+        y' + block y z' × suc y + block x (suc z') × suc y ^ z' × suc y                                ≡⟨ refl ⟩+⟨ ×-pullᵣ (sym (^-sucᵣ _ _)) ⟩
+        y' + block y z' × suc y + block x (suc z') × suc y ^ suc z'                                    ∎)
     where
     q :
       ∀ x y z w →
-      x * y + (w + z * suc w) * suc x * y ≡
-      (x + w + w * x) * y + z * suc w * suc x * y
+      x × y + (w + z × suc w) × suc x × y ≡
+      (x + w + w × x) × y + z × suc w × suc x × y
     q x y z w =
-      x * y + (w + z * suc w) * suc x * y               ≡⟨ refl ⟩+⟨ *-assoc _ _ _ ⟩
-      x * y + (w + z * suc w) * (suc x * y)             ≡⟨ +-pushᵣ (*-distₗ-+ _ _ _) ⟩
-      x * y + w * (suc x * y) + z * suc w * (suc x * y) ≡⟨ refl ⟩+⟨ sym (*-assoc _ _ _) ⟩+⟨ sym (*-assoc _ _ _) ⟩
-      x * y + w * suc x * y + z * suc w * suc x * y     ≡⟨ sym (*-distₗ-+ _ _ _) ⟩+⟨ refl ⟩
-      (x + w * suc x) * y + z * suc w * suc x * y       ≡⟨ +-pushᵣ (*-sucᵣ _ _) ⟩*⟨ refl ⟩+⟨ refl ⟩
-      (x + w + w * x) * y + z * suc w * suc x * y       ∎
-  block-distₗ-*-pred x nothing (just y-1) nothing = refl
-  block-distₗ-*-pred x (just x-1) (just y-1) nothing = refl
-  block-distₗ-*-pred x nothing nothing p = refl
-  block-distₗ-*-pred x (just x-1) nothing nothing = refl
-  block-distₗ-*-pred {z} x (just x-1) nothing (just z-1) =
+      x × y + (w + z × suc w) × suc x × y               ≡⟨ refl ⟩+⟨ ×-assoc _ _ _ ⟩
+      x × y + (w + z × suc w) × (suc x × y)             ≡⟨ +-pushᵣ (×-distₗ-+ _ _ _) ⟩
+      x × y + w × (suc x × y) + z × suc w × (suc x × y) ≡⟨ refl ⟩+⟨ sym (×-assoc _ _ _) ⟩+⟨ sym (×-assoc _ _ _) ⟩
+      x × y + w × suc x × y + z × suc w × suc x × y     ≡⟨ sym (×-distₗ-+ _ _ _) ⟩+⟨ refl ⟩
+      (x + w × suc x) × y + z × suc w × suc x × y       ≡⟨ +-pushᵣ (×-sucᵣ _ _) ⟩×⟨ refl ⟩+⟨ refl ⟩
+      (x + w + w × x) × y + z × suc w × suc x × y       ∎
+  block-distₗ-×-pred x nothing (just y') nothing = refl
+  block-distₗ-×-pred x (just x') (just y') nothing = refl
+  block-distₗ-×-pred x nothing nothing p = refl
+  block-distₗ-×-pred x (just x') nothing nothing = refl
+  block-distₗ-×-pred {z} x (just x') nothing (just z') =
     congS just
-      ( zero + zero + x-1 * suc zero + block (zero + x * suc zero) z-1 * suc (zero + x * suc zero) ≡⟨ +-elimₗ (+-idₗ _) ⟩+⟨ cong₂ block (+-idₗ _) refl ⟩*⟨ cong suc (+-idₗ _) ⟩
-        x-1 * suc zero + block (x * suc zero) z-1 * suc (x * suc zero)                             ≡⟨ *-elimᵣ (sym one-suc) ⟩+⟨ cong₂ block (*-elimᵣ (sym one-suc)) refl ⟩*⟨ cong suc (*-elimᵣ (sym one-suc)) ⟩
-        x-1 + block x z-1 * suc x                                                                  ≡⟨ *-introᵣ (sym (^-annihₗ _)) ⟩
-        (x-1 + block x z-1 * suc x) * one ^ z                                                      ≡⟨ +-introₗ (sym (block-annihₗ _)) ⟩
-        block zero z + (x-1 + block x z-1 * suc x) * one ^ z                                       ≡⟨ cong₂ block (sym (+-idₗ _)) refl ⟩+⟨ refl ⟩*⟨ one-suc ⟩^⟨ refl ⟩
-        block (zero + zero) z + (x-1 + block x z-1 * suc x) * suc zero ^ z                         ∎)
+      ( zero + zero + x' × suc zero + block (zero + x × suc zero) z' × suc (zero + x × suc zero) ≡⟨ +-elimₗ (+-idₗ _) ⟩+⟨ cong₂ block (+-idₗ _) refl ⟩×⟨ cong suc (+-idₗ _) ⟩
+        x' × suc zero + block (x × suc zero) z' × suc (x × suc zero)                             ≡⟨ ×-elimᵣ (sym one-suc) ⟩+⟨ cong₂ block (×-elimᵣ (sym one-suc)) refl ⟩×⟨ cong suc (×-elimᵣ (sym one-suc)) ⟩
+        x' + block x z' × suc x                                                                  ≡⟨ ×-introᵣ (sym (^-annihₗ _)) ⟩
+        (x' + block x z' × suc x) × one ^ z                                                      ≡⟨ +-introₗ (sym (block-annihₗ _)) ⟩
+        block zero z + (x' + block x z' × suc x) × one ^ z                                       ≡⟨ cong₂ block (sym (+-idₗ _)) refl ⟩+⟨ refl ⟩×⟨ one-suc ⟩^⟨ refl ⟩
+        block (zero + zero) z + (x' + block x z' × suc x) × suc zero ^ z                         ∎)
 
-  block-distₗ-*ᴾ :
+  block-distₗ-×ᴾ :
     ∀ {x y z} xᴾ yᴾ zᴾ →
-    PathP (λ i → Pred (block-distₗ-* x y z i))
-      (blockᴾ (yᴾ +ᴾ xᴾ *ᴾ sucᴾ yᴾ) zᴾ)
-      (blockᴾ yᴾ zᴾ +ᴾ blockᴾ xᴾ zᴾ *ᴾ sucᴾ yᴾ ^ᴾ zᴾ)
-  block-distₗ-*ᴾ {x} xᴾ yᴾ zᴾ =
-    Pred-path (block-distₗ-*-pred x (xᴾ .pred) (yᴾ .isPred) (zᴾ .isPred))
+    PathP (λ i → Pred (block-distₗ-× x y z i))
+      (blockᴾ (yᴾ +ᴾ xᴾ ×ᴾ sucᴾ yᴾ) zᴾ)
+      (blockᴾ yᴾ zᴾ +ᴾ blockᴾ xᴾ zᴾ ×ᴾ sucᴾ yᴾ ^ᴾ zᴾ)
+  block-distₗ-×ᴾ {x} xᴾ yᴾ zᴾ =
+    Pred-path (block-distₗ-×-pred x (xᴾ .pred) (yᴾ .isPred) (zᴾ .isPred))
 
   block-annihₗᴾ :
     ∀ {x} xᴾ → PathP (λ i → Pred (block-annihₗ x i)) (blockᴾ zeroᴾ xᴾ) zeroᴾ
   block-annihₗᴾ xᴾ = Pred-path refl
 
   ^-sucₗ-pred :
-    ∀ {y y-1} x → IsPred y-1 y → ^-pred (just (zero + x)) y y-1 ≡ just (zero + block x y)
+    ∀ {y y'} x → IsPred y' y → ^-pred (just (zero + x)) y y' ≡ just (zero + block x y)
   ^-sucₗ-pred x nothing = congS just (+-introᵣ (sym (block-annihᵣ _)))
-  ^-sucₗ-pred {y} x (just y-1) =
+  ^-sucₗ-pred {y} x (just y') =
     congS just
       ( block (zero + x) y ≡⟨ cong₂ block (+-idₗ _) refl ⟩
         block x y          ≡⟨ sym (+-idₗ _) ⟩
@@ -825,10 +829,10 @@ module E where
   block-infᵣᴾ {x} xᴾ =
     Pred-path
       (congS just
-        ( zero + x + block (suc x) inf * suc (suc x) ≡⟨ +-idₗ _ ⟩+⟨ block-infᵣ x ⟩*⟨ refl ⟩
-          x + inf * suc (suc x)                      ≡⟨ +-pushᵣ (*-sucᵣ _ _) ⟩
-          x + inf + inf * suc x                      ≡⟨ +-annihᵣ _ ⟩+⟨ refl ⟩
-          inf + inf * suc x                          ≡⟨ +-annihₗ _ ⟩
+        ( zero + x + block (suc x) inf × suc (suc x) ≡⟨ +-idₗ _ ⟩+⟨ block-infᵣ x ⟩×⟨ refl ⟩
+          x + inf × suc (suc x)                      ≡⟨ +-pushᵣ (×-sucᵣ _ _) ⟩
+          x + inf + inf × suc x                      ≡⟨ +-annihᵣ _ ⟩+⟨ refl ⟩
+          inf + inf × suc x                          ≡⟨ +-annihₗ _ ⟩
           inf                                        ∎))
 
   transᴾ :
@@ -837,10 +841,10 @@ module E where
     PathP (λ i → Pred (trans p q i)) xᴾ zᴾ
   transᴾ pᴾ qᴾ = Pred-path ((λ i → pᴾ i .pred) ∙ (λ i → qᴾ i .pred))
 
-  embed-isPred : ∀ x x-1 → x .pred ≡ x-1 → IsPred x-1 (embed x)
+  embed-isPred : ∀ x x' → x .pred ≡ x' → IsPred x' (embed x)
   embed-isPred x nothing p = subst (IsPred _) (sym (embed-zero x p)) nothing
-  embed-isPred x (just x-1) p =
-    subst (IsPred _) (sym (embed-suc x x-1 p)) (just x-1)
+  embed-isPred x (just x') p =
+    subst (IsPred _) (sym (embed-suc x x' p)) (just x')
 
   embedᴾ : ∀ x → Pred (embed x)
   embedᴾ x .pred = x .pred
@@ -850,12 +854,12 @@ module E where
   embed-zeroᴾ x p = Pred-path p
 
   embed-sucᴾ :
-    ∀ {x-1} x x-1ᴾ p →
-    PathP (λ i → Pred (embed-suc x x-1 p i)) (embedᴾ x) (sucᴾ x-1ᴾ)
-  embed-sucᴾ {x-1} x x-1ᴾ p = Pred-path
+    ∀ {x'} x x'ᴾ p →
+    PathP (λ i → Pred (embed-suc x x' p i)) (embedᴾ x) (sucᴾ x'ᴾ)
+  embed-sucᴾ {x'} x x'ᴾ p = Pred-path
     ( x .pred           ≡⟨ p ⟩
-      just x-1          ≡⟨ congS just (sym (+-idₗ _)) ⟩
-      just (zero + x-1) ∎)
+      just x'          ≡⟨ congS just (sym (+-idₗ _)) ⟩
+      just (zero + x') ∎)
 \end{code}
 \begin{code}
   ⟦_⟧ᴾ : ∀ x → Pred x
@@ -871,28 +875,28 @@ module E where
   ⟦ zero ⟧ᴾ = zeroᴾ
   ⟦ +-idₗ x i ⟧ᴾ = +-idₗᴾ ⟦ x ⟧ᴾ i
 
-  ⟦ x * y ⟧ᴾ = ⟦ x ⟧ᴾ *ᴾ ⟦ y ⟧ᴾ
-  ⟦ *-assoc x y z i ⟧ᴾ = *-assocᴾ ⟦ x ⟧ᴾ ⟦ y ⟧ᴾ ⟦ z ⟧ᴾ i
-  ⟦ *-comm x y i ⟧ᴾ = *-commᴾ ⟦ x ⟧ᴾ ⟦ y ⟧ᴾ i
+  ⟦ x × y ⟧ᴾ = ⟦ x ⟧ᴾ ×ᴾ ⟦ y ⟧ᴾ
+  ⟦ ×-assoc x y z i ⟧ᴾ = ×-assocᴾ ⟦ x ⟧ᴾ ⟦ y ⟧ᴾ ⟦ z ⟧ᴾ i
+  ⟦ ×-comm x y i ⟧ᴾ = ×-commᴾ ⟦ x ⟧ᴾ ⟦ y ⟧ᴾ i
   ⟦ one ⟧ᴾ = oneᴾ
-  ⟦ *-idₗ x i ⟧ᴾ = *-idₗᴾ ⟦ x ⟧ᴾ i
-  ⟦ *-distₗ-+ x y z i ⟧ᴾ = *-distₗ-+ᴾ ⟦ x ⟧ᴾ ⟦ y ⟧ᴾ ⟦ z ⟧ᴾ i
-  ⟦ *-annihₗ x i ⟧ᴾ = *-annihₗᴾ ⟦ x ⟧ᴾ i
+  ⟦ ×-idₗ x i ⟧ᴾ = ×-idₗᴾ ⟦ x ⟧ᴾ i
+  ⟦ ×-distₗ-+ x y z i ⟧ᴾ = ×-distₗ-+ᴾ ⟦ x ⟧ᴾ ⟦ y ⟧ᴾ ⟦ z ⟧ᴾ i
+  ⟦ ×-annihₗ x i ⟧ᴾ = ×-annihₗᴾ ⟦ x ⟧ᴾ i
 
   ⟦ x ^ y ⟧ᴾ = ⟦ x ⟧ᴾ ^ᴾ ⟦ y ⟧ᴾ
-  ⟦ ^-assocᵣ-* x y z i ⟧ᴾ = ^-assocᵣ-*ᴾ ⟦ x ⟧ᴾ ⟦ y ⟧ᴾ ⟦ z ⟧ᴾ i
+  ⟦ ^-assocᵣ-× x y z i ⟧ᴾ = ^-assocᵣ-×ᴾ ⟦ x ⟧ᴾ ⟦ y ⟧ᴾ ⟦ z ⟧ᴾ i
   ⟦ ^-idᵣ x i ⟧ᴾ = ^-idᵣᴾ ⟦ x ⟧ᴾ i
   ⟦ ^-distᵣ-+ x y z i ⟧ᴾ = ^-distᵣ-+ᴾ ⟦ x ⟧ᴾ ⟦ y ⟧ᴾ ⟦ z ⟧ᴾ i
   ⟦ ^-annihᵣ x i ⟧ᴾ = ^-annihᵣᴾ ⟦ x ⟧ᴾ i
-  ⟦ ^-distₗ-* x y z i ⟧ᴾ = ^-distₗ-*ᴾ ⟦ x ⟧ᴾ ⟦ y ⟧ᴾ ⟦ z ⟧ᴾ i
+  ⟦ ^-distₗ-× x y z i ⟧ᴾ = ^-distₗ-×ᴾ ⟦ x ⟧ᴾ ⟦ y ⟧ᴾ ⟦ z ⟧ᴾ i
   ⟦ ^-annihₗ x i ⟧ᴾ = ^-annihₗᴾ ⟦ x ⟧ᴾ i
 
   ⟦ block x y ⟧ᴾ = blockᴾ ⟦ x ⟧ᴾ ⟦ y ⟧ᴾ
-  ⟦ block-assocᵣ-* x y z i ⟧ᴾ = block-assocᵣ-*ᴾ ⟦ x ⟧ᴾ ⟦ y ⟧ᴾ ⟦ z ⟧ᴾ i
+  ⟦ block-assocᵣ-× x y z i ⟧ᴾ = block-assocᵣ-×ᴾ ⟦ x ⟧ᴾ ⟦ y ⟧ᴾ ⟦ z ⟧ᴾ i
   ⟦ block-idᵣ x i ⟧ᴾ = block-idᵣᴾ ⟦ x ⟧ᴾ i
   ⟦ block-distᵣ-+ x y z i ⟧ᴾ = block-distᵣ-+ᴾ ⟦ x ⟧ᴾ ⟦ y ⟧ᴾ ⟦ z ⟧ᴾ i
   ⟦ block-annihᵣ x i ⟧ᴾ = block-annihᵣᴾ ⟦ x ⟧ᴾ i
-  ⟦ block-distₗ-* x y z i ⟧ᴾ = block-distₗ-*ᴾ ⟦ x ⟧ᴾ ⟦ y ⟧ᴾ ⟦ z ⟧ᴾ i
+  ⟦ block-distₗ-× x y z i ⟧ᴾ = block-distₗ-×ᴾ ⟦ x ⟧ᴾ ⟦ y ⟧ᴾ ⟦ z ⟧ᴾ i
   ⟦ block-annihₗ x i ⟧ᴾ = block-annihₗᴾ ⟦ x ⟧ᴾ i
   ⟦ ^-sucₗ x y i ⟧ᴾ = ^-sucₗᴾ ⟦ x ⟧ᴾ ⟦ y ⟧ᴾ i
 
@@ -903,7 +907,7 @@ module E where
   ⟦ trans p q i ⟧ᴾ = transᴾ (cong ⟦_⟧ᴾ p) (cong ⟦_⟧ᴾ q) i
   ⟦ embed x ⟧ᴾ = embedᴾ x
   ⟦ embed-zero x p i ⟧ᴾ = embed-zeroᴾ x p i
-  ⟦ embed-suc x x-1 p i ⟧ᴾ = embed-sucᴾ x ⟦ x-1 ⟧ᴾ p i
+  ⟦ embed-suc x x' p i ⟧ᴾ = embed-sucᴾ x ⟦ x' ⟧ᴾ p i
 \end{code}
 \begin{code}
   predᴱ : Expr → Maybe Expr
@@ -919,9 +923,9 @@ module E where
   pred-suc : ∀ x → predᴱ (suc x) ≡ just x
   pred-suc x = congS just (+-idₗ _)
 
-  unpred-pred-pred : ∀ {x x-1} → IsPred x-1 x → unpred x-1 ≡ x
+  unpred-pred-pred : ∀ {x x'} → IsPred x' x → unpred x' ≡ x
   unpred-pred-pred nothing = refl
-  unpred-pred-pred (just x-1) = refl
+  unpred-pred-pred (just x') = refl
 
   unpred-pred : ∀ x → unpred (predᴱ x) ≡ x
   unpred-pred x = unpred-pred-pred (isPredᴱ x)
@@ -941,12 +945,12 @@ module E where
   interp-embed x i .pred = x .pred
 
   embed-interp : ∀ x → embed (interp x) ≡ x
-  embed-interp-pred : ∀ {x x-1} → IsPred x-1 x → embed (interp x) ≡ x
+  embed-interp-pred : ∀ {x x'} → IsPred x' x → embed (interp x) ≡ x
 
   embed-interp x = embed-interp-pred (isPredᴱ x)
   embed-interp-pred nothing = embed-zero (interp zero) refl
-  embed-interp-pred (just x-1) =
-    embed-suc (interp (suc x-1)) x-1 (congS just (+-idₗ _))
+  embed-interp-pred (just x') =
+    embed-suc (interp (suc x')) x' (congS just (+-idₗ _))
 
   ExprIsoNExpr : Iso Expr NExpr
   ExprIsoNExpr = iso interp embed interp-embed embed-interp
@@ -966,30 +970,30 @@ embed-pred : Maybe Conat → Maybe Expr
 embed x = E.embed (embedᴺ x)
 embedᴺ x .pred = embed-pred (x .pred)
 embed-pred nothing = nothing
-embed-pred (just x-1) = just (embed x-1)
+embed-pred (just x') = just (embed x')
 
 interp : Expr → Conat
 interp-pred : Maybe Expr → Maybe Conat
 
 interp x .pred = interp-pred (predᴱ x)
 interp-pred nothing = nothing
-interp-pred (just x-1) = just (interp x-1)
+interp-pred (just x') = just (interp x')
 
 interp-embed : ∀ x → interp (embed x) ≡ x
-interp-embed-pred : ∀ x-1 → interp-pred (embed-pred x-1) ≡ x-1
+interp-embed-pred : ∀ x' → interp-pred (embed-pred x') ≡ x'
 
 interp-embed x i .pred = interp-embed-pred (x .pred) i
 interp-embed-pred nothing = refl
-interp-embed-pred (just x-1) = cong just (interp-embed x-1)
+interp-embed-pred (just x') = cong just (interp-embed x')
 
 embed-interp : ∀ x → embed (interp x) ≡ x
 embed-interpᴺ : ∀ x → embedᴺ (interp x) ≡ E.interp x
-embed-interp-pred : ∀ x-1 → embed-pred (interp-pred x-1) ≡ x-1
+embed-interp-pred : ∀ x' → embed-pred (interp-pred x') ≡ x'
 
 embed-interp x = E.trans (cong E.embed (embed-interpᴺ x)) (E.embed-interp x)
 embed-interpᴺ x i .pred = embed-interp-pred (predᴱ x) i
 embed-interp-pred nothing = refl
-embed-interp-pred (just x-1) = cong just (embed-interp x-1)
+embed-interp-pred (just x') = cong just (embed-interp x')
 \end{code}
 \begin{code}
 ExprIsoConat : Iso Expr Conat
@@ -1009,9 +1013,9 @@ conatStrPredConat =
 \begin{code}[hide]
   where
   subst-Maybe :
-    ∀ x-1 → subst Maybe (isoToPath ExprIsoConat) x-1 ≡ interp-pred x-1
+    ∀ x' → subst Maybe (isoToPath ExprIsoConat) x' ≡ interp-pred x'
   subst-Maybe nothing = refl
-  subst-Maybe (just x-1) = cong just (transportRefl _)
+  subst-Maybe (just x') = cong just (transportRefl _)
 
 open ConatStrPred conatStrPredConat
   renaming (isSetA to isSetConat; conatStr to conatStrConat) public
