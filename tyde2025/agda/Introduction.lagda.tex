@@ -4,10 +4,6 @@
 module Introduction where
 
 open import Cubical.Foundations.Prelude
-open import Cubical.Data.Maybe using (Maybe; nothing; just)
-
-postulate
-  ADMIT : ∀ {ℓ} {A : Type ℓ} → A
 \end{code}
 In dependent type theory, natural numbers are represented as an inductive type
 with two constructors, one for zero and the other for the successor of a natural
@@ -17,8 +13,8 @@ module _ where private
 \end{code}
 \begin{code}
   data ℕ : Type where
-    zero  : ℕ
-    suc   : ℕ → ℕ
+    zero  :      ℕ
+    suc   : ℕ →  ℕ
 \end{code}
 Categorically, natural numbers are the initial object in the category of
 algebras over the $\mathbb{1} + {-}$ (or the ``Maybe'') endofunctor. So an
@@ -28,6 +24,10 @@ constructor containing a Maybe of a natural number:
 module _ where private
 \end{code}
 \begin{code}
+  data Maybe (A : Type) : Type where
+    nothing  :      Maybe A
+    just     : A →  Maybe A
+
   data ℕ : Type where
     con : Maybe ℕ → ℕ
 \end{code}
@@ -36,6 +36,9 @@ We can dualize natural numbers to get \emph{conatural numbers}, which are the
 terminal object in the category of coalgebras over the $\mathbb{1} + {-}$
 endofunctor. In Agda, it is a coinductive record type with one destructor into
 Maybe of conatural numbers:
+\begin{code}[hide]
+open import Cubical.Data.Maybe using (Maybe; nothing; just)
+\end{code}
 \begin{code}
 record ℕ∞ : Type where
   coinductive
@@ -44,15 +47,12 @@ record ℕ∞ : Type where
 \end{code}
 \begin{code}[hide]
 open ℕ∞ public
-
-pred-inj : ∀ {x y} → pred x ≡ pred y → x ≡ y
-pred (pred-inj p i) = p i
 \end{code}
-This destructor is the predecessor function which either fails or gives us
+This destructor is the predecessor function which either fails or returns
 another conatural number.
 
 We can define elements of \AgdaDatatype{ℕ∞} by copattern matching, that is, we
-specify what the predecessor is for a particular element. As examples, \AgdaFunction{zero} does
+specify what the predecessor is for a particular element. As examples, zero does
 not have a predecessor:
 \begin{code}
 zero : ℕ∞
@@ -74,9 +74,9 @@ copattern matching (\AgdaField{pred}), under only constructors
 (\AgdaInductiveConstructor{just}). Agda uses guardedness to check whether a
 corecursive defintion is productive. A definition is \emph{productive} when one
 can compute the application of any finite amount of destructors on a corecursive
-value in a finite amount of steps. Guardedness is sufficient to prove
-productivity but it is not necessary, so Agda is too conservative in that
-regard.
+value in a finite amount of steps. Guardedness is sufficient to show
+productivity but it is not necessary, thus Agda is too conservative about which
+corecursive definitions it allows. (TODO: citations)
 
 The conatural numbers can represent all natural numbers and an extra element for
 infinity, however, it is not constructively isomorphic to $\mathbb{N} +
@@ -106,121 +106,45 @@ follows:
 As a result of this restriction, we cannot define a function that decides if an
 element is equal to \AgdaFunction{∞}.
 
-We can define addition of conatural numbers by guarded corecursion, using a
-helper function \AgdaFunction{+-match} to pattern match on the predecessor of
-$x$:
-\begin{code}[hide]
-infixl 6 _+_
-mutual
-\end{code}
-\begin{code}
-  _+_ : ℕ∞ → ℕ∞ → ℕ∞
-  pred (x + y) = +-match (pred x) y
-
-  +-match : Maybe ℕ∞ → ℕ∞ → Maybe ℕ∞
-  +-match nothing    y = pred y
-  +-match (just x')  y = just (x' + y)
-\end{code}
-In the first case, we say that the predecessor of $0 + y$ is the predecessor of
-$y$. In the second case, which is when $x$ is non-zero, we say that the
-predecessor of $x + y$ is $x' + y$ where $x'$ is the predecessor of $x$.
-
-If we naïvely try define multiplication by using addition, then Agda will reject
-it, unless we use the unsafe \AgdaKeyword{TERMINATING} pragma:
-\begin{code}[hide]
-infixl 7 _×_
-mutual
-\end{code}
-\begin{code}
-  {-# TERMINATING #-}
-  _×_ : ℕ∞ → ℕ∞ → ℕ∞
-  pred (x × y) = ×-match (pred x) y (pred y)
-
-  ×-match :
-    Maybe ℕ∞ → ℕ∞ → Maybe ℕ∞ → Maybe ℕ∞
-  ×-match nothing    y y'         = nothing
-  ×-match (just x')  y nothing    = nothing
-  ×-match (just x')  y (just y')  = just (y' + x' × y)
-\end{code}
-Here we match on both $x$ and $y$. If neither are zero, then the predecessor of
-$x × y$ is $y' + x' × y$, where $x - 1 = x'$ and $y - 1 = y'$. This definition
-is productive but not guarded, as the recursive call to \AgdaFunction{\_×\_} is
-under \AgdaFunction{\_+\_}, which is not a constructor.
-
-We can prove some of the usual properties of addition over the conatural
-numbers, like the associativity of the addition.
-\begin{code}[hide]
-mutual
-\end{code}
-\begin{code}
-  +-assoc : ∀ x y z → (x + y) + z ≡ x + (y + z)
-  pred (+-assoc x y z i) = +-assoc-match (pred x) y z i
-
-  +-assoc-match :
-    ∀ x' y z →
-    +-match (+-match x' y) z ≡ +-match x' (y + z)
-  +-assoc-match nothing    y z = refl
-  +-assoc-match (just x')  y z = cong just (+-assoc x' y z)
-\end{code}
-This is again a nice guarded corecusion and Agda happily accepts this as a
-proof. However, the proof of commutativity of addition below is rejected without
-the \AgdaKeyword{TERMINATING} pragma. Let us assume we have this equation
-available to use in the proof of commutativity.
-\begin{code}[hide]
-postulate
-\end{code}
-\begin{code}
-  +-suc : ∀ x y → x + suc y ≡ suc (x + y)
-\end{code}
-
-\begin{code}[hide]
-mutual
-\end{code}
-\begin{code}
-  {-# TERMINATING #-}
-  +-comm : ∀ x y → x + y ≡ y + x
-  pred (+-comm x y i) =
-    +-comm-match x (pred x) y (pred y) refl refl i
-
-  +-comm-match :
-    ∀ x x' y y' → pred x ≡ x' → pred y ≡ y' →
-    +-match x' y ≡ +-match y' x
-  +-comm-match x (just x') y (just y') px py =
-    cong just
-      (  x' + y         ≡⟨ cong (x' +_) (pred-inj py) ⟩
-         x' + suc y'    ≡⟨ +-suc x' y' ⟩
-         suc (x' + y')  ≡⟨ cong suc (+-comm x' y') ⟩
-         suc (y' + x')  ≡⟨ sym (+-suc y' x') ⟩
-         y' + suc x'    ≡⟨ cong (y' +_) (pred-inj (sym px)) ⟩
-         y' + x         ∎)
-\end{code}
-\begin{code}[hide]
-  +-comm-match x nothing y nothing p q = ADMIT
-  +-comm-match x nothing y (just y') p q = ADMIT
-  +-comm-match x (just x') y nothing p q = ADMIT
-\end{code}
-Same problem as the definition of multiplication above, the definition is
-productive but not guarded, since the equational reasoning contains the
-transitivity operation which is not a constructor.
-
 Our contribution in this paper is to prove that the conatural numbers form an
-exponential semiring by guarded corecursion. Along the way, we show three
-different methods starting out with the formalisation, showcasing some of the
-difficulties and problems. The last method we show is the one we use to prove
-that the conatural numbers form an exponential semiring.
+exponential commutative semiring by guarded corecursion, where an
+\emph{exponential commutative semiring} is a commutative semiring with a binary
+operation for exponentiation satisfying the following equations:
+\begin{align*}
+  x^{yz} &= (x^y)^z & x^{y+z} &= x^y x^z & (xy)^z &= x^z y^z \\
+  x^1 &= x & x^0 &= 1 & 1^x &= 1
+\end{align*}
 
-Section 2 ...
+In Section~\ref{sec:problem}, we show how to define addition on conatural
+numbers and prove that it is associative, at the same time, we show that if we
+naïvely define multiplication and prove that addition is commutative, they get
+rejected by Agda because they are not guarded. In the next sections, we show
+three ways to avoid this issue, using multiplication and commutativity of
+addition as running examples. In section~\ref{sec:direct}, we show how to
 
-Section 3 ...
+In section~\ref{sec:dsl}, we use Nils Anders Danielsson's
+method~\cite{danielsson-beating}
 
-Section 4 ...
+In section~\ref{sec:quotiented}, we adapt the previous method to Cubical Agda,
+making use of a mixed higher-inductive--coinductive type and univalence to
+define and prove all the operations and equations of an exponential commutative
+semiring at once.
 
 \subsection{Formalization}
 
-For our formalisation we are going to use Cubical Agda, so the bisimulation
-relation over conatural numbers coincide with equality. With that, for example,
-we can define the injectivity proof for the \AgdaField{pred} destructor the
-following way:
+In vanilla Agda, it is not possible to prove non-trivial equations about
+conatural numbers using the Martin-Löf identity type (TODO: cite), one needs to
+either postulate the coinduction principle, or instead use a coinductively
+defined equivalence relation, in which case one would need to prove that the
+operations preserve that relation. As such, in this paper we use Cubical Agda,
+where the coinduction principle and other equations can be directly proved
+thanks to the interaction between copattern matching and the
+interval~\cite{vezzosi-cubical}. As an example, we show the proof that the
+predecessor function is injective:
+\begin{code}
+pred-inj : ∀ {x y} → pred x ≡ pred y → x ≡ y
+pred (pred-inj p i) = p i
+\end{code}
 
 \subsection{Related work}
 

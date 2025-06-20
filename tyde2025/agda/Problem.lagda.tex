@@ -1,0 +1,113 @@
+\begin{code}[hide]
+{-# OPTIONS --cubical --guardedness --no-import-sorts --no-postfix-projections #-}
+
+module Problem where
+
+open import Cubical.Foundations.Prelude
+open import Cubical.Data.Maybe using (Maybe; nothing; just; pred-inj)
+open import Introduction
+
+postulate
+  ADMIT : ∀ {ℓ} {A : Type ℓ} → A
+\end{code}
+In this section, we attempt to define operations and prove equations in the most
+straightforward way with corecursion, and show that some of these fail to be
+guarded.
+
+We can define addition of conatural numbers by guarded corecursion, using a
+helper function \AgdaFunction{+-match} to pattern match on the predecessor of
+$x$:
+\begin{code}[hide]
+infixl 6 _+_
+mutual
+\end{code}
+\begin{code}
+  _+_ : ℕ∞ → ℕ∞ → ℕ∞
+  pred (x + y) = +-match (pred x) y
+
+  +-match : Maybe ℕ∞ → ℕ∞ → Maybe ℕ∞
+  +-match nothing    y = pred y
+  +-match (just x')  y = just (x' + y)
+\end{code}
+In the first case, we say that the predecessor of $0 + y$ is the predecessor of
+$y$. In the second case, which is when $x$ is non-zero, we say that the
+predecessor of $x + y$ is $x' + y$ where $x'$ is the predecessor of $x$.
+
+If we naïvely try to define multiplication by using addition, then Agda will
+reject it, unless we use the unsafe \AgdaKeyword{TERMINATING} pragma:
+\begin{code}[hide]
+infixl 7 _×_
+mutual
+\end{code}
+\begin{code}
+  {-# TERMINATING #-}
+  _×_ : ℕ∞ → ℕ∞ → ℕ∞
+  pred (x × y) = ×-match (pred x) y (pred y)
+
+  ×-match :
+    Maybe ℕ∞ → ℕ∞ → Maybe ℕ∞ → Maybe ℕ∞
+  ×-match nothing    y y'         = nothing
+  ×-match (just x')  y nothing    = nothing
+  ×-match (just x')  y (just y')  = just (y' + x' × y)
+\end{code}
+Here we match on both $x$ and $y$. If neither are zero, then the predecessor of
+$x × y$ is $y' + x' × y$, where $x - 1 = x'$ and $y - 1 = y'$. This definition
+is rejected by Agda, because it is not guarded (even though it is productive),
+as the recursive call to \AgdaFunction{\_×\_} is under \AgdaFunction{\_+\_},
+which is not a constructor.
+
+We can also prove some of the usual properties of addition over the conatural
+numbers, like the associativity of the addition.
+\begin{code}[hide]
+mutual
+\end{code}
+\begin{code}
+  +-assoc : ∀ x y z → (x + y) + z ≡ x + (y + z)
+  pred (+-assoc x y z i) = +-assoc-match (pred x) y z i
+
+  +-assoc-match :
+    ∀ x' y z →
+    +-match (+-match x' y) z ≡ +-match x' (y + z)
+  +-assoc-match nothing    y z = refl
+  +-assoc-match (just x')  y z = cong just (+-assoc x' y z)
+\end{code}
+This is again a nice guarded corecusion and Agda happily accepts this as a
+proof. However, the proof of commutativity of addition below is rejected without
+the \AgdaKeyword{TERMINATING} pragma. Let us assume we have this equation
+available to use in the proof of commutativity.
+\begin{code}[hide]
+postulate
+\end{code}
+\begin{code}
+  +-suc : ∀ x y → x + suc y ≡ suc (x + y)
+\end{code}
+
+\begin{code}[hide]
+mutual
+\end{code}
+\begin{code}
+  {-# TERMINATING #-}
+  +-comm : ∀ x y → x + y ≡ y + x
+  pred (+-comm x y i) =
+    +-comm-match x (pred x) y (pred y) refl refl i
+
+  +-comm-match :
+    ∀ x x' y y' → pred x ≡ x' → pred y ≡ y' →
+    +-match x' y ≡ +-match y' x
+  +-comm-match x (just x') y (just y') px py =
+    cong just
+      (  x' + y         ≡⟨ cong (x' +_) (pred-inj py) ⟩
+         x' + suc y'    ≡⟨ +-suc x' y' ⟩
+         suc (x' + y')  ≡⟨ cong suc (+-comm x' y') ⟩
+         suc (y' + x')  ≡⟨ sym (+-suc y' x') ⟩
+         y' + suc x'    ≡⟨ cong (y' +_) (pred-inj (sym px)) ⟩
+         y' + x         ∎)
+\end{code}
+\begin{code}[hide]
+  +-comm-match x nothing y nothing p q = ADMIT
+  +-comm-match x nothing y (just y') p q = ADMIT
+  +-comm-match x (just x') y nothing p q = ADMIT
+\end{code}
+Same problem as the definition of multiplication above, the definition is
+productive but not guarded, since the equational reasoning contains the
+transitivity operation which is not a constructor.

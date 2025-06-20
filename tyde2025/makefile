@@ -12,5 +12,5 @@ latex/%.tex: agda/%.lagda.tex
 
 clean:
 	rm -f *.aux *.bbl *.blg *.fdb_latexmk *.fls *.log *.out *.pdf *.ptb *.xcp
-	rm -f agda/**/*.agdai
-	rm -f latex/**/*.tex
+	rm -f agda/*.agdai agda/*/*.agdai agda/*/*/*.agdai
+	rm -f latex/*.tex latex/*/*.tex latex/*/*/*.tex

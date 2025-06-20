@@ -7,8 +7,19 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Data.Maybe using (Maybe; nothing; just)
 import Cubical.Data.Nat as ℕ
 open ℕ using (ℕ)
-open import Introduction using (ℕ∞; pred; suc; _+_; +-match)
+open import Introduction using (ℕ∞; pred; suc)
+open import Problem using (_+_; +-match)
 \end{code}
+In this section, we show some examples of how to do corecursion without running
+into the guardedness issue.
+
+For multiplication, we define the operation for positive conats first
+
+$x\times'y = (x+1)\times(y+1)-1$
+
+we can do multiplication from scratch instead of reusing
+addition. Here we define a helper function that keeps track of the original
+\AgdaBound{y}.
 \begin{code}[hide]
 infixl 7 _×'_
 mutual
@@ -32,6 +43,9 @@ mutual
     nothing
 \end{code}
 
+e.g. $(3,2) \to (3,1) \to (3,0) \to (2,2) \to \dots \to (0,1) \to (0,0)$ is $4
+\times 3 - 1 = 11$ steps
+
 \begin{code}[hide]
 infixl 7 _×_
 mutual
@@ -46,6 +60,8 @@ mutual
   ×-match (just x')  (just y')  = just (x' ×' y')
 \end{code}
 
+To prove commutativity of addition, we introduce an operation for addition of an
+inductive natural number to a conatural number:
 \begin{code}
 infixl 6 _+L_
 _+L_ : ℕ → ℕ∞ → ℕ∞
@@ -73,5 +89,7 @@ mutual
     l ≡ r
   +-comm-helper₁-match n x nothing y nothing px py le re = {!!}
   +-comm-helper₁-match n x nothing y (just y') px py le re = {!!}
-  +-comm-helper₁-match n x (just x') y y' px py le re = {!!}
+  +-comm-helper₁-match n x (just x') y nothing px py le re = {!!}
+  +-comm-helper₁-match n x (just x') y (just y') px py le re =
+    {!!}
 \end{code}

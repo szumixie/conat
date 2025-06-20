@@ -67,6 +67,11 @@ conference title from your rights confirmation email}{June 03--05,
 \newunicodechar{≋}{\ensuremath{≋}}
 \newunicodechar{∙}{\ensuremath{∙}}
 \newunicodechar{↺}{\ensuremath{↺}}
+\newunicodechar{ₗ}{\ensuremath{_L}}
+\newunicodechar{ᵣ}{\ensuremath{_R}}
+\newunicodechar{ᴺ}{\ensuremath{_N}}
+\newunicodechar{ᴱ}{\ensuremath{_E}}
+\newunicodechar{ᴾ}{\ensuremath{_P}}
 
 %%
 %% end of the preamble, start of the body of the document source.
@@ -159,24 +164,27 @@ conference title from your rights confirmation email}{June 03--05,
 %% information and builds the first part of the formatted document.
 \maketitle
 
-\section{Introduction}
+\section{Introduction}\label{sec:intro}
 \input{latex/Introduction}
+
+\section{Naïve corecursion}\label{sec:problem}
+\input{latex/Problem}
 
 % TERMINATION CHECKING ERROR STUFF
 
-\section{"You don't want to do this" version}
+\section{"You don't want to do this" version}\label{sec:direct}
 \input{latex/Direct}
 
 % Proving everything directly
 % using complicated states
 
-\section{My version (up to comm+)}
+\section{My version (up to comm+)}\label{sec:dsl}
 \input{latex/CompBisim}
 
 % Compositionality
 % Neil's method: Define a DSL to make proving compositional.
 
-\section{Good version}
+\section{Good version}\label{sec:quotiented}
 \input{latex/Quotiented}
 
 % Mixed inductive and coinductive type

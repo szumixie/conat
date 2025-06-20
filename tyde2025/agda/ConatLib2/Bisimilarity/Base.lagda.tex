@@ -21,7 +21,7 @@ private variable
   n k : A
 \end{code}
 
-The second method defines a domain specific language (via \cite{danielsson-beating}) to make
+We define a domain specific language (via \cite{danielsson-beating}) to make
 the equational reasoning possible again by making the reflexivity, symmetry and
 transitivity properties constructors of this language including the possibility
 to use corecursive steps in a proof.
@@ -61,6 +61,8 @@ data _≋_ n k where
 \end{code}
 
 We define the predecessor over the new \AgdaDatatype{\_≋\_} relation.
+The definition itself is too long to be included here. It can be viewed
+in our repository.
 
 \begin{code}
 `pred : n ≋ k → Maybe~ _≋_ (pred n) (pred k)

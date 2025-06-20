@@ -19,7 +19,11 @@ open import Cubical.Data.Empty
 open import Cubical.Data.Unit
 \end{code}
 
-In this section we show
+In this section we show the usage of the domain specific language and
+equational reasoning to prove the commutativity property of addition
+over conatural numbers. Using the definition of \AgdaFunction{\_+\_}
+defined in the Introduction \textbf{HIVATKOZÁST BESZÚRNI RÁ?}, the following properties can be proven
+directly without the language.
 
 \begin{code}[hide]
 unpred∘pred : ∀{n} → unpred (pred n) ≡ n
@@ -27,22 +31,41 @@ pred (unpred∘pred {n} i) = pred n
 
 unpred∘just : ∀{n} → unpred (just n) ≡ suc n
 pred (unpred∘just {n} i) = just n
-
+\end{code}
+\begin{code}
 pred-inj : ∀{n k} → pred n ≡ pred k → n ≡ k
+\end{code}
+\begin{code}[hide]
 pred (pred-inj e i) = e i
-
-idl+ : (n : ℕ∞) → zero + n ≡ n
+\end{code}
+\begin{code}[hide]
+idl+ : ∀ n → zero + n ≡ n
 pred (idl+ n i) = pred n
-
+\end{code}
+\begin{code}
 idr+ : ∀ n → n + zero ≡ n
+\end{code}
+\begin{code}[hide]
 pred (idr+ n i) with pred n
 ... | nothing = nothing
 ... | just n' = just (idr+ n' i)
-
+\end{code}
+\begin{code}
 sucl+ : ∀ n k → suc n + k ≡ suc (n + k)
+\end{code}
+\begin{code}[hide]
 pred (sucl+ n k i) = just (n + k)
+\end{code}
 
+The addition is defined by pattern matching on the predecessor of the
+first parameter, so we cannot easily handle the case where the \AgdaFunction{suc}
+is on the second parameter. This is going to be the first property on which
+we are going to have to use our language.
+
+\begin{code}
 `sucr+ : ∀ n k → n + suc k `≋ suc (n + k)
+\end{code}
+\begin{code}[hide]
 `prove (`sucr+ n k) with pred n | inspect pred n
 ... | nothing | reveal eq1 = cong-just (
   k
@@ -60,19 +83,41 @@ pred (sucl+ n k i) = just (n + k)
     `≡⟨ cong (_+ k) (sym (pred-inj eq1)) ⟩
   n + k `∎
   )
+\end{code}
+
+For brevity we omit the proofs here. However, they are formalised and available in our repository. \textbf{??? LINK A REPÓRA?}
+
+After proving \AgdaFunction{`sucr+}, we still need to obtain the proof over equality.
+This is simply done by using the \AgdaFunction{run} function to turn the language's proof
+into an equality.
+
+\begin{code}
 sucr+ : ∀ n k → n + suc k ≡ suc (n + k)
 sucr+ n k = run (`sucr+ n k)
-
-assoc+ : (a b c : ℕ∞) → (a + b) + c ≡ a + (b + c)
+\end{code}
+\begin{code}[hide]
+assoc+ : ∀ a b c → (a + b) + c ≡ a + (b + c)
 pred (assoc+ a b c i) with pred a
 ... | just x = just (assoc+ x b c i)
 ... | nothing = +-match (pred b) c
+\end{code}
 
-`comm+ : (a b : ℕ∞) → a + b `≋ b + a
+With everything set up, we are now able to prove commutativity. One of the advantages
+of this method is that the proof is going to have nearly the same structure as the proof
+for the same property in Introduction \textbf{HIVATKOZÁST BESZÚRNI RÁ?}. However, now the definition is going to
+compile without any unsafe flags. We omit the uninteresting branches of the proof, namely when either
+\AgdaBound{a} or \AgdaBound{b} is \AgdaFunction{zero}.
+
+\begin{code}
+`comm+ : ∀ a b → a + b `≋ b + a
 `comm+-match : ∀ a a' b b' → a' ≡ pred a → b' ≡ pred b → Maybe~ _≋_ (+-match a' b) (+-match b' a)
+\end{code}
+\begin{code}[hide]
 `comm+-match a nothing b nothing eq1 eq2 = subst2 (Maybe~ _≋_) eq2 eq1 nothing-refl
 `comm+-match a nothing b (just b') eq1 eq2 = subst (λ x → Maybe~ _≋_ x (just (b' + a))) eq2 (cong-just (`path (sym (idr+ b')) `∙ `path (cong (b' +_) (pred-inj eq1))))
 `comm+-match a (just a') b nothing eq1 eq2 = subst (Maybe~ _≋_ (just (a' + b))) eq1 (cong-just (`path (cong (a' +_) (pred-inj (sym eq2))) `∙ `path (idr+ a')))
+\end{code}
+\begin{code}
 `comm+-match a (just a') b (just b') eq1 eq2 = cong-just (
   a' + b
     `≡⟨ cong (a' +_) (pred-inj (sym eq2)) ⟩
@@ -87,4 +132,20 @@ pred (assoc+ a b c i) with pred a
   b' + a `∎
   )
 `prove (`comm+ a b) = `comm+-match a (pred a) b (pred b) refl refl
+\end{code}
+
+The only change in this proof with respect to the one in the Introduction is that
+we need to switch up two steps. First, we need to use commutativity first to switch the
+operands of \AgdaFunction{\_+\_} before making \AgdaFunction{suc} the outermost function.
+This is because we do not have the \AgdaFunction{cong} property in our language.
+However, this problem is easily solvable by just adding it to the language and
+prove that it behaves the same way as the \AgdaFunction{cong} function in Cubical Agda itself.
+
+Note that the proof only exists in our language so again we have to convert
+it to make it use the equality using the \AgdaFunction{run} function the same
+way as we did with the \AgdaFunction{sucr+} property.
+
+\begin{code}
+comm+ : ∀ a b → a + b ≡ b + a
+comm+ a b = run (`comm+ a b)
 \end{code}
