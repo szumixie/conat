@@ -48,9 +48,10 @@ mutual
   _×'ᴺ_ : ℕ∞ → ℕ∞ → NExpr
   pred (x ×'ᴺ y) = ×'-match (pred x) y (pred y)
 
-  ×'-match : Maybe ℕ∞ → ℕ∞ → Maybe ℕ∞ → Maybe Expr
-  ×'-match nothing y y' = nothing
-  ×'-match (just x') y nothing = nothing
+  ×'-match : Maybe ℕ∞ → ℕ∞ → Maybe ℕ∞ →
+             Maybe Expr
+  ×'-match nothing y y'          = nothing
+  ×'-match (just x') y nothing  = nothing
   ×'-match (just x') y (just y') = just (embedℕ∞ y' + x' ×' y)
 \end{code}
 

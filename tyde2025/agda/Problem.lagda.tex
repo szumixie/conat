@@ -82,6 +82,8 @@ postulate
   +-suc : ∀ x y → x + suc y ≡ suc (x + y)
 \end{code}
 
+Then we can prove the commutativity of addition.
+
 \begin{code}[hide]
 mutual
 \end{code}
@@ -108,6 +110,6 @@ mutual
   +-comm-match x nothing y (just y') p q = ADMIT
   +-comm-match x (just x') y nothing p q = ADMIT
 \end{code}
-Same problem as the definition of multiplication above, the definition is
+Here the same problem arises as for the definition of multiplication above, the definition is
 productive but not guarded, since the equational reasoning contains the
 transitivity operation which is not a constructor.

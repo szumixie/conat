@@ -73,11 +73,11 @@ conference title from your rights confirmation email}{June 03--05,
 \newunicodechar{≋}{\ensuremath{≋}}
 \newunicodechar{∙}{\ensuremath{∙}}
 \newunicodechar{↺}{\ensuremath{↺}}
-\newunicodechar{ₗ}{\ensuremath{_L}}
-\newunicodechar{ᵣ}{\ensuremath{_R}}
-\newunicodechar{ᴺ}{\ensuremath{_N}}
-\newunicodechar{ᴱ}{\ensuremath{_E}}
-\newunicodechar{ᴾ}{\ensuremath{_P}}
+\newunicodechar{ₗ}{\textsubscript{L}}
+\newunicodechar{ᵣ}{\textsubscript{R}}
+\newunicodechar{ᴺ}{\textsubscript{N}}
+\newunicodechar{ᴱ}{\textsubscript{E}}
+\newunicodechar{ᴾ}{\textsubscript{P}}
 
 %%
 %% end of the preamble, start of the body of the document source.
@@ -178,19 +178,19 @@ conference title from your rights confirmation email}{June 03--05,
 
 % TERMINATION CHECKING ERROR STUFF
 
-\section{"You don't want to do this" version}\label{sec:direct}
+\section{Direct corecusion}\label{sec:direct}
 \input{latex/Direct}
 
 % Proving everything directly
 % using complicated states
 
-\section{My version (up to comm+)}\label{sec:dsl}
+\section{Embedded languages approach}\label{sec:dsl}
 \input{latex/CompBisim}
 
 % Compositionality
-% Nils' method: Define a DSL to make proving compositional.
+% Nils' method: Define a DSL to make corecursion guarded.
 
-\section{Good version}\label{sec:quotiented}
+\section{A quotiented embedded language}\label{sec:quotiented}
 \input{latex/Quotiented}
 
 % Mixed inductive and coinductive type

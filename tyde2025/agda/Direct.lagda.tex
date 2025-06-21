@@ -16,9 +16,8 @@ In this section, we show some examples of how to do corecursion without running
 into the guardedness issue.
 
 To avoid the guardedness issue in Section~\ref{sec:problem}, we define
-multiplication from scratch instead of reusing addition.
-
-First, we match to check whether both arguments are zero:
+multiplication from scratch instead of reusing addition. First, we match to
+check whether either of the arguments is zero:
 \begin{code}[hide]
 infixl 7 _×_ _×'_
 mutual
@@ -59,15 +58,12 @@ We achieve that by defining a helper function which keeps track of the original 
 \end{code}
 
 Here is an example just showing the internal states after every step
-on how this funtcion calculates the predecessor of $4\times3$:
-
-$(3,2) \to (3,1) \to (3,0) \to (2,2) \to \dots \to (0,1) \to (0,0)$
-
-It took $4 \times 3 - 1 = 11$ steps to get to $(0,0)$
+on how this funtcion calculates $3 \times' 2$:
+\[(3,2) \to (3,1) \to (3,0) \to (2,2) \to \dots \to (0,1) \to (0,0)\]
+It takes $4 \times 3 - 1 = 11$ steps to get to $(0,0)$
 
 To prove commutativity of addition, we introduce an operation for adding an
 inductive natural number to a conatural number:
-
 \begin{code}
 infixl 6 _+ₗ_
 _+ₗ_ : ℕ → ℕ∞ → ℕ∞
@@ -75,7 +71,8 @@ _+ₗ_ : ℕ → ℕ∞ → ℕ∞
 ℕ.suc n +ₗ x = suc (n +ₗ x)
 \end{code}
 
-
+We are also going to need a property which states that the successor operation
+can be moved from the right side of addition to the front of the whole exression.
 
 \begin{code}
 +ₗ-suc : ∀ n x → n +ₗ suc x ≡ suc (n +ₗ x)
@@ -84,6 +81,13 @@ _+ₗ_ : ℕ → ℕ∞ → ℕ∞
 +ₗ-suc ℕ.zero x = refl
 +ₗ-suc (ℕ.suc n) x = cong suc (+ₗ-suc n x)
 \end{code}
+
+The intuition for the commutativity proof is that we keep track of how many steps we have
+iterated so far using a finite natural number.
+
+As we can see in the diagram below, where the top line is the left hand side,
+the botton line is the right hand side, at the beginning we go through $x$ and
+$y$ at the same time, while learning that both of them must be at least $n$.
 
 \begin{center}
   \begin{tikzpicture}[xscale=8, yscale=.5]
@@ -102,20 +106,21 @@ _+ₗ_ : ℕ → ℕ∞ → ℕ∞
     \draw [-{To[length=1mm]}] (0,0) -- ($(2/9,0)$);
 
     \draw [decorate, decoration={brace, amplitude=2mm}]
+      (0,1.75) -- ($(2/9,1.75)$) node [midway, above=2mm] {$n$};
+    \draw [decorate, decoration={brace, amplitude=2mm}]
       ($(2/9,1.75)$) -- ($(1/3,1.75)$) node [midway, above=2mm] {$x$};
     \draw [decorate, decoration={brace, amplitude=2mm}]
-      ($(1/3,1.75)$) -- (1,1.75) node [midway, above=2mm] {$n+y$};
+      ($(1/3,1.75)$) -- (1,1.75) node [midway, above=2mm] {$n+y=y_0$};
 
-    \draw [decorate, decoration={brace, mirror, amplitude=2mm}]
-      (0,-0.75) -- ($(2/9,-0.75)$) node [midway, below=2mm] {$n$};
     \draw [decorate, decoration={brace, mirror, amplitude=2mm}]
       ($(2/9,-0.75)$) -- ($(2/3,-0.75)$) node [midway, below=2mm] {$y$};
     \draw [decorate, decoration={brace, mirror, amplitude=2mm}]
-      ($(2/3,-0.75)$) -- (1,-0.75) node [midway, below=2mm] {$n+x$};
+      ($(2/3,-0.75)$) -- (1,-0.75) node [midway, below=2mm] {$n+x=x_0$};
   \end{tikzpicture}
 \end{center}
 
-At this point we know $x$ is finite and equals to $n$:
+When it reaches the end of $x$, we learn that it is finite and equals to some $n$.
+
 \begin{center}
   \begin{tikzpicture}[xscale=8, yscale=.5]
     \draw (0,1) -- (1,1);
@@ -135,14 +140,17 @@ At this point we know $x$ is finite and equals to $n$:
     \draw [decorate, decoration={brace, amplitude=2mm}]
       (0,1.75) -- ($(1/3,1.75)$) node [midway, above=2mm] {$n$};
     \draw [decorate, decoration={brace, amplitude=2mm}]
-      ($(4/9,1.75)$) -- (1,1.75) node [midway, above=2mm] {$n+y$};
+      ($(4/9,1.75)$) -- (1,1.75) node [midway, above=2mm] {$n+y=y_0$};
 
     \draw [decorate, decoration={brace, mirror, amplitude=2mm}]
       ($(4/9,-0.75)$) -- ($(2/3,-0.75)$) node [midway, below=2mm] {$y$};
     \draw [decorate, decoration={brace, mirror, amplitude=2mm}]
-      ($(2/3,-0.75)$) -- (1,-0.75) node [midway, below=2mm] {$n$};
+      ($(2/3,-0.75)$) -- (1,-0.75) node [midway, below=2mm] {$n+0$};
   \end{tikzpicture}
 \end{center}
+
+For this reason (or rather intuition) we are going to need two lemmas that exactly describe
+the two possible situations.
 
 \begin{code}[hide]
 mutual
@@ -152,37 +160,56 @@ mutual
   +-comm x y = +-comm-helper₁ ℕ.zero x x y y refl refl
 
   +-comm-helper₁ :
-    ∀ n x x₀ y y₀ → n +ₗ x ≡ x₀ → n +ₗ y ≡ y₀ → x + y₀ ≡ y + x₀
+    ∀ n x x₀ y y₀ → n +ₗ x ≡ x₀ → n +ₗ y ≡ y₀ →
+    x + y₀ ≡ y + x₀
   pred (+-comm-helper₁ n x x₀ y y₀ nx ny i) =
-    +-comm-helper₁-match n x (pred x) x₀ y (pred y) y₀ refl refl nx ny i
+    +-comm-helper₁-match n x (pred x) x₀ y (pred y) y₀
+      refl refl nx ny i
 
   +-comm-helper₁-match :
     ∀ n x x' x₀ y y' y₀ →
-    pred x ≡ x' → pred y ≡ y' → n +ₗ x ≡ x₀ → n +ₗ y ≡ y₀ →
-    +-match x' y₀ ≡ +-match y' x₀
-  +-comm-helper₁-match n x nothing x₀ y nothing y₀ px py nx ny =
-    cong pred
-      (sym ny ∙ cong (n +ₗ_) (pred-inj py ∙ pred-inj {zero} (sym px)) ∙ nx)
-  +-comm-helper₁-match n x nothing x₀ y (just y') y₀ px py nx ny =
-    cong pred (sym ny ∙ cong (n +ₗ_) (pred-inj py) ∙ +ₗ-suc n y') ∙
-    cong just
-      ( +-comm-helper₂ n y' (n +ₗ y') refl ∙
-        cong (y' +_) (cong (n +ₗ_) (pred-inj (sym px)) ∙ nx))
-  +-comm-helper₁-match n x (just x') x₀ y nothing y₀ px py nx ny =
-    cong just
-      ( cong (x' +_) (sym ny ∙ cong (n +ₗ_) (pred-inj py)) ∙
-        sym (+-comm-helper₂ n x' (n +ₗ x') refl)) ∙
-    cong pred (sym (+ₗ-suc n x') ∙ cong (n +ₗ_) (pred-inj (sym px)) ∙ nx)
-  +-comm-helper₁-match n x (just x') x₀ y (just y') y₀ px py nx ny =
-    cong just
-      (+-comm-helper₁ (ℕ.suc n) x' x₀ y' y₀
-        (sym (+ₗ-suc n x') ∙ cong (n +ₗ_) (pred-inj (sym px)) ∙ nx)
-        (sym (+ₗ-suc n y') ∙ cong (n +ₗ_) (pred-inj (sym py)) ∙ ny))
+    pred x ≡ x' → pred y ≡ y' → n +ₗ x ≡ x₀ →
+    n +ₗ y ≡ y₀ → +-match x' y₀ ≡ +-match y' x₀
+  +-comm-helper₁-match
+    n x nothing x₀ y nothing y₀ px py nx ny =
+      cong pred
+        (sym ny ∙
+         cong (n +ₗ_) (pred-inj py ∙
+                      pred-inj {zero} (sym px)) ∙
+         nx)
+  +-comm-helper₁-match
+    n x nothing x₀ y (just y') y₀ px py nx ny =
+      cong pred (sym ny ∙
+                 cong (n +ₗ_) (pred-inj py) ∙
+                 +ₗ-suc n y') ∙
+      cong just
+        ( +-comm-helper₂ n y' (n +ₗ y') refl ∙
+          cong (y' +_) (cong (n +ₗ_) (pred-inj (sym px)) ∙
+                        nx))
+  +-comm-helper₁-match
+    n x (just x') x₀ y nothing y₀ px py nx ny =
+      cong just
+        ( cong (x' +_) (sym ny ∙
+                        cong (n +ₗ_) (pred-inj py)) ∙
+          sym (+-comm-helper₂ n x' (n +ₗ x') refl)) ∙
+      cong pred (sym (+ₗ-suc n x') ∙
+                 cong (n +ₗ_) (pred-inj (sym px)) ∙
+                 nx)
+  +-comm-helper₁-match
+    n x (just x') x₀ y (just y') y₀ px py nx ny =
+      cong just (+-comm-helper₁ (ℕ.suc n) x' x₀ y' y₀ 1+n+x'≡x₀ 1+n+y'≡y₀)
+\end{code}
+\begin{code}[hide]
+    where
+    1+n+x'≡x₀ = sym (+ₗ-suc n x') ∙ cong (n +ₗ_) (pred-inj (sym px)) ∙ nx
+    1+n+y'≡y₀ = sym (+ₗ-suc n y') ∙ cong (n +ₗ_) (pred-inj (sym py)) ∙ ny
 \end{code}
 \begin{code}
-  +-comm-helper₂ : ∀ n y y₀ → n +ₗ y ≡ y₀ → y₀ ≡ y + (n +ₗ zero)
+  +-comm-helper₂ : ∀ n y y₀ → n +ₗ y ≡ y₀ →
+                   y₀ ≡ y + (n +ₗ zero)
   pred (+-comm-helper₂ n y y₀ ny i) =
-    +-comm-helper₂-match n y (pred y) y₀ (pred y₀) refl refl ny i
+    +-comm-helper₂-match
+      n y (pred y) y₀ (pred y₀) refl refl ny i
 
   +-comm-helper₂-match :
     ∀ n y y' y₀ y₀' →
@@ -194,7 +221,9 @@ mutual
     exfalso
       (¬just≡nothing
         ( cong pred
-            (sym (+ₗ-suc n y') ∙ cong (n +ₗ_) (pred-inj (sym py)) ∙ ny) ∙
+            ( sym (+ₗ-suc n y') ∙
+              cong (n +ₗ_) (pred-inj (sym py)) ∙
+              ny) ∙
           py₀))
   +-comm-helper₂-match n y (just y') y₀ (just y₀') py py₀ ny =
     cong just

@@ -106,19 +106,19 @@ infixr 2 _`↺⟨_⟩_ _`↺⟨_⟨_ _`≡⟨_⟩_ _`≡⟨_⟨_ _`≋⟨_⟩_ _
 infix  3 _`∎
 \end{code}
 \begin{code}
-pattern _`∙_  {a} a~b b~c = `trans {a} a~b b~c
-pattern _`↺⟨_⟩_ a a∼b b∼c = `trans {a} (`step a∼b) b∼c
-pattern _`↺⟨_⟨_ a b∼a b∼c = `trans {a} (`sym (`step b∼a)) b∼c
-pattern _`≋⟨_⟩_ a a∼b b∼c = `trans {a} a∼b b∼c
-pattern _`≋⟨_⟨_ a b∼a b∼c = `trans {a} (`sym b∼a) b∼c
-pattern _`≡⟨_⟩_ a a∼b b∼c = `trans {a} (`path a∼b) b∼c
-pattern _`≡⟨_⟨_ a b∼a b∼c = `trans {a} (`sym (`path b∼a)) b∼c
+pattern _`∙_  {a} ab bc = `trans {a} ab bc
+pattern _`↺⟨_⟩_ a ab bc = `trans {a} (`step ab) bc
+pattern _`↺⟨_⟨_ a ba bc = `trans {a} (`sym (`step ba)) bc
+pattern _`≋⟨_⟩_ a ab bc = `trans {a} ab bc
+pattern _`≋⟨_⟨_ a ba bc = `trans {a} (`sym ba) bc
+pattern _`≡⟨_⟩_ a ab bc = `trans {a} (`path ab) bc
+pattern _`≡⟨_⟨_ a ba bc = `trans {a} (`sym (`path ba)) bc
 
-_`≡⟨⟩_ : (a : ℕ∞){b : ℕ∞} → a ≋ b → a ≋ b
-a `≡⟨⟩ a∼b = `trans {a} (`path refl) a∼b
+_`≡⟨⟩_ : ∀ a {b} → a ≋ b → a ≋ b
+a `≡⟨⟩ ab = `trans {a} (`path refl) ab
 {-# INLINE _`≡⟨⟩_ #-}
 
-_`∎ : (a : ℕ∞) → a ≋ a
+_`∎ : ∀ a → a ≋ a
 a `∎ = `path {a} refl
 {-# INLINE _`∎ #-}
 \end{code}
