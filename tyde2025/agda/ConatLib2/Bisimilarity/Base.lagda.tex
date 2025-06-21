@@ -104,27 +104,35 @@ Agda's standard library's notation \cite{agda-stdlib}.
 \begin{code}[hide]
 infixr 2 _`↺⟨_⟩_ _`↺⟨_⟨_ _`≡⟨_⟩_ _`≡⟨_⟨_ _`≋⟨_⟩_ _`≋⟨_⟨_ _`∙_ _`≡⟨⟩_
 infix  3 _`∎
+
+pattern _`∙_  {a} ab bc = `trans {a} ab bc
 \end{code}
 \begin{code}
-pattern _`∙_  {a} ab bc = `trans {a} ab bc
 pattern _`↺⟨_⟩_ a ab bc = `trans {a} (`step ab) bc
+\end{code}
+\begin{code}[hide]
 pattern _`↺⟨_⟨_ a ba bc = `trans {a} (`sym (`step ba)) bc
 pattern _`≋⟨_⟩_ a ab bc = `trans {a} ab bc
 pattern _`≋⟨_⟨_ a ba bc = `trans {a} (`sym ba) bc
+\end{code}
+\begin{code}
 pattern _`≡⟨_⟩_ a ab bc = `trans {a} (`path ab) bc
+\end{code}
+\begin{code}[hide]
 pattern _`≡⟨_⟨_ a ba bc = `trans {a} (`sym (`path ba)) bc
 
 _`≡⟨⟩_ : ∀ a {b} → a ≋ b → a ≋ b
 a `≡⟨⟩ ab = `trans {a} (`path refl) ab
 {-# INLINE _`≡⟨⟩_ #-}
-
+\end{code}
+\begin{code}
 _`∎ : ∀ a → a ≋ a
 a `∎ = `path {a} refl
 {-# INLINE _`∎ #-}
 \end{code}
 
-Note that these last two definitions could not be made \AgdaKeyword{pattern}s
-as they both use the \AgdaFunction{refl} function which is not a constructor
-in Cubical Agda, just a regular function. However, if we inline their definitions,
-since they are not recursive, nor corecursive, Agda sees them as guarded definitions
-and it is going to accept their usage.
+Note that the last definition could not be made \AgdaKeyword{pattern}
+as it uses the \AgdaFunction{refl} function which is not a constructor
+in Cubical Agda, just a regular function. However, if we inline its definition,
+since they are not recursive, nor corecursive, Agda sees it as a guarded definition
+and it is going to accept its usage.

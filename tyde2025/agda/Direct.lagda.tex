@@ -149,9 +149,12 @@ When it reaches the end of $x$, we learn that it is finite and equals to some $n
   \end{tikzpicture}
 \end{center}
 
-For this reason (or rather intuition) we are going to need two lemmas that exactly describe
-the two possible situations.
-
+For this reason (or rather intuition) we are going to need two lemmas that
+exactly describe the two possible situations. During corecursion, we generalize
+the resulting equation and add equality arguments to avoid transporting the
+corecursive call, since transports do not preserve guardedness in Agda. We omit
+the uninteresting equality proofs below for readability.
+\begin{AgdaSuppressSpace}
 \begin{code}[hide]
 mutual
 \end{code}
@@ -168,45 +171,49 @@ mutual
 
   +-comm-helper₁-match :
     ∀ n x x' x₀ y y' y₀ →
-    pred x ≡ x' → pred y ≡ y' → n +ₗ x ≡ x₀ →
-    n +ₗ y ≡ y₀ → +-match x' y₀ ≡ +-match y' x₀
+    pred x ≡ x' → pred y ≡ y' →
+    n +ₗ x ≡ x₀ → n +ₗ y ≡ y₀ →
+    +-match x' y₀ ≡ +-match y' x₀
   +-comm-helper₁-match
     n x nothing x₀ y nothing y₀ px py nx ny =
-      cong pred
-        (sym ny ∙
-         cong (n +ₗ_) (pred-inj py ∙
-                      pred-inj {zero} (sym px)) ∙
-         nx)
+      cong pred y₀≡x₀
+\end{code}
+\begin{code}[hide]
+      where
+      y₀≡x₀ = sym ny ∙ cong (n +ₗ_) (pred-inj (py ∙ sym px)) ∙ nx
+\end{code}
+\begin{code}
   +-comm-helper₁-match
     n x nothing x₀ y (just y') y₀ px py nx ny =
-      cong pred (sym ny ∙
-                 cong (n +ₗ_) (pred-inj py) ∙
-                 +ₗ-suc n y') ∙
+      cong pred y₀≡1+n+y' ∙
       cong just
-        ( +-comm-helper₂ n y' (n +ₗ y') refl ∙
-          cong (y' +_) (cong (n +ₗ_) (pred-inj (sym px)) ∙
-                        nx))
+        (+-comm-helper₂ n y' (n +ₗ y') refl ∙ y'+n+0≡y'+x₀)
+\end{code}
+\begin{code}[hide]
+    where
+    y₀≡1+n+y' = sym ny ∙ cong (n +ₗ_) (pred-inj py) ∙ +ₗ-suc n y'
+    y'+n+0≡y'+x₀ = cong (y' +_) (cong (n +ₗ_) (pred-inj (sym px)) ∙ nx)
   +-comm-helper₁-match
     n x (just x') x₀ y nothing y₀ px py nx ny =
-      cong just
-        ( cong (x' +_) (sym ny ∙
-                        cong (n +ₗ_) (pred-inj py)) ∙
-          sym (+-comm-helper₂ n x' (n +ₗ x') refl)) ∙
-      cong pred (sym (+ₗ-suc n x') ∙
-                 cong (n +ₗ_) (pred-inj (sym px)) ∙
-                 nx)
+      sym (+-comm-helper₁-match n y nothing y₀ x (just x') x₀ py px ny nx)
+\end{code}
+\begin{code}
   +-comm-helper₁-match
     n x (just x') x₀ y (just y') y₀ px py nx ny =
-      cong just (+-comm-helper₁ (ℕ.suc n) x' x₀ y' y₀ 1+n+x'≡x₀ 1+n+y'≡y₀)
+      cong just
+        (+-comm-helper₁ (ℕ.suc n) x' x₀ y' y₀
+          1+n+x'≡x₀ 1+n+y'≡y₀)
 \end{code}
 \begin{code}[hide]
     where
     1+n+x'≡x₀ = sym (+ₗ-suc n x') ∙ cong (n +ₗ_) (pred-inj (sym px)) ∙ nx
     1+n+y'≡y₀ = sym (+ₗ-suc n y') ∙ cong (n +ₗ_) (pred-inj (sym py)) ∙ ny
 \end{code}
+\end{AgdaSuppressSpace}
+\begin{AgdaSuppressSpace}
 \begin{code}
-  +-comm-helper₂ : ∀ n y y₀ → n +ₗ y ≡ y₀ →
-                   y₀ ≡ y + (n +ₗ zero)
+  +-comm-helper₂ :
+    ∀ n y y₀ → n +ₗ y ≡ y₀ → y₀ ≡ y + (n +ₗ zero)
   pred (+-comm-helper₂ n y y₀ ny i) =
     +-comm-helper₂-match
       n y (pred y) y₀ (pred y₀) refl refl ny i
@@ -216,25 +223,40 @@ mutual
     pred y ≡ y' → pred y₀ ≡ y₀' → n +ₗ y ≡ y₀ →
     y₀' ≡ +-match y' (n +ₗ zero)
   +-comm-helper₂-match n y nothing y₀ y₀' py py₀ ny =
-    sym py₀ ∙ cong pred (sym ny ∙ cong (n +ₗ_) (pred-inj py))
-  +-comm-helper₂-match n y (just y') y₀ nothing py py₀ ny =
-    exfalso
-      (¬just≡nothing
-        ( cong pred
-            ( sym (+ₗ-suc n y') ∙
-              cong (n +ₗ_) (pred-inj (sym py)) ∙
-              ny) ∙
-          py₀))
-  +-comm-helper₂-match n y (just y') y₀ (just y₀') py py₀ ny =
-    cong just
-      (+-comm-helper₂ n y' y₀'
-        (just-inj _ _
-          ( cong pred
-              ( sym (+ₗ-suc n y') ∙
-                cong (n +ₗ_) (pred-inj (sym py)) ∙
-                ny) ∙
-            py₀)))
+    sym py₀ ∙ cong pred y₀≡n+0
 \end{code}
+\begin{code}[hide]
+    where
+    y₀≡n+0 = sym ny ∙ cong (n +ₗ_) (pred-inj py)
+\end{code}
+\begin{code}
+  +-comm-helper₂-match n y (just y') y₀ nothing py py₀ ny
+    = impossible
+\end{code}
+\begin{code}[hide]
+    where
+    impossible =
+      exfalso
+        (¬just≡nothing
+          ( cong pred
+              (sym (+ₗ-suc n y') ∙ cong (n +ₗ_) (pred-inj (sym py)) ∙ ny) ∙
+            py₀))
+\end{code}
+\begin{code}
+  +-comm-helper₂-match n y (just y') y₀ (just y₀') py py₀ ny
+    = cong just (+-comm-helper₂ n y' y₀' n+y'≡y₀')
+\end{code}
+\begin{code}[hide]
+    where
+    n+y'≡y₀' =
+      just-inj _ _
+        ( cong pred
+            (sym (+ₗ-suc n y') ∙ cong (n +ₗ_) (pred-inj (sym py)) ∙ ny) ∙
+          py₀)
+\end{code}
+\end{AgdaSuppressSpace}
 
-extra equality arguments are to avoid transports, since they do not preserve
-guardedness.
+Directly defining the corecursion itself is tedious, it is even
+difficult to figure out the predecessor of an operation (for example
+exponentiation), let alone figuring out the predecessor of a property
+that uses that operator, like $(a ^n) ^k = a ^n ^\times ^k$.

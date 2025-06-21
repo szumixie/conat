@@ -14,19 +14,20 @@ open import Cubical.Foundations.Univalence using (ua→)
 open import Cubical.Foundations.HLevels
 open import Cubical.Reflection.RecordEquiv using (declareRecordIsoΣ)
 import Cubical.Data.Empty as ⊥
-import Cubical.Data.Maybe as Maybe
-open Maybe
+open import Cubical.Data.Maybe
   using
     ( Maybe; nothing; just;
       isOfHLevelMaybe; just-inj; ¬nothing≡just; ¬just≡nothing)
+  renaming (rec to matchMaybe)
 
 module E where
 \end{code}
-Adapting the approach in Section~\ref{sec:dsl}
+Adapting the approach in Section~\ref{sec:dsl} to Cubical Agda
 
 First show that conatural numbers form a commutative semiring
 
 We mutually define expressions and head normal expressions
+\begin{AgdaAlign}
 \begin{code}
   record NExpr : Type
   data Expr : Type
@@ -44,27 +45,28 @@ predecessor
   infixl 6 _+_
   infixl 7 _×_
 \end{code}
-In \AgdaDatatype{Expr}, we include all of the commutative semiring equations
+In \AgdaDatatype{Expr}, we include all of the commutative semiring equations and
+that it is a set (its equalities are proof irrelevant)
 \begin{code}
   data Expr where
-    isSetExpr : isSet Expr
+    _+_        : Expr → Expr → Expr
+    +-assoc    : ∀ x y z → (x + y) + z ≡ x + (y + z)
+    +-comm     : ∀ x y → x + y ≡ y + x
 
-    _+_ : Expr → Expr → Expr
-    +-assoc : ∀ x y z → (x + y) + z ≡ x + (y + z)
-    +-comm : ∀ x y → x + y ≡ y + x
+    zero       : Expr
+    +-idₗ      : ∀ x → zero + x ≡ x
 
-    zero : Expr
-    +-idₗ : ∀ x → zero + x ≡ x
+    _×_        : Expr → Expr → Expr
+    ×-assoc    : ∀ x y z → (x × y) × z ≡ x × (y × z)
+    ×-comm     : ∀ x y → x × y ≡ y × x
 
-    _×_ : Expr → Expr → Expr
-    ×-assoc : ∀ x y z → (x × y) × z ≡ x × (y × z)
-    ×-comm : ∀ x y → x × y ≡ y × x
+    one        : Expr
+    ×-idₗ      : ∀ x → one × x ≡ x
 
-    one : Expr
-    ×-idₗ : ∀ x → one × x ≡ x
+    ×-distₗ-+  : ∀ x y z → (x + y) × z ≡ x × z + y × z
+    ×-annihₗ   : ∀ x → zero × x ≡ zero
 
-    ×-distₗ-+ : ∀ x y z → (x + y) × z ≡ x × z + y × z
-    ×-annihₗ : ∀ x → zero × x ≡ zero
+    isSetExpr  : isSet Expr
 \end{code}
 We add a constructor to embed head normal expressions into expressions, this way
 we can construct infinite expressions, as long as they are guarded
@@ -75,14 +77,17 @@ We add equations to relate taking the predecessor on the head normal expression
 
 Note that we use the destructor \AgdaField{pred} of \AgdaRecord{NExpr}
 \begin{code}
-    embed-zero : ∀ x → pred x ≡ nothing → embed x ≡ zero
-    embed-suc : ∀ x x' → pred x ≡ just x' → embed x ≡ one + x'
+    embed-zero  :
+      ∀ x → pred x ≡ nothing → embed x ≡ zero
+    embed-suc   :
+      ∀ x x' → pred x ≡ just x' → embed x ≡ one + x'
 \end{code}
 Finally, a constructor for transitivity because the general transitivity
 function does not preserve guardedness
 \begin{code}
     trans : ∀ {x y z} → x ≡ y → y ≡ z → x ≡ z
 \end{code}
+\end{AgdaAlign}
 \begin{code}[hide]
   suc : Expr → Expr
   suc x = one + x
@@ -218,8 +223,8 @@ function does not preserve guardedness
 For convenience, we define an inductive predicate, for pattern matching
 \begin{code}
   data IsPred : Maybe Expr → Expr → Type where
-    nothing : IsPred nothing zero
-    just : ∀ x' → IsPred (just x') (suc x')
+    nothing  :         IsPred nothing    zero
+    just     : ∀ x' →  IsPred (just x')  (suc x')
 \end{code}
 \begin{code}[hide]
   isPropIsPred-zero :
@@ -252,8 +257,8 @@ We define the motive
 \begin{code}
   record Pred (x : Expr) : Type where
     field
-      pred : Maybe Expr
-      isPred : IsPred pred x
+      pred    : Maybe Expr
+      isPred  : IsPred pred x
 \end{code}
 \begin{code}[hide]
   open Pred
@@ -283,28 +288,30 @@ We can prove that it is a set using library stuff
 If we know the predecessor of $x$ and $y$, then we can define the predecessor of
 $x + y$
 \begin{code}
-  +-pred : Maybe Expr → Expr → Maybe Expr → Maybe Expr
-  +-pred nothing y y' = y'
-  +-pred (just x') y y' = just (x' + y)
+  +-pred :
+    Maybe Expr → Expr → Maybe Expr → Maybe Expr
+  +-pred nothing    y y' = y'
+  +-pred (just x')  y y' = just (x' + y)
 
   +-isPred :
-    ∀ {x x' y y'} →
-    IsPred x' x → IsPred y' y → IsPred (+-pred x' y y') (x + y)
-  +-isPred {y} nothing p = subst (IsPred _) (sym (+-idₗ _)) p
-  +-isPred {y} (just x') p =
-    subst (IsPred _) (sym (+-sucₗ _ _)) (just (x' + y))
+    ∀ {x x' y y'} → IsPred x' x → IsPred y' y →
+    IsPred (+-pred x' y y') (x + y)
+  +-isPred {y} nothing    p = subst (IsPred _) (sym (+-idₗ _)) p
+  +-isPred {y} (just x')  p =
+    subst (IsPred _) (sym (+-assoc _ _ _)) (just (x' + y))
 
   infixl 6 _+ᴾ_
   _+ᴾ_ : ∀ {x y} → Pred x → Pred y → Pred (x + y)
-  pred (_+ᴾ_ {y} xᴾ yᴾ) = +-pred (pred xᴾ) y (pred yᴾ)
-  isPred (xᴾ +ᴾ yᴾ) = +-isPred (isPred xᴾ) (isPred yᴾ)
+  pred    (_+ᴾ_ {y}  xᴾ yᴾ) = +-pred (pred xᴾ) y (pred yᴾ)
+  isPred  (_+ᴾ_      xᴾ yᴾ) = +-isPred (isPred xᴾ) (isPred yᴾ)
 \end{code}
 Multiplication works
 \begin{code}
-  ×-pred : Maybe Expr → Expr → Maybe Expr → Maybe Expr
-  ×-pred nothing y y' = nothing
-  ×-pred (just x') y nothing = nothing
-  ×-pred (just x') y (just y') = just (y' + x' × y)
+  ×-pred :
+    Maybe Expr → Expr → Maybe Expr → Maybe Expr
+  ×-pred nothing    y y'         = nothing
+  ×-pred (just x')  y nothing    = nothing
+  ×-pred (just x')  y (just y')  = just (y' + x' × y)
 \end{code}
 \begin{code}[hide]
   ×-isPred :
@@ -342,15 +349,17 @@ Commutativity
   +-comm-pred :
     ∀ {x x' y y'} → IsPred x' x → IsPred y' y →
     +-pred x' y y' ≡ +-pred y' x x'
-  +-comm-pred nothing nothing = refl
-  +-comm-pred nothing (just y') = congS just (sym (+-idᵣ _))
-  +-comm-pred (just x') nothing = congS just (+-idᵣ _)
-  +-comm-pred (just x') (just y') =
+  +-comm-pred nothing    nothing    = refl
+  +-comm-pred nothing    (just y')  =
+    congS just (sym (+-idᵣ _))
+  +-comm-pred (just x')  nothing    =
+    congS just (+-idᵣ _)
+  +-comm-pred (just x')  (just y')  =
     congS just
-      ( x' + suc y'   ≡⟨ +-sucᵣ _ _ ⟩
-        suc (x' + y') ≡⟨ cong suc (+-comm _ _) ⟩
-        suc (y' + x') ≡⟨ sym (+-sucᵣ _ _) ⟩
-        y' + suc x'   ∎)
+      (  x' + suc y'    ≡⟨ +-sucᵣ _ _ ⟩
+         suc (x' + y')  ≡⟨ cong suc (+-comm _ _) ⟩
+         suc (y' + x')  ≡⟨ sym (+-sucᵣ _ _) ⟩
+         y' + suc x'    ∎)
 \end{code}
 \begin{code}[hide]
   +-commᴾ :
@@ -458,7 +467,7 @@ Commutativity
       just x'          ≡⟨ congS just (sym (+-idₗ _)) ⟩
       just (zero + x') ∎)
 \end{code}
-Using the methods, we can eliminate
+Using the methods, we can recursively eliminate
 \begin{code}
   ⟦_⟧ᴾ : ∀ x → Pred x
 \end{code}
@@ -501,11 +510,11 @@ Extract functions
   pred-suc : ∀ x → predᴱ (suc x) ≡ just x
   pred-suc x = congS just (+-idₗ _)
 
-  unpred-pred-pred : ∀ {x x'} → IsPred x' x → Maybe.rec zero suc x' ≡ x
+  unpred-pred-pred : ∀ {x x'} → IsPred x' x → matchMaybe zero suc x' ≡ x
   unpred-pred-pred nothing = refl
   unpred-pred-pred (just x') = refl
 
-  unpred-pred : ∀ x → Maybe.rec zero suc (predᴱ x) ≡ x
+  unpred-pred : ∀ x → matchMaybe zero suc (predᴱ x) ≡ x
   unpred-pred x = unpred-pred-pred (isPredᴱ x)
 
   interp : Expr → NExpr
@@ -596,11 +605,11 @@ record ℕ∞Str A pred where
   field
     isSetA : isSet A
 \end{code}
-e.g.
+e.g.etc.
 \begin{code}
-    _+_ : A → A → A
-    +-assoc : ∀ x y z → (x + y) + z ≡ x + (y + z)
-    +-comm : ∀ x y → x + y ≡ y + x
+    _+_      : A → A → A
+    +-assoc  : ∀ x y z → (x + y) + z ≡ x + (y + z)
+    +-comm   : ∀ x y → x + y ≡ y + x
 \end{code}
 \begin{code}[hide]
     zero : A
@@ -622,9 +631,9 @@ e.g.
 And we can also relate pred of ring operations
 \begin{code}
   field
-    pred-zero : pred zero ≡ nothing
-    pred-suc : ∀ x → pred (one + x) ≡ just x
-    unpred-pred : ∀ x → Maybe.rec zero (one +_) (pred x) ≡ x
+    pred-zero    : pred zero ≡ nothing
+    pred-suc     : ∀ x → pred (one + x) ≡ just x
+    unpred-pred  : ∀ x → matchMaybe zero (one +_) (pred x) ≡ x
 \end{code}
 We fill the record using expression
 \begin{code}
@@ -639,14 +648,13 @@ We fill the record using expression
       pred-suc = E.pred-suc;
       unpred-pred = E.unpred-pred }
 \end{code}
-Using univalence we get the same record for \AgdaRecord{ℕ∞}
+Using univalence we can transport over the isomorphism to get the record for
+\AgdaRecord{ℕ∞}
 \begin{code}
 ℕ∞Strℕ∞ : ℕ∞Str ℕ∞ pred
 ℕ∞Strℕ∞ =
   transport
-    (cong₂ ℕ∞Str
-      (isoToPath ExprIsoℕ∞)
-      (ua→ λ x → toPathP (subst-Maybe _)))
+    (cong₂ ℕ∞Str (isoToPath ExprIsoℕ∞) predᴱ≡pred)
     ℕ∞StrExpr
 \end{code}
 \begin{code}[hide]
@@ -655,6 +663,7 @@ Using univalence we get the same record for \AgdaRecord{ℕ∞}
     ∀ x' → subst Maybe (isoToPath ExprIsoℕ∞) x' ≡ interp-pred x'
   subst-Maybe nothing = refl
   subst-Maybe (just x') = cong just (transportRefl _)
+  predᴱ≡pred = ua→ λ x → toPathP (subst-Maybe _)
 
 open ℕ∞Str ℕ∞Strℕ∞ renaming (isSetA to isSetℕ∞) public
 \end{code}
