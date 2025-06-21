@@ -281,33 +281,34 @@ For exponentiation, we add constructors
     ×-annihₗ : ∀ x → zero × x ≡ zero
 \end{code}
 \begin{code}
-    _^_ : Expr → Expr → Expr
-    ^-assocᵣ-× : ∀ x y z → x ^ (y × z) ≡ (x ^ z) ^ y
-    ^-idᵣ : ∀ x → x ^ one ≡ x
+    _^_         : Expr → Expr → Expr
+    ^-assocᵣ-×  : ∀ x y z → x ^ (y × z) ≡ (x ^ z) ^ y
+    ^-idᵣ       : ∀ x → x ^ one ≡ x
 
-    ^-distᵣ-+ : ∀ x y z → x ^ (y + z) ≡ x ^ z × x ^ y
-    ^-annihᵣ : ∀ x → x ^ zero ≡ one
+    ^-distᵣ-+   : ∀ x y z → x ^ (y + z) ≡ x ^ z × x ^ y
+    ^-annihᵣ    : ∀ x → x ^ zero ≡ one
 
-    ^-distₗ-× : ∀ x y z → (x × y) ^ z ≡ x ^ z × y ^ z
-    ^-annihₗ : ∀ x → one ^ x ≡ one
+    ^-distₗ-×   : ∀ x y z → (x × y) ^ z ≡ x ^ z × y ^ z
+    ^-annihₗ    : ∀ x → one ^ x ≡ one
 \end{code}
-$\AgdaFunction{suc}\ x$ is an abbreviation for $\AgdaInductiveConstructor{one}
-\mathop{\AgdaInductiveConstructor{+}} x$
-
 \[\AgdaInductiveConstructor{block}\ x\ y = \sum_{i=0}^{y-1} x \times (1 + x)^i = (1+x)^y - 1\]
 
 \[\AgdaInductiveConstructor{block}\ 9\ 3 = 9 \times 10^0 + 9 \times 10^1 + 9 \times 10^2 = 999\]
 \begin{code}
     block : Expr → Expr → Expr
-    block-assocᵣ-× : ∀ x y z → block x (y × z) ≡ block (block x z) y
+    block-assocᵣ-× :
+      ∀ x y z → block x (y × z) ≡ block (block x z) y
     block-idᵣ : ∀ x → block x one ≡ x
 
     block-distᵣ-+ :
-      ∀ x y z → block x (y + z) ≡ block x y + block x z × suc x ^ y
+      ∀ x y z →
+      block x (y + z) ≡ block x y + block x z × suc x ^ y
     block-annihᵣ : ∀ x → block x zero ≡ zero
 
     block-distₗ-× :
-      ∀ x y z → block (y + x × suc y) z ≡ block y z + block x z × suc y ^ z
+      ∀ x y z →
+      block (y + x × suc y) z ≡
+      block y z + block x z × suc y ^ z
     block-annihₗ : ∀ x → block zero x ≡ zero
 \end{code}
 Relate exponentiation and \AgdaInductiveConstructor{block}
@@ -528,10 +529,11 @@ We can also add some properties about infinity, the last one allows us to prove 
 \end{code}
 Here we define the predecessor of exponentiation to use \AgdaInductiveConstructor{block}
 \begin{code}
-  ^-pred : Maybe Expr → Expr → Maybe Expr → Maybe Expr
-  ^-pred x' y nothing = just zero
-  ^-pred nothing y (just y') = nothing
-  ^-pred (just x') y (just y') = just (block x' y)
+  ^-pred :
+    Maybe Expr → Expr → Maybe Expr → Maybe Expr
+  ^-pred x'         y nothing    = just zero
+  ^-pred nothing    y (just y')  = nothing
+  ^-pred (just x')  y (just y')  = just (block x' y)
 \end{code}
 \begin{code}[hide]
   ^-isPred :
@@ -645,10 +647,12 @@ in the case of the predecessor of $\AgdaInductiveConstructor{block}\ 9\ 3 =
 
 \[999-1 = (9-1) + 99 \times (1+9)\]
 \begin{code}
-  block-pred : Expr → Maybe Expr → Maybe Expr → Maybe Expr
-  block-pred x nothing y' = nothing
-  block-pred x (just x') nothing = nothing
-  block-pred x (just x') (just y') = just (x' + block x y' × suc x)
+  block-pred :
+    Expr → Maybe Expr → Maybe Expr → Maybe Expr
+  block-pred x nothing    y'         = nothing
+  block-pred x (just x')  nothing    = nothing
+  block-pred x (just x')  (just y')  =
+    just (x' + block x y' × suc x)
 \end{code}
 
 After defining pred for the properties, it is straightforward to change the

@@ -1,5 +1,5 @@
 \begin{code}[hide]
-{-# OPTIONS --safe --cubical --guardedness #-}
+{-# OPTIONS --safe --cubical --guardedness --no-import-sorts #-}
 {-# OPTIONS -WnoUnsupportedIndexedMatch #-}
 
 module ConatLib2.Bisimilarity.Base where
@@ -16,7 +16,7 @@ open import ConatLib2.Type
 open import ConatLib2.Inspect
 
 private variable
-  A : Set
+  A : Type
   a₀ a₁ : A
   n k : A
 \end{code}
@@ -27,19 +27,19 @@ transitivity properties constructors of this language including the possibility
 to use corecursive steps in a proof.
 
 \begin{code}
-data Maybe~ (A~ : A → A → Set) :
-  Maybe A → Maybe A → Set
+data Maybe~ (A~ : A → A → Type) :
+  Maybe A → Maybe A → Type
   where
     nothing-refl : Maybe~ A~ nothing nothing
     cong-just : A~ a₀ a₁ → Maybe~ A~ (just a₀) (just a₁)
 \end{code}
 \begin{code}[hide]
-infix 4 _`≋_ _≋_
+infix 4 _`≈_ _≈_
 \end{code}
 \begin{code}
-data _≋_ (n k : ℕ∞) : Set
+data _≈_ (n k : ℕ∞) : Type
 
-record _`≋_ (n k : ℕ∞) : Set where
+record _`≈_ (n k : ℕ∞) : Type where
   coinductive
 \end{code}
 \begin{code}[hide]
@@ -47,25 +47,25 @@ record _`≋_ (n k : ℕ∞) : Set where
 \end{code}
 \begin{code}
   field
-    `prove : Maybe~ _≋_ (pred n) (pred k)
+    `prove : Maybe~ _≈_ (pred n) (pred k)
 \end{code}
 \begin{code}[hide]
-open _`≋_ public
+open _`≈_ public
 \end{code}
 \begin{code}
-data _≋_ n k where
-  `step  : n `≋ k → n ≋ k
-  `path  : n ≡ k → n ≋ k
-  `sym   : k ≋ n → n ≋ k
-  `trans : ∀{m} → n ≋ m → m ≋ k → n ≋ k
+data _≈_ n k where
+  `step   : n `≈ k → n ≈ k
+  `path   : n ≡ k → n ≈ k
+  `sym    : k ≈ n → n ≈ k
+  `trans  : ∀{m} → n ≈ m → m ≈ k → n ≈ k
 \end{code}
 
-We define the predecessor over the new \AgdaDatatype{\_≋\_} relation.
+We define the predecessor over the new \AgdaDatatype{\_≈\_} relation.
 The definition itself is too long to be included here. It can be viewed
 in our repository.
 
 \begin{code}
-`pred : n ≋ k → Maybe~ _≋_ (pred n) (pred k)
+`pred : n ≈ k → Maybe~ _≈_ (pred n) (pred k)
 \end{code}
 \begin{code}[hide]
 `pred (`step x) = `prove x
@@ -87,12 +87,12 @@ by defining the \AgdaFunction{run} function that interprets the proofs from our 
 proofs in Cubical Agda.
 
 \begin{code}
-run : n `≋ k → n ≡ k
-runT : n ≋ k → n ≡ k
+run : n `≈ k → n ≡ k
+runT : n ≈ k → n ≡ k
 pred (runT {n} {k} x i) with {pred n} | {pred k} | `pred x
 ... | nothing-refl = nothing
 ... | cong-just t = just (runT t i)
-run′ : Maybe~ _≋_ n k → n ≡ k
+run′ : Maybe~ _≈_ n k → n ≡ k
 run′ nothing-refl = refl
 run′ (cong-just x) i = just (runT x i)
 pred (run e i) = run′ (`prove e) i
@@ -101,8 +101,9 @@ pred (run e i) = run′ (`prove e) i
 Let us set up the notation for equational reasoning using
 Agda's standard library's notation \cite{agda-stdlib}.
 
+\begin{AgdaSuppressSpace}
 \begin{code}[hide]
-infixr 2 _`↺⟨_⟩_ _`↺⟨_⟨_ _`≡⟨_⟩_ _`≡⟨_⟨_ _`≋⟨_⟩_ _`≋⟨_⟨_ _`∙_ _`≡⟨⟩_
+infixr 2 _`↺⟨_⟩_ _`↺⟨_⟨_ _`≡⟨_⟩_ _`≡⟨_⟨_ _`≈⟨_⟩_ _`≈⟨_⟨_ _`∙_ _`≡⟨⟩_
 infix  3 _`∎
 
 pattern _`∙_  {a} ab bc = `trans {a} ab bc
@@ -112,21 +113,23 @@ pattern _`↺⟨_⟩_ a ab bc = `trans {a} (`step ab) bc
 \end{code}
 \begin{code}[hide]
 pattern _`↺⟨_⟨_ a ba bc = `trans {a} (`sym (`step ba)) bc
-pattern _`≋⟨_⟩_ a ab bc = `trans {a} ab bc
-pattern _`≋⟨_⟨_ a ba bc = `trans {a} (`sym ba) bc
+pattern _`≈⟨_⟩_ a ab bc = `trans {a} ab bc
+pattern _`≈⟨_⟨_ a ba bc = `trans {a} (`sym ba) bc
 \end{code}
 \begin{code}
 pattern _`≡⟨_⟩_ a ab bc = `trans {a} (`path ab) bc
 \end{code}
 \begin{code}[hide]
 pattern _`≡⟨_⟨_ a ba bc = `trans {a} (`sym (`path ba)) bc
-
-_`≡⟨⟩_ : ∀ a {b} → a ≋ b → a ≋ b
+\end{code}
+\end{AgdaSuppressSpace}
+\begin{code}[hide]
+_`≡⟨⟩_ : ∀ a {b} → a ≈ b → a ≈ b
 a `≡⟨⟩ ab = `trans {a} (`path refl) ab
 {-# INLINE _`≡⟨⟩_ #-}
 \end{code}
 \begin{code}
-_`∎ : ∀ a → a ≋ a
+_`∎ : ∀ a → a ≈ a
 a `∎ = `path {a} refl
 {-# INLINE _`∎ #-}
 \end{code}

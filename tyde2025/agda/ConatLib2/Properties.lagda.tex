@@ -31,30 +31,27 @@ pred (unpred∘pred {n} i) = pred n
 
 unpred∘just : ∀{n} → unpred (just n) ≡ suc n
 pred (unpred∘just {n} i) = just n
-\end{code}
-\begin{code}
+
 pred-inj : ∀{n k} → pred n ≡ pred k → n ≡ k
-\end{code}
-\begin{code}[hide]
 pred (pred-inj e i) = e i
 \end{code}
 \begin{code}[hide]
-idl+ : ∀ n → zero + n ≡ n
-pred (idl+ n i) = pred n
++-idₗ : ∀ n → zero + n ≡ n
+pred (+-idₗ n i) = pred n
 \end{code}
 \begin{code}
-idr+ : ∀ n → n + zero ≡ n
++-idᵣ : ∀ n → n + zero ≡ n
 \end{code}
 \begin{code}[hide]
-pred (idr+ n i) with pred n
+pred (+-idᵣ n i) with pred n
 ... | nothing = nothing
-... | just n' = just (idr+ n' i)
+... | just n' = just (+-idᵣ n' i)
 \end{code}
 \begin{code}
-sucl+ : ∀ n k → suc n + k ≡ suc (n + k)
++-sucₗ : ∀ n k → suc n + k ≡ suc (n + k)
 \end{code}
 \begin{code}[hide]
-pred (sucl+ n k i) = just (n + k)
+pred (+-sucₗ n k i) = just (n + k)
 \end{code}
 
 The addition is defined by pattern matching on the predecessor of the
@@ -63,22 +60,22 @@ is on the second parameter. This is going to be the first property on which
 we are going to have to use our language.
 
 \begin{code}
-`sucr+ : ∀ n k → n + suc k `≋ suc (n + k)
+`+-sucᵣ : ∀ n k → n + suc k `≈ suc (n + k)
 \end{code}
 \begin{code}[hide]
-`prove (`sucr+ n k) with pred n | inspect pred n
+`prove (`+-sucᵣ n k) with pred n | inspect pred n
 ... | nothing | reveal eq1 = cong-just (
   k
-    `≡⟨ idl+ k ⟨
+    `≡⟨ +-idₗ k ⟨
   zero + k
     `≡⟨ cong (_+ k) (pred-inj eq1) ⟨
   n + k `∎
   )
 ... | just x  | reveal eq1 = cong-just (
   x + suc k
-    `↺⟨ `sucr+ x k ⟩
+    `↺⟨ `+-sucᵣ x k ⟩
   suc (x + k)
-    `≡⟨ sucl+ x k ⟨
+    `≡⟨ +-sucₗ x k ⟨
   suc x + k
     `≡⟨ cong (_+ k) (sym (pred-inj eq1)) ⟩
   n + k `∎
@@ -87,13 +84,13 @@ we are going to have to use our language.
 
 For brevity we omit the proofs here. However, they are formalised and available in our repository.
 
-After proving \AgdaFunction{`sucr+}, we still need to obtain the proof over equality.
+After proving \AgdaFunction{`+-sucᵣ}, we still need to obtain the proof over equality.
 This is simply done by using the \AgdaFunction{run} function to turn the language's proof
 into an equality.
 
 \begin{code}
-sucr+ : ∀ n k → n + suc k ≡ suc (n + k)
-sucr+ n k = run (`sucr+ n k)
++-sucᵣ : ∀ n k → n + suc k ≡ suc (n + k)
++-sucᵣ n k = run (`+-sucᵣ n k)
 \end{code}
 \begin{code}[hide]
 assoc+ : ∀ a b c → (a + b) + c ≡ a + (b + c)
@@ -109,27 +106,27 @@ compile without any unsafe pragmas. We omit the uninteresting branches of the pr
 \AgdaBound{a} or \AgdaBound{b} is \AgdaFunction{zero}.
 
 \begin{code}
-`comm+ : ∀ a b → a + b `≋ b + a
-`comm+-match :
+`+-comm : ∀ a b → a + b `≈ b + a
+`+-comm-match :
   ∀ a a' b b' → a' ≡ pred a → b' ≡ pred b →
-  Maybe~ _≋_ (+-match a' b) (+-match b' a)
+  Maybe~ _≈_ (+-match a' b) (+-match b' a)
 \end{code}
 \begin{code}[hide]
-`comm+-match a nothing b nothing eq1 eq2 = subst2 (Maybe~ _≋_) eq2 eq1 nothing-refl
-`comm+-match a nothing b (just b') eq1 eq2 = subst (λ x → Maybe~ _≋_ x (just (b' + a))) eq2 (cong-just (`path (sym (idr+ b')) `∙ `path (cong (b' +_) (pred-inj eq1))))
-`comm+-match a (just a') b nothing eq1 eq2 = subst (Maybe~ _≋_ (just (a' + b))) eq1 (cong-just (`path (cong (a' +_) (pred-inj (sym eq2))) `∙ `path (idr+ a')))
+`+-comm-match a nothing b nothing eq1 eq2 = subst2 (Maybe~ _≈_) eq2 eq1 nothing-refl
+`+-comm-match a nothing b (just b') eq1 eq2 = subst (λ x → Maybe~ _≈_ x (just (b' + a))) eq2 (cong-just (`path (sym (+-idᵣ b')) `∙ `path (cong (b' +_) (pred-inj eq1))))
+`+-comm-match a (just a') b nothing eq1 eq2 = subst (Maybe~ _≈_ (just (a' + b))) eq1 (cong-just (`path (cong (a' +_) (pred-inj (sym eq2))) `∙ `path (+-idᵣ a')))
 \end{code}
 \begin{code}
-`comm+-match a (just a') b (just b') eq1 eq2 =
+`+-comm-match a (just a') b (just b') eq1 eq2 =
   cong-just
     ( a' + b         `≡⟨ cong (a' +_) (pred-inj (sym eq2)) ⟩
-      a' + suc b'    `↺⟨ `comm+ a' (suc b') ⟩
-      suc b' + a'    `≡⟨ sucl+ b' a' ⟩
-      suc (b' + a')  `≡⟨ sym (sucr+ b' a') ⟩
+      a' + suc b'    `↺⟨ `+-comm a' (suc b') ⟩
+      suc b' + a'    `≡⟨ +-sucₗ b' a' ⟩
+      suc (b' + a')  `≡⟨ sym (+-sucᵣ b' a') ⟩
       b' + suc a'    `≡⟨ cong (b' +_) (pred-inj eq1) ⟩
       b' + a `∎)
-`prove (`comm+ a b) =
-  `comm+-match a (pred a) b (pred b) refl refl
+`prove (`+-comm a b) =
+  `+-comm-match a (pred a) b (pred b) refl refl
 \end{code}
 
 The only change in this proof with respect to the one in Section~\ref{sec:problem} is that
@@ -141,11 +138,11 @@ prove that it behaves the same way as the \AgdaFunction{cong} function in Cubica
 
 Note that the proof only exists in our language so again we have to convert
 it to make it use the equality using the \AgdaFunction{run} function the same
-way as we did with the \AgdaFunction{sucr+} property.
+way as we did with the \AgdaFunction{+-sucᵣ} property.
 
 \begin{code}
-comm+ : ∀ a b → a + b ≡ b + a
-comm+ a b = run (`comm+ a b)
++-comm : ∀ a b → a + b ≡ b + a
++-comm a b = run (`+-comm a b)
 \end{code}
 
 This way Agda sees the equational reasoning as being guarded, hence it accepts the proof.

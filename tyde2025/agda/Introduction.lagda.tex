@@ -107,9 +107,10 @@ As a result of this restriction, we cannot define a function that decides if an
 element is equal to \AgdaFunction{∞}.
 
 Our contribution in this paper is to prove that the conatural numbers form an
-exponential commutative semiring by guarded corecursion, where an
-\emph{exponential commutative semiring} is a commutative semiring with a binary
-operation for exponentiation satisfying the following equations:
+exponential commutative semiring by guarded corecursion, along the way showing
+methods to keep the corecursion guarded. An \emph{exponential commutative
+semiring} is a commutative semiring with a binary operation for exponentiation
+satisfying the following equations:
 \begin{align*}
   x^{yz} &= (x^y)^z & x^{y+z} &= x^y x^z & (xy)^z &= x^z y^z \\
   x^1 &= x & x^0 &= 1 & 1^x &= 1

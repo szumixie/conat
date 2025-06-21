@@ -31,13 +31,11 @@ mutual
   ×-match (just x')  nothing    = nothing
   ×-match (just x')  (just y')  = just (x' ×' y')
 \end{code}
-
 For the non-zero case, we define a separate operation \AgdaFunction{\_\times'\_}
-such that $x\times'y = (x+1)\times(y+1)-1$. The idea for the function is to basically
-count $y+1$ steps $x+1$ times. This means that in the function we have to be somehow
-able to reset the original number of steps we have to make in a cycle.
-We achieve that by defining a helper function which keeps track of the original \AgdaBound{y}.
-
+such that $x\times'y = (x+1)\times(y+1)-1$. The idea for the function is to
+count $y+1$ steps $x+1$ times. This means that after each $y+1$ steps, we have
+to reset the counter. To achieve this, we define a helper function which keeps
+track of the original $y$ which we call $y_0$:
 \begin{code}
   _×'_ : ℕ∞ → ℕ∞ → ℕ∞
   x ×' y = ×'-helper x y y
@@ -56,24 +54,67 @@ We achieve that by defining a helper function which keeps track of the original 
   ×'-helper-match x nothing nothing y₀ =
     nothing
 \end{code}
+If $y$ is not zero, we continue by decreasing it by one. If $y$ is zero but $x$
+is non-zero, then we decrease $x$ by one and reset $y$ to $y_0$. If both are
+zero then we stop. As an example, if we compute $3 \times' 2$, then we get the
+following trace for $(x, y)$:
+\[
+  (3,2) \to (3,1) \to (3,0) \to (2,2) \to \dots \to (0,1) \to (0,0)
+\]
+It takes $4 \times 3 - 1 = 11$ steps for it to terminate.
 
-Here is an example just showing the internal states after every step
-on how this funtcion calculates $3 \times' 2$:
-\[(3,2) \to (3,1) \to (3,0) \to (2,2) \to \dots \to (0,1) \to (0,0)\]
-It takes $4 \times 3 - 1 = 11$ steps to get to $(0,0)$
+Exponentiation can be defined as well. We can first define a
+\AgdaFunction{\_\textasciicircum'\_} such that $x \mathop{\textasciicircum}' y =
+(x+1)^{y+1}-1$, then define a helper function with the following type
+corecursively:
+\begin{code}[hide]
+postulate
+  ADMIT : ∀ {ℓ} {A : Type ℓ} → A
 
-To prove commutativity of addition, we introduce an operation for adding an
-inductive natural number to a conatural number:
+record NEList∞ (A : Type) : Type where
+
+replicate : ∀ {A} → ℕ∞ → A → NEList∞ A
+replicate = ADMIT
+
+infixr 5 _∷_
+_∷_ : ∀ {A} → A → NEList∞ A → NEList∞ A
+_∷_ = ADMIT
+
+mutual
+\end{code}
+\begin{code}
+  _^'_ : ℕ∞ → ℕ∞ → ℕ∞
+  x ^' y = ^'-helper (y ∷ replicate y x) x ℕ.zero
+
+  ^'-helper : NEList∞ ℕ∞ → ℕ∞ → ℕ → ℕ∞
+\end{code}
+\begin{code}[hide]
+  ^'-helper = ADMIT
+\end{code}
+In the helper function, \AgdaRecord{NEList∞} is a nonempty colist (potentially
+infinite list), the first argument is an iterated version of what was done when
+defining multiplication and the second argument is the resetting value. The
+following is an example trace of $2 \mathop{\textasciicircum}' 2$
+\begin{gather*}
+  [2, 2, 2] \to [1, 2, 2] \to [0, 2, 2] \to [2, 1, 2] \to \dots \\
+  \qquad\qquad\qquad\qquad\qquad\qquad\to [1, 0, 0] \to [0, 0, 0]
+\end{gather*}
+When some prefix of the colist is filled with zeroes, we need to recurse into
+the colist to find the next number to decrease, but because colist is
+coinductive and potentially infinite, as the last argument we keep an inductive
+natural number to track how deep we can go and use it to recurse into the
+colist.
+
+To prove the commutativity of addition, we introduce an operation for adding an
+finite natural number to a conatural number:
 \begin{code}
 infixl 6 _+ₗ_
 _+ₗ_ : ℕ → ℕ∞ → ℕ∞
 ℕ.zero +ₗ x = x
 ℕ.suc n +ₗ x = suc (n +ₗ x)
 \end{code}
-
-We are also going to need a property which states that the successor operation
-can be moved from the right side of addition to the front of the whole exression.
-
+We can also prove that the successor operation can be moved from the right side
+of addition to the front of the whole exression.
 \begin{code}
 +ₗ-suc : ∀ n x → n +ₗ suc x ≡ suc (n +ₗ x)
 \end{code}
@@ -82,13 +123,12 @@ can be moved from the right side of addition to the front of the whole exression
 +ₗ-suc (ℕ.suc n) x = cong suc (+ₗ-suc n x)
 \end{code}
 
-The intuition for the commutativity proof is that we keep track of how many steps we have
-iterated so far using a finite natural number.
-
-As we can see in the diagram below, where the top line is the left hand side,
-the botton line is the right hand side, at the beginning we go through $x$ and
-$y$ at the same time, while learning that both of them must be at least $n$.
-
+The intuition for the commutativity proof is that we keep track of how many
+steps we have taken so far using a finite natural number. As we can see in the
+diagram below, where the top line is the left hand side, the botton line is the
+right hand side, at the beginning we go through $x$ and $y$ at the same time,
+while learning that both of them must be at least $n$. At each step, we decrease
+$x$ and $y$ and increase $n$ by one:
 \begin{center}
   \begin{tikzpicture}[xscale=8, yscale=.5]
     \draw (0,1) -- (1,1);
@@ -118,9 +158,8 @@ $y$ at the same time, while learning that both of them must be at least $n$.
       ($(2/3,-0.75)$) -- (1,-0.75) node [midway, below=2mm] {$n+x=x_0$};
   \end{tikzpicture}
 \end{center}
-
-When it reaches the end of $x$, we learn that it is finite and equals to some $n$.
-
+When we reach the end of $x$, we learn that it is finite and equals to some $n$.
+We continue stepping through $y$ on both sides:
 \begin{center}
   \begin{tikzpicture}[xscale=8, yscale=.5]
     \draw (0,1) -- (1,1);
@@ -148,12 +187,14 @@ When it reaches the end of $x$, we learn that it is finite and equals to some $n
       ($(2/3,-0.75)$) -- (1,-0.75) node [midway, below=2mm] {$n+0$};
   \end{tikzpicture}
 \end{center}
+When we reach the end of $y$, we only have $n$ on both sides, which we can
+immediately prove equal.
 
-For this reason (or rather intuition) we are going to need two lemmas that
-exactly describe the two possible situations. During corecursion, we generalize
-the resulting equation and add equality arguments to avoid transporting the
-corecursive call, since transports do not preserve guardedness in Agda. We omit
-the uninteresting equality proofs below for readability.
+In the formalization, we have two helper lemmas that correspond to the two
+diagrams. During corecursion, we generalize the resulting equation and add
+equality arguments to avoid using the transitivity operation after the
+corecursive call, since transitivity does not preserve guardedness in Agda. We omit
+the uninteresting equality proofs below for readability:
 \begin{AgdaSuppressSpace}
 \begin{code}[hide]
 mutual
@@ -210,6 +251,15 @@ mutual
     1+n+y'≡y₀ = sym (+ₗ-suc n y') ∙ cong (n +ₗ_) (pred-inj (sym py)) ∙ ny
 \end{code}
 \end{AgdaSuppressSpace}
+In the first branch, both $x$ and $y$ reach zero at the same time, at which
+point we can already prove that both sides are equal. In the second branch, $x$
+reaches zero first, which is why we switch to the other lemma. There is a
+symmetric case where $y$ reaches zero first which we omit. The last case is
+where we have the corecursive call, stepping through both $x$ and $y$.
+
+In the second lemma, we similarly have to generalize the equation to avoid the
+transitivity operation. The second branch is an impossible case where we have a
+contradiction from the equation assumptions.
 \begin{AgdaSuppressSpace}
 \begin{code}
   +-comm-helper₂ :
@@ -256,7 +306,12 @@ mutual
 \end{code}
 \end{AgdaSuppressSpace}
 
-Directly defining the corecursion itself is tedious, it is even
-difficult to figure out the predecessor of an operation (for example
-exponentiation), let alone figuring out the predecessor of a property
-that uses that operator, like $(a ^n) ^k = a ^n ^\times ^k$.
+The commutativity of multiplication can be proved similarly by tracking the
+steps taken using \AgdaFunction{\_+ₗ\_}.
+
+Defining and proving things directly by guarded corecursion is difficult, since
+we cannot reuse earlier definitions, such as addition in the case of the
+definition of multiplication. Defining the corecursion and coinduction
+principles then using them can help with managing the proofs. Using the
+inductively defined identity type instead of the cubical path type for equality
+also helps, as we can pattern match on them.

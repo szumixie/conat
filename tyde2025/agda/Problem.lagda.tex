@@ -71,19 +71,20 @@ mutual
   +-assoc-match nothing    y z = refl
   +-assoc-match (just x')  y z = cong just (+-assoc x' y z)
 \end{code}
-This is again a nice guarded corecusion and Agda happily accepts this as a
-proof. However, the proof of commutativity of addition below is rejected without
-the \AgdaKeyword{TERMINATING} pragma. Let us assume we have this equation
-available to use in the proof of commutativity.
+This is again a nice instance of guarded corecusion and Agda happily accepts
+this as a proof. However, it is more difficult to prove that addition is
+commutative. Let us assume that we have the following equation to commute
+\AgdaFunction{suc}:
 \begin{code}[hide]
 postulate
 \end{code}
 \begin{code}
   +-suc : ∀ x y → x + suc y ≡ suc (x + y)
 \end{code}
-
-Then we can prove the commutativity of addition.
-
+Then we can use it to attempt to prove the commutativity of addition. We make
+\AgdaFunction{+-comm-match} take equations to remember that the arguments we
+match on are equal to the original values. We only show the case where neither
+$x$ nor $y$ are zero:
 \begin{code}[hide]
 mutual
 \end{code}
@@ -110,6 +111,7 @@ mutual
   +-comm-match x nothing y (just y') p q = ADMIT
   +-comm-match x (just x') y nothing p q = ADMIT
 \end{code}
-Here the same problem arises as for the definition of multiplication above, the definition is
-productive but not guarded, since the equational reasoning contains the
-transitivity operation which is not a constructor.
+The same problem arises here as in the definition of multiplication above. The
+definition here is productive but not guarded, because \AgdaFunction{+-comm} is
+used in the equational reasoning chain, which is just applications of the
+transitivity operation of equality, but they are not a constructor.
