@@ -21,8 +21,8 @@ mutual
 \begin{code}
   data Expr : Type where
     embedℕ∞ : ℕ∞ → Expr
-    embed : NExpr → Expr
-    _+_ : Expr → Expr → Expr
+    embed   : NExpr → Expr
+    _+_     : Expr → Expr → Expr
 
   record NExpr : Type where
     coinductive

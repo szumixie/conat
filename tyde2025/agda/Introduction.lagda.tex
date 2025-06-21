@@ -51,7 +51,7 @@ open ℕ∞ public
 This destructor is the predecessor function which either fails or returns
 another conatural number.
 
-We can define elements of \AgdaDatatype{ℕ∞} by copattern matching, that is, we
+We can define elements of \AgdaRecord{ℕ∞} by copattern matching, that is, we
 specify what the predecessor is for a particular element. As examples, zero does
 not have a predecessor:
 \begin{code}
@@ -146,9 +146,13 @@ pred-inj : ∀ {x y} → pred x ≡ pred y → x ≡ y
 pred (pred-inj p i) = p i
 \end{code}
 
+% we will not assume familiarity with cubical type theory
+we will not use features of cubical type theory besides the interval from the
+path/equality type
+
 \subsection{Related work}
 
-sized types
+sized types, guarded recursion/later modality
 
 decreasing boolean sequences
 

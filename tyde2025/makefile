@@ -11,6 +11,6 @@ latex/%.tex: agda/%.lagda.tex
 	agda -i agda/ --latex $<
 
 clean:
-	rm -f *.aux *.bbl *.blg *.fdb_latexmk *.fls *.log *.out *.pdf *.ptb *.xcp
+	rm -f *.aux *.bbl *.bcf *.blg *.fdb_latexmk *.fls *.log *.out *.pdf *.ptb *.run.xml *.xcp
 	rm -f agda/*.agdai agda/*/*.agdai agda/*/*/*.agdai
 	rm -f latex/*.tex latex/*/*.tex latex/*/*/*.tex

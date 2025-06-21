@@ -4,26 +4,41 @@
 module Direct where
 
 open import Cubical.Foundations.Prelude
-open import Cubical.Data.Maybe using (Maybe; nothing; just)
+open import Cubical.Data.Empty
+  renaming (rec to exfalso)
+open import Cubical.Data.Maybe using (Maybe; nothing; just; just-inj; ¬just≡nothing)
 import Cubical.Data.Nat as ℕ
 open ℕ using (ℕ)
-open import Introduction using (ℕ∞; pred; suc)
+open import Introduction using (ℕ∞; pred; zero; suc; pred-inj)
 open import Problem using (_+_; +-match)
 \end{code}
 In this section, we show some examples of how to do corecursion without running
 into the guardedness issue.
 
-For multiplication, we define the operation for positive conats first
+To avoid the guardedness issue in Section~\ref{sec:problem}, we define
+multiplication from scratch instead of reusing addition.
 
-$x\times'y = (x+1)\times(y+1)-1$
-
-we can do multiplication from scratch instead of reusing
-addition. Here we define a helper function that keeps track of the original
-\AgdaBound{y}.
+First, we match to check whether both arguments are zero:
 \begin{code}[hide]
-infixl 7 _×'_
+infixl 7 _×_ _×'_
 mutual
 \end{code}
+\begin{code}
+  _×_ : ℕ∞ → ℕ∞ → ℕ∞
+  pred (x × y) = ×-match (pred x) (pred y)
+
+  ×-match : Maybe ℕ∞ → Maybe ℕ∞ → Maybe ℕ∞
+  ×-match nothing    y'         = nothing
+  ×-match (just x')  nothing    = nothing
+  ×-match (just x')  (just y')  = just (x' ×' y')
+\end{code}
+
+For the non-zero case, we define a separate operation \AgdaFunction{\_\times'\_}
+such that $x\times'y = (x+1)\times(y+1)-1$. The idea for the function is to basically
+count $y+1$ steps $x+1$ times. This means that in the function we have to be somehow
+able to reset the original number of steps we have to make in a cycle.
+We achieve that by defining a helper function which keeps track of the original \AgdaBound{y}.
+
 \begin{code}
   _×'_ : ℕ∞ → ℕ∞ → ℕ∞
   x ×' y = ×'-helper x y y
@@ -43,53 +58,154 @@ mutual
     nothing
 \end{code}
 
-e.g. $(3,2) \to (3,1) \to (3,0) \to (2,2) \to \dots \to (0,1) \to (0,0)$ is $4
-\times 3 - 1 = 11$ steps
+Here is an example just showing the internal states after every step
+on how this funtcion calculates the predecessor of $4\times3$:
 
-\begin{code}[hide]
-infixl 7 _×_
-mutual
-\end{code}
-\begin{code}
-  _×_ : ℕ∞ → ℕ∞ → ℕ∞
-  pred (x × y) = ×-match (pred x) (pred y)
+$(3,2) \to (3,1) \to (3,0) \to (2,2) \to \dots \to (0,1) \to (0,0)$
 
-  ×-match : Maybe ℕ∞ → Maybe ℕ∞ → Maybe ℕ∞
-  ×-match nothing    y'         = nothing
-  ×-match (just x')  nothing    = nothing
-  ×-match (just x')  (just y')  = just (x' ×' y')
-\end{code}
+It took $4 \times 3 - 1 = 11$ steps to get to $(0,0)$
 
-To prove commutativity of addition, we introduce an operation for addition of an
+To prove commutativity of addition, we introduce an operation for adding an
 inductive natural number to a conatural number:
+
 \begin{code}
-infixl 6 _+L_
-_+L_ : ℕ → ℕ∞ → ℕ∞
-ℕ.zero +L x = x
-ℕ.suc n +L x = suc (n +L x)
+infixl 6 _+ₗ_
+_+ₗ_ : ℕ → ℕ∞ → ℕ∞
+ℕ.zero +ₗ x = x
+ℕ.suc n +ₗ x = suc (n +ₗ x)
 \end{code}
+
+
+
+\begin{code}
++ₗ-suc : ∀ n x → n +ₗ suc x ≡ suc (n +ₗ x)
+\end{code}
+\begin{code}[hide]
++ₗ-suc ℕ.zero x = refl
++ₗ-suc (ℕ.suc n) x = cong suc (+ₗ-suc n x)
+\end{code}
+
+\begin{center}
+  \begin{tikzpicture}[xscale=8, yscale=.5]
+    \draw (0,1) -- (1,1);
+    \draw (0,0) -- (1,0);
+
+    \draw (0,0.75) -- (0,1.25);
+    \draw ($(1/3,0.75)$) -- ($(1/3,1.25)$);
+    \draw (1,0.75) -- (1,1.25);
+
+    \draw (0,-0.25) -- (0,0.25);
+    \draw ($(2/3,-0.25)$) -- ($(2/3,0.25)$);
+    \draw (1,-0.25) -- (1,0.25);
+
+    \draw [-{To[length=1mm]}] (0,1) -- ($(2/9,1)$);
+    \draw [-{To[length=1mm]}] (0,0) -- ($(2/9,0)$);
+
+    \draw [decorate, decoration={brace, amplitude=2mm}]
+      ($(2/9,1.75)$) -- ($(1/3,1.75)$) node [midway, above=2mm] {$x$};
+    \draw [decorate, decoration={brace, amplitude=2mm}]
+      ($(1/3,1.75)$) -- (1,1.75) node [midway, above=2mm] {$n+y$};
+
+    \draw [decorate, decoration={brace, mirror, amplitude=2mm}]
+      (0,-0.75) -- ($(2/9,-0.75)$) node [midway, below=2mm] {$n$};
+    \draw [decorate, decoration={brace, mirror, amplitude=2mm}]
+      ($(2/9,-0.75)$) -- ($(2/3,-0.75)$) node [midway, below=2mm] {$y$};
+    \draw [decorate, decoration={brace, mirror, amplitude=2mm}]
+      ($(2/3,-0.75)$) -- (1,-0.75) node [midway, below=2mm] {$n+x$};
+  \end{tikzpicture}
+\end{center}
+
+At this point we know $x$ is finite and equals to $n$:
+\begin{center}
+  \begin{tikzpicture}[xscale=8, yscale=.5]
+    \draw (0,1) -- (1,1);
+    \draw (0,0) -- (1,0);
+
+    \draw (0,0.75) -- (0,1.25);
+    \draw ($(1/3,0.75)$) -- ($(1/3,1.25)$);
+    \draw (1,0.75) -- (1,1.25);
+
+    \draw (0,-0.25) -- (0,0.25);
+    \draw ($(2/3,-0.25)$) -- ($(2/3,0.25)$);
+    \draw (1,-0.25) -- (1,0.25);
+
+    \draw [-{To[length=1mm]}] (0,1) -- ($(4/9,1)$);
+    \draw [-{To[length=1mm]}] (0,0) -- ($(4/9,0)$);
+
+    \draw [decorate, decoration={brace, amplitude=2mm}]
+      (0,1.75) -- ($(1/3,1.75)$) node [midway, above=2mm] {$n$};
+    \draw [decorate, decoration={brace, amplitude=2mm}]
+      ($(4/9,1.75)$) -- (1,1.75) node [midway, above=2mm] {$n+y$};
+
+    \draw [decorate, decoration={brace, mirror, amplitude=2mm}]
+      ($(4/9,-0.75)$) -- ($(2/3,-0.75)$) node [midway, below=2mm] {$y$};
+    \draw [decorate, decoration={brace, mirror, amplitude=2mm}]
+      ($(2/3,-0.75)$) -- (1,-0.75) node [midway, below=2mm] {$n$};
+  \end{tikzpicture}
+\end{center}
 
 \begin{code}[hide]
 mutual
 \end{code}
 \begin{code}
   +-comm : ∀ x y → x + y ≡ y + x
-  +-comm x y = +-comm-helper₁ ℕ.zero x y refl refl
+  +-comm x y = +-comm-helper₁ ℕ.zero x x y y refl refl
 
   +-comm-helper₁ :
-    ∀ n x y {l r} → l ≡ x + (n +L y) → r ≡ y + (n +L x) → l ≡ r
-  +-comm-helper₁ n x y le re i .pred =
-    +-comm-helper₁-match n x (pred x) y (pred y)
-      refl refl (cong pred le) (cong pred re) i
+    ∀ n x x₀ y y₀ → n +ₗ x ≡ x₀ → n +ₗ y ≡ y₀ → x + y₀ ≡ y + x₀
+  pred (+-comm-helper₁ n x x₀ y y₀ nx ny i) =
+    +-comm-helper₁-match n x (pred x) x₀ y (pred y) y₀ refl refl nx ny i
 
   +-comm-helper₁-match :
-    ∀ n x x' y y' {l r} →
-    pred x ≡ x' → pred y ≡ y' →
-    l ≡ +-match x' (n +L y) → r ≡ +-match y' (n +L x) →
-    l ≡ r
-  +-comm-helper₁-match n x nothing y nothing px py le re = {!!}
-  +-comm-helper₁-match n x nothing y (just y') px py le re = {!!}
-  +-comm-helper₁-match n x (just x') y nothing px py le re = {!!}
-  +-comm-helper₁-match n x (just x') y (just y') px py le re =
-    {!!}
+    ∀ n x x' x₀ y y' y₀ →
+    pred x ≡ x' → pred y ≡ y' → n +ₗ x ≡ x₀ → n +ₗ y ≡ y₀ →
+    +-match x' y₀ ≡ +-match y' x₀
+  +-comm-helper₁-match n x nothing x₀ y nothing y₀ px py nx ny =
+    cong pred
+      (sym ny ∙ cong (n +ₗ_) (pred-inj py ∙ pred-inj {zero} (sym px)) ∙ nx)
+  +-comm-helper₁-match n x nothing x₀ y (just y') y₀ px py nx ny =
+    cong pred (sym ny ∙ cong (n +ₗ_) (pred-inj py) ∙ +ₗ-suc n y') ∙
+    cong just
+      ( +-comm-helper₂ n y' (n +ₗ y') refl ∙
+        cong (y' +_) (cong (n +ₗ_) (pred-inj (sym px)) ∙ nx))
+  +-comm-helper₁-match n x (just x') x₀ y nothing y₀ px py nx ny =
+    cong just
+      ( cong (x' +_) (sym ny ∙ cong (n +ₗ_) (pred-inj py)) ∙
+        sym (+-comm-helper₂ n x' (n +ₗ x') refl)) ∙
+    cong pred (sym (+ₗ-suc n x') ∙ cong (n +ₗ_) (pred-inj (sym px)) ∙ nx)
+  +-comm-helper₁-match n x (just x') x₀ y (just y') y₀ px py nx ny =
+    cong just
+      (+-comm-helper₁ (ℕ.suc n) x' x₀ y' y₀
+        (sym (+ₗ-suc n x') ∙ cong (n +ₗ_) (pred-inj (sym px)) ∙ nx)
+        (sym (+ₗ-suc n y') ∙ cong (n +ₗ_) (pred-inj (sym py)) ∙ ny))
 \end{code}
+\begin{code}
+  +-comm-helper₂ : ∀ n y y₀ → n +ₗ y ≡ y₀ → y₀ ≡ y + (n +ₗ zero)
+  pred (+-comm-helper₂ n y y₀ ny i) =
+    +-comm-helper₂-match n y (pred y) y₀ (pred y₀) refl refl ny i
+
+  +-comm-helper₂-match :
+    ∀ n y y' y₀ y₀' →
+    pred y ≡ y' → pred y₀ ≡ y₀' → n +ₗ y ≡ y₀ →
+    y₀' ≡ +-match y' (n +ₗ zero)
+  +-comm-helper₂-match n y nothing y₀ y₀' py py₀ ny =
+    sym py₀ ∙ cong pred (sym ny ∙ cong (n +ₗ_) (pred-inj py))
+  +-comm-helper₂-match n y (just y') y₀ nothing py py₀ ny =
+    exfalso
+      (¬just≡nothing
+        ( cong pred
+            (sym (+ₗ-suc n y') ∙ cong (n +ₗ_) (pred-inj (sym py)) ∙ ny) ∙
+          py₀))
+  +-comm-helper₂-match n y (just y') y₀ (just y₀') py py₀ ny =
+    cong just
+      (+-comm-helper₂ n y' y₀'
+        (just-inj _ _
+          ( cong pred
+              ( sym (+ₗ-suc n y') ∙
+                cong (n +ₗ_) (pred-inj (sym py)) ∙
+                ny) ∙
+            py₀)))
+\end{code}
+
+extra equality arguments are to avoid transports, since they do not preserve
+guardedness.
