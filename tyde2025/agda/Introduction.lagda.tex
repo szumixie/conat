@@ -123,8 +123,9 @@ rejected by Agda because they are not guarded. In the next sections, we show
 three ways to avoid this issue, using multiplication and commutativity of
 addition as running examples.
 
-In section~\ref{sec:direct}, we directly formalise every needed function, lemma,
-property to prove commutativity of addition.
+In section~\ref{sec:direct}, we directly use corecursion to define
+multiplication and prove the commutativity of addition, avoiding reusing any
+previous definitions to keep guardedness.
 
 In section~\ref{sec:dsl}, we use Nils Anders Danielsson's
 method~\cite{danielsson-beating} to formalise a proof language and use that

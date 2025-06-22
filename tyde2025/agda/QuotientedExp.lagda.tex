@@ -1046,32 +1046,22 @@ private
 
 The rest of the proof remains the same, we just add the new operations and
 equations to the \AgdaRecord{ℕ∞Str} record. The result is that we have the proof
-that \AgdaRecord{ℕ∞} forms an exponential commutative semiring.
-
-After defining the predecessors for the properties too, it is straightforward to
-change the proof to derive exponentiation and its properties for
-\AgdaRecord{ℕ∞}.
-
-Every other property from the commutative semiring section stays the same, the
-same proofs still work. It is also proven that extending the language with
-exponentiation still retains its stability and completeness. We had to also extend to motive
-and the structure to include exponentiation. Instantiating the structure with our new extended
-\AgdaDatatype{Expr} we get all the proofs contained in it for conatural numbers and concluding
-our proof that conatural numbers with $\AgdaFunction{\_+\_}$,$\AgdaFunction{\_\times\_}$ and
-$\AgdaFunction{\_\textasciicircum\_}$ form an exponential semiring.
-
-Here we can see an example proof of $2^\infty = \infty$ using conatural numbers
-and equational reasoning.
+that \AgdaRecord{ℕ∞} forms an exponential commutative semiring. Since we are
+using Cubical Agda, the usage of the univalence principle computes, the only
+problem is that there are some extraneous transports in the result of the
+computation, but they are invisible if one only uses the interface provided by
+the exponential commutative semiring and the predecessor. Here we show an
+example of defining $2^\infty$ and proving that $2^\infty = \infty$.
 \begin{code}
   example : ℕ∞
   example = suc (suc zero) ^ ∞
 
   _ : example ≡ ∞
   _ =
-    suc (suc zero) ^ ∞       ≡⟨ ^-sucₗ _ _ ⟩
-    suc (block (suc zero) ∞) ≡⟨ cong suc (block-∞ᵣ _) ⟩
-    suc ∞                    ≡⟨ sym ∞-suc ⟩
-    ∞                        ∎
+    suc (suc zero) ^ ∞        ≡⟨ ^-sucₗ _ _ ⟩
+    suc (block (suc zero) ∞)  ≡⟨ cong suc (block-∞ᵣ _) ⟩
+    suc ∞                     ≡⟨ sym ∞-suc ⟩
+    ∞                         ∎
 \end{code}
 \begin{code}[hide]
   _ : one .pred ≡ just zero
@@ -1080,3 +1070,7 @@ and equational reasoning.
     suc zero .pred ≡⟨ pred-suc _ ⟩
     just zero      ∎
 \end{code}
+
+In this section we have seen how to add exponentiation to the proof, however, we
+had to modify the original \AgdaDatatype{Expr} datatype. As such, this method is
+not modular, as it is inconvenient to extend the proof after the fact.
