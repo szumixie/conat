@@ -691,9 +691,9 @@ ExprIsoℕ∞ = iso interp embedℕ∞ interp-embedℕ∞ embedℕ∞-interp
 \end{code}
 
 Now that we have an isomorphism, we get all the operations and equations in
-\AgdaDatatype{Expr} for \AgdaRecord{ℕ∞} by the univalence principle (TODO:
-cite?). To do that, we define a record with all the operations and equations of
-a commutative semiring.
+\AgdaDatatype{Expr} for \AgdaRecord{ℕ∞} by the univalence
+principle~\cite{hottbook}. To do that, we define a record with all the
+operations and equations of a commutative semiring.
 \begin{AgdaAlign}
 \begin{code}
 record ℕ∞Str (A : Type) (pred : A → Maybe A) : Type

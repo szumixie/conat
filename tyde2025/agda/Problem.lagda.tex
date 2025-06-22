@@ -31,10 +31,10 @@ mutual
 \end{code}
 In the first case, we say that the predecessor of $0 + y$ is the predecessor of
 $y$. In the second case, which is when $x$ is non-zero, we say that the
-predecessor of $x + y$ is $x' + y$ where $x'$ is the predecessor of $x$.
+predecessor of $x + y$ is $x' + y$ where $x'$ is the predecessor of~$x$.
 
 If we naïvely try to define multiplication by using addition, then Agda will
-reject it, unless we use the unsafe \AgdaKeyword{TERMINATING} pragma:
+reject it, unless we use the unsafe \AgdaKeyword{TERMINATING} pragma.
 \begin{code}[hide]
 infixl 7 _×_
 mutual
@@ -50,7 +50,7 @@ mutual
   ×-match (just x')  y nothing    = nothing
   ×-match (just x')  y (just y')  = just (y' + x' × y)
 \end{code}
-Here we match on both $x$ and $y$. If neither are zero, then the predecessor of
+Here we match on both $x$ and~$y$. If neither are zero, then the predecessor of
 $x × y$ is $y' + x' × y$, where $x - 1 = x'$ and $y - 1 = y'$. This definition
 is rejected by Agda, because it is not guarded (even though it is productive),
 as the recursive call to \AgdaFunction{\_×\_} is under \AgdaFunction{\_+\_},

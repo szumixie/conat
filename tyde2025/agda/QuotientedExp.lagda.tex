@@ -1047,11 +1047,12 @@ private
 The rest of the proof remains the same, we just add the new operations and
 equations to the \AgdaRecord{ℕ∞Str} record. The result is that we have the proof
 that \AgdaRecord{ℕ∞} forms an exponential commutative semiring. Since we are
-using Cubical Agda, the usage of the univalence principle computes, the only
-problem is that there are some extraneous transports in the result of the
-computation, but they are invisible if one only uses the interface provided by
-the exponential commutative semiring and the predecessor. Here we show an
-example of defining $2^\infty$ and proving that $2^\infty = \infty$.
+using Cubical Agda, the usage of the univalence principle
+computes~\cite{vezzosi-cubical}, the only problem is that there are some
+extraneous transports in the result of the computation, but they are invisible
+if one only uses the interface provided by the exponential commutative semiring
+and the predecessor. Here we show an example of defining $2^\infty$ and proving
+that $2^\infty = \infty$.
 \begin{code}
   example : ℕ∞
   example = suc (suc zero) ^ ∞

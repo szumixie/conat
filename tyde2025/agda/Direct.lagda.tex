@@ -17,7 +17,7 @@ into the guardedness issue.
 
 To avoid the guardedness issue in Section~\ref{sec:problem}, we define
 multiplication from scratch instead of reusing addition. First, we match to
-check whether either of the arguments is zero:
+check whether either of the arguments is zero.
 \begin{code}[hide]
 infixl 7 _×_ _×'_
 mutual
@@ -35,7 +35,7 @@ For the non-zero case, we define a separate operation \AgdaFunction{\_\times'\_}
 such that $x\times'y = (x+1)\times(y+1)-1$. The idea for the function is to
 count $y+1$ steps $x+1$ times. This means that after each $y+1$ steps, we have
 to reset the counter. To achieve this, we define a helper function which keeps
-track of the original $y$ which we call $y_0$:
+track of the original $y$ which we call~$y_0$.
 \begin{code}
   _×'_ : ℕ∞ → ℕ∞ → ℕ∞
   x ×' y = ×'-helper x y y
@@ -55,7 +55,7 @@ track of the original $y$ which we call $y_0$:
     nothing
 \end{code}
 If $y$ is not zero, we continue by decreasing it by one. If $y$ is zero but $x$
-is non-zero, then we decrease $x$ by one and reset $y$ to $y_0$. If both are
+is non-zero, then we decrease $x$ by one and reset $y$ to~$y_0$. If both are
 zero then we stop. As an example, if we compute $3 \times' 2$, then we get the
 following trace for $(x, y)$:
 \[
@@ -106,7 +106,7 @@ natural number to track how deep we can go and use it to recurse into the
 colist.
 
 To prove the commutativity of addition, we introduce an operation for adding a
-finite natural number to a conatural number:
+finite natural number to a conatural number.
 \begin{code}
 infixl 6 _+ₗ_
 _+ₗ_ : ℕ → ℕ∞ → ℕ∞
@@ -127,8 +127,8 @@ The intuition for the commutativity proof is that we keep track of how many
 steps we have taken so far using a finite natural number. As we can see in the
 diagram below, where the top line is the left hand side, the botton line is the
 right hand side, at the beginning we go through $x$ and $y$ at the same time,
-while learning that both of them must be at least $n$. At each step, we decrease
-$x$ and $y$ and increase $n$ by one:
+while learning that both of them must be at least~$n$. At each step, we decrease
+$x$ and $y$ and increase $n$ by one.
 \begin{center}
   \begin{tikzpicture}[xscale=8, yscale=.5]
     \draw (0,1) -- (1,1);
@@ -158,8 +158,8 @@ $x$ and $y$ and increase $n$ by one:
       ($(2/3,-0.75)$) -- (1,-0.75) node [midway, below=2mm] {$n+x=x_0$};
   \end{tikzpicture}
 \end{center}
-When we reach the end of $x$, we learn that it is finite and equals to some $n$.
-We continue stepping through $y$ on both sides:
+When we reach the end of~$x$, we learn that it is finite and equals to some~$n$.
+We continue stepping through $y$ on both sides.
 \begin{center}
   \begin{tikzpicture}[xscale=8, yscale=.5]
     \draw (0,1) -- (1,1);
@@ -187,14 +187,14 @@ We continue stepping through $y$ on both sides:
       ($(2/3,-0.75)$) -- (1,-0.75) node [midway, below=2mm] {$n+0$};
   \end{tikzpicture}
 \end{center}
-When we reach the end of $y$, we only have $n$ on both sides, which we can
+When we reach the end of~$y$, we only have $n$ on both sides, which we can
 immediately prove equal.
 
 In the formalisation, we have two helper lemmas that correspond to the two
 diagrams. During corecursion, we generalise the resulting equation and add
 equality arguments to avoid using the transitivity operation after the
 corecursive call, since transitivity does not preserve guardedness in Agda. We omit
-the uninteresting equality proofs below for readability:
+the uninteresting equality proofs below for readability.
 \begin{AgdaSuppressSpace}
 \begin{code}[hide]
 mutual
@@ -252,8 +252,8 @@ mutual
 \end{code}
 \end{AgdaSuppressSpace}
 In the first branch, both $x$ and $y$ reach zero at the same time, at which
-point we can already prove that both sides are equal. In the second branch, $x$
-reaches zero first, which is why we switch to the other lemma. There is a
+point we can already prove that both sides are equal. In the second branch,
+$x$~reaches zero first, which is why we switch to the other lemma. There is a
 symmetric case where $y$ reaches zero first which we omit. The last case is
 where we have the corecursive call, stepping through both $x$ and $y$.
 

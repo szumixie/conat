@@ -8,7 +8,7 @@ open import Introduction using (ℕ∞; pred)
 We define an embedded language where addition is a constructor, this way we can
 define multiplication in a similar way as in Section~\ref{sec:problem} and have
 Agda accept it without enabling unsafe features. In this language, we also add a
-way to embed conatural numbers and head normal expressions (\AgdaRecord{NExpr}):
+way to embed conatural numbers and head normal expressions (\AgdaRecord{NExpr}).
 \begin{code}[hide]
 infixl 6 _`+_
 mutual
@@ -32,7 +32,8 @@ the definition of multiplication to be defined corecursively.
 open NExpr public
 \end{code}
 Since \AgdaDatatype{Expr} is inductive and \AgdaRecord{NExpr} is coinductive,
-this is an instance of a mixed inductive/coinductive definition.
+this is an instance of a mixed inductive/coinductive
+definition~\cite{hancock-stream}.
 
 Given this language, we can define multiplication. The structure of
 the definition is similar to the one in Section~\ref{sec:problem}, but here it
