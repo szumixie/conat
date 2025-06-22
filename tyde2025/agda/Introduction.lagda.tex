@@ -166,10 +166,11 @@ Our formalisation is available at \url{https://github.com/szumixie/conat}.
 There are some extensions to type theory that can make corecursive definitions
 easier to define.
 
-Sized types attaches ordinals to constructors, which allows corecursion to be
-done by recursion on the sizes~\cite{hughes-sized, abel-delay}. This bypasses
-the guardedness restriction, however, the current implementation of sized types
-in Agda is inconsistent~\cite{abel-agda-sized}.
+Using sized types, one can attach ordinals to constructors, which allows
+corecursion to be done by well-founded recursion on the
+sizes~\cite{hughes-sized, abel-delay}. This bypasses the guardedness
+restriction, however, the current implementation of sized types in Agda is
+inconsistent~\cite{abel-agda-sized}.
 
 Guarded recursion adds a modality to type theory and a fixed point operation
 which uses the modality to avoid allowing non-terminating
@@ -179,7 +180,7 @@ There is an equivalent non-coinductive representation of conatural numbers,
 which are monotonically decreasing (or increasing) Boolean
 sequences~\cite{escardo-infinite}.
 \[
-  (f : \mathbb{N} \to \mathbb{2}) \times ((m\,n : \mathbb{N}) \to n \le m \to f(m) \le f(n))
+  (f : \mathbb{N} \to \mathbb{2}) \times ((m\ n : \mathbb{N}) \to n \le m \to f(m) \le f(n))
 \]
 Naïm Camille Favier proved that conatural numbers form a semiring with meet
 using this representation, avoiding corecursion~\cite{favier-conat}.
