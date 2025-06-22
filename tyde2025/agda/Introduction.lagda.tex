@@ -51,9 +51,9 @@ open ℕ∞ public
 This destructor is the predecessor function which either fails or returns
 another conatural number.
 
-We can define elements of \AgdaRecord{ℕ∞} by copattern matching, that is, we
-specify what the predecessor is for a particular element. As examples, zero does
-not have a predecessor:
+We can define elements of \AgdaRecord{ℕ∞} by copattern
+matching~\cite{abel-copatterns}, that is, we specify what the predecessor is for
+a particular element. As examples, zero does not have a predecessor:
 \begin{code}
 zero : ℕ∞
 pred zero = nothing
@@ -128,8 +128,8 @@ multiplication and prove the commutativity of addition, avoiding reusing any
 previous definitions to keep guardedness.
 
 In section~\ref{sec:dsl}, we use Nils Anders Danielsson's
-method~\cite{danielsson-beating} to formalise a proof language and use that
-to prove commutativity of addition.
+method~\cite{danielsson-beating} to use an embedded language to define
+multiplication, and another language to the prove commutativity of addition.
 
 In section~\ref{sec:quotiented}, we adapt the previous method to Cubical Agda,
 making use of a mixed higher-inductive/coinductive type and univalence to
@@ -139,29 +139,40 @@ semiring at once.
 \subsection{Formalisation}
 
 In vanilla Agda, it is not possible to prove non-trivial equations about
-conatural numbers using the Martin-Löf identity type \textbf{(TODO: cite)}, one needs to
-either postulate the coinduction principle, or instead use a coinductively
-defined equivalence relation, in which case one would need to prove that the
-operations preserve that relation. As such, in this paper we use Cubical Agda,
-where the coinduction principle and other equations can be directly proved
-thanks to the interaction between copattern matching and the
-interval~\cite{vezzosi-cubical}. As an example, we show the proof that the
-predecessor function is injective:
+conatural numbers using the Martin-Löf identity type \textbf{(TODO: cite)}, one
+needs to either postulate the coinduction principle, or instead use a
+coinductively defined equivalence relation, in which case one would need to
+prove that the operations preserve that relation. As such, in this paper we use
+Cubical Agda, where the coinduction principle and other equations can be
+directly proved thanks to the interaction between copattern matching and the
+interval~\cite{vezzosi-cubical}. As an example, the proof below that the
+predecessor function is injective cannot be done in vanilla Agda:
 \begin{code}
 pred-inj : ∀ {x y} → pred x ≡ pred y → x ≡ y
 pred (pred-inj p i) = p i
 \end{code}
 
-% we will not assume familiarity with cubical type theory
-we will not use features of cubical type theory besides the interval from the
-path/equality type
+With the method in Section~\ref{sec:direct}, we have formalized that the
+conatural numbers form a commutative semiring, and defined the exponentiation
+operation without equations. With the method in Section~\ref{sec:dsl} we have
+proved the properties of addition (TODO: this is using vanilla Agda?). With the
+last method, in Section~\ref{sec:quotiented}, we have a full formalization that
+the conatural numbers form an exponential commutative semiring.
 
 \subsection{Related work}
 
-sized types, guarded recursion/later modality
+There are some extensions to type theory that can make corecursive definitions
+easier to define.
 
-decreasing boolean sequences
+sized types: attach sizes to constructors, well-founded recursion on sizes instead of
+corecursion, current implementation in Agda inconsistent~\cite{hughes-sized}
 
-Naïm~\cite{favier-conat}
+guarded recursion/later modality: ???
 
-TypeTopology
+There is another equivalent representation of conatural numbers, which are
+monotonically decreasing (or increasing) Boolean sequences
+\[
+  (f : \mathbb{N} \to \mathbb{2}) \times ((m n : \mathbb{N}) \to n \le m \to f(m) \le f(n))
+\]
+Naïm Camille Favier proved that conatural numbers form a semiring with meet
+using this representation, avoiding corecursion~\cite{favier-conat}.

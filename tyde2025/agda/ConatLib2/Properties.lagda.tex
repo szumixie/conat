@@ -109,7 +109,7 @@ mutual
   `+-comm-match a nothing b (just b') eq1 eq2 = subst (λ x → Maybe~ _≈_ x (just (b' + a))) eq2 (cong-just (`eq (sym (+-idᵣ b')) `∙ `eq (cong (b' +_) (pred-inj eq1))))
   `+-comm-match a (just a') b nothing eq1 eq2 = subst (Maybe~ _≈_ (just (a' + b))) eq1 (cong-just (`eq (cong (a' +_) (pred-inj (sym eq2))) `∙ `eq (+-idᵣ a')))
 \end{code}
-There is one difference in this proof compared to the one in in
+There is one difference in this proof compared to the one in
 Section~\ref{sec:problem}, which is that we need to switch up two steps. First,
 we need to use commutativity to switch the operands of \AgdaFunction{\_+\_}
 before making \AgdaFunction{suc} the outermost function. This is because we do
@@ -117,7 +117,7 @@ not have congruence over \AgdaFunction{suc} in our language, but it could also
 be added to the language.
 
 The proof only exists in our language so again we convert it to an equality the
-same way as we did with the \AgdaFunction{+-suc} property.
+same way we did with the \AgdaFunction{+-suc} property.
 \begin{code}
 +-comm : ∀ x y → x + y ≡ y + x
 +-comm x y = interp (`step (`+-comm x y))

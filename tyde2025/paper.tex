@@ -125,18 +125,17 @@ Bib\TeX}}}
 %% The abstract is a short summary of the work to be presented in the
 %% article.
 \begin{abstract}
-  Conatural numbers are the dual of natural numbers with the concept of
-  infinity and additional structure. They are useful for example counting
-  the number of steps a possibly infinite operation takes to finish IOn
-  conatural numbers isteadd of recursion, we can only use corecursion
-  defintions which are productive. Cubical Agda requires from us a stricter
-  constraint, a corecursion has to be guarded in order to be accepted.
-  Unfortunately, proofs often require transitive reasoning to prove
-  a certain property but transitivity is not considered guarded by
-  Cubical Agda. We propose some ideas on solving this issue using
-  a running example of multiplication and commutativity of addition,
-  then we give comparison between the three different
-  methods.
+  Conatural numbers are a coinductive type dual to the inductively defined
+  natural numbers. The conatural numbers can represent all natural numbers and
+  an extra element for infinity, this can be useful for representing the amount
+  of steps taken by a possibly non-terminating program. We can define functions
+  on conatural numbers by corecursion, however proof assistants such as Agda
+  require the corecursive definitions to be guarded to make sure that they are
+  productive. This requirement is often too restrictive, as it disallows the
+  corecursive occurrence to appear under previously defined operations. In this
+  paper, we explore some methods to solving this issue using the running
+  examples of multiplication and the commutativity of addition on conatural
+  numbers, then we give comparisons between these methods.
 \end{abstract}
 
 %%
@@ -229,8 +228,8 @@ transitivity in the same proof making it compositional, hence we could reuse
 properties and the corecursion principle to prove other properties just like
 during a proof over an inductive type. The problem is we have to define a new
 language for every new operation we want in which we have to include every
-operation as a constructor in order to make Agda see the definition as guarded
-which quickly leads to code duplication.
+operation we want to reuse as a constructor in order to make Agda
+see the definition as guarded which quickly leads to code duplication.
 
 In Section~\ref{sec:quotiented} we extended our language using the idea that we
 can include equations themselves using a mixed higher-inductive/coinductive
@@ -238,7 +237,7 @@ type, which is only allowed in Cubical Agda. This method allows us to reuse any
 other operation and equation that we are defining at the same time. With it, we
 easily proved that conatural numbers form a commutative semiring. The only
 problem with this method is that it is not modular. If we want to include more
-operations or properties that we define and proof, then we have to extend the
+operations or properties that we define and proofs, then we have to extend the
 already existing datatype of expressions.
 
 We believe the last method can be generalised to definitions and proofs about
@@ -254,7 +253,7 @@ does not necessitate code duplication.
 
 Another question is how one can define some more complicated operations, such as
 tetration or the Ackermann function, on conatural numbers. Since conatural
-numbers are an coinductive type, one defines operations by specifying the
+numbers are a coinductive type, one defines operations by specifying the
 predecessor, however, it is not clear how one can specify the predecessors of
 the aforementioned operations.
 

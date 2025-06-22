@@ -31,7 +31,7 @@ single embedded language.
 
 We will first show that the conatural numbers form a commutative semiring.
 
-We mutually define expressions as an higher inductive type and head normal
+We mutually define expressions as a higher inductive type and head normal
 expressions as a coinductive type. This is similar to the types in
 Section~\ref{sec:dsl-mul}, except we add equations as constructors for
 \AgdaDatatype{Expr}.
@@ -102,7 +102,7 @@ transitivity function does not preserve guardedness.
 \end{AgdaAlign}
 This is a mixed higher-inductive/coinductive definition.
 
-We introduce an abbreviation for adding one.
+We introduce an abbreviation for adding one to expressions.
 \begin{code}
   suc : Expr → Expr
   suc x = one + x
@@ -658,7 +658,7 @@ mutual
 \end{code}
 If we interpret an expression from the language to conatural numbers and then we
 embed it back to the language, then we get an expression equal to the one we
-started with. Here is the point where we had to use of the embedded transitivity
+started with. Here is the point where we had to use the embedded transitivity
 operation, because otherwise it would not be guarded.
 \begin{code}[hide]
 mutual
@@ -696,9 +696,10 @@ cite?). To do that, we define a record with all the operations and equations of
 a commutative semiring.
 \begin{AgdaAlign}
 \begin{code}
-record ℕ∞Str (A : Type) (pred : A → Maybe A) : Type where
+record ℕ∞Str (A : Type) (pred : A → Maybe A) : Type
 \end{code}
 \begin{code}[hide]
+  where
   infixl 6 _+_
   infixl 7 _×_
 \end{code}
@@ -753,7 +754,9 @@ With the record defined, we can easily define it for \AgdaDatatype{Expr}.
 \end{code}
 Then, by transporting over the isomorphism using univalence, we get the same
 record for \AgdaRecord{ℕ∞}, and thus getting every single operation and equation
-in the record for conatural numbers at once.
+in the record for conatural numbers at once. Note that it is possible to derive
+this without univalence, but with more work for every single operation and
+equation.
 \begin{code}
 ℕ∞Strℕ∞ : ℕ∞Str ℕ∞ pred
 ℕ∞Strℕ∞ =

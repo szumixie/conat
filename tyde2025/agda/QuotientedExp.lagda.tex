@@ -297,7 +297,7 @@ to extend our previous language by adding them as constructors.
 \end{AgdaSuppressSpace}
 
 However, the current method requires us to specify what the predecessor of
-exponentiating two numbers. To do this, we create a new operation that
+exponentiating two numbers is. To do this, we create a new operation that
 represents a ``block'' of digits, essentially representing $y$ number of the
 digit $x$ in base $x + 1$ (so $x$ is always the last digit in the base). This
 gives us the following equation:
@@ -678,7 +678,7 @@ $(9-1) + 99 * (1+9) = 8 + 99 * 10$.
   block-pred x (just x')  (just y')  =
     just (x' + block x y' × suc x)
 \end{code}
-The operations and equations that we have in \AgdaDatatype{Expr} is enough to
+The operations and equations that we have in \AgdaDatatype{Expr} are enough to
 define the rest of the methods.
 \begin{code}[hide]
   block-isPred :
