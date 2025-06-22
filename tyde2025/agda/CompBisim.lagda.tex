@@ -1,12 +1,11 @@
 In this section, we use Nils Anders Danielsson's
 method~\cite{danielsson-beating} of defining an embedded language to keep the
-definitions guarded.
+definitions guarded. The only difference is that we define coinductive types
+using coinductive records instead of the deprecated ``musical'' notation.
 
-\subsection{Defining multiplication}
+\subsection{Defining multiplication}\label{sec:dsl-mul}
 \input{latex/Multiplication}
 
-\subsection{Setting up the language for proving}
+\subsection{Proving the commutativity of addition}\label{sec:dsl-comm}
 \input{latex/ConatLib2/Bisimilarity/Base}
-
-\subsection{Proving commutativity of addition}
 \input{latex/ConatLib2/Properties}

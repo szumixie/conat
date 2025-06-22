@@ -19,7 +19,7 @@ module _ where private
 Categorically, natural numbers are the initial object in the category of
 algebras over the $\mathbb{1} + {-}$ (or the ``Maybe'') endofunctor. So an
 equivalent representation of natural numbers is an inductive type with a single
-constructor containing a Maybe of a natural number:
+constructor containing a \AgdaDatatype{Maybe} of a natural number:
 \begin{code}[hide]
 module _ where private
 \end{code}
@@ -32,10 +32,10 @@ module _ where private
     con : Maybe ℕ → ℕ
 \end{code}
 
-We can dualize natural numbers to get \emph{conatural numbers}, which are the
+We can dualise natural numbers to get \emph{conatural numbers}, which are the
 terminal object in the category of coalgebras over the $\mathbb{1} + {-}$
 endofunctor. In Agda, it is a coinductive record type with one destructor into
-Maybe of conatural numbers:
+\AgdaDatatype{Maybe} of conatural numbers:
 \begin{code}[hide]
 open import Cubical.Data.Maybe using (Maybe; nothing; just)
 \end{code}
@@ -83,7 +83,7 @@ infinity, however, it is not constructively isomorphic to $\mathbb{N} +
 \mathbb{1}$, because all functions out of the conatural numbers must be
 continuous. Computationally, finite amount of output can only depend on finite
 amount of input. Topologically, \AgdaFunction{∞} is the limit of $0, 1, 2,
-\dots$, which must be preserved. We can visualize the topological space as
+\dots$, which must be preserved. We can visualise the topological space as
 follows:
 \begin{center}
   \begin{tikzpicture}[
@@ -121,20 +121,24 @@ numbers and prove that it is associative, at the same time, we show that if we
 naïvely define multiplication and prove that addition is commutative, they get
 rejected by Agda because they are not guarded. In the next sections, we show
 three ways to avoid this issue, using multiplication and commutativity of
-addition as running examples. In section~\ref{sec:direct}, we show how to
+addition as running examples.
+
+In section~\ref{sec:direct}, we directly formalise every needed function, lemma,
+property to prove commutativity of addition.
 
 In section~\ref{sec:dsl}, we use Nils Anders Danielsson's
-method~\cite{danielsson-beating}
+method~\cite{danielsson-beating} to formalise a proof language and use that
+to prove commutativity of addition.
 
 In section~\ref{sec:quotiented}, we adapt the previous method to Cubical Agda,
-making use of a mixed higher-inductive--coinductive type and univalence to
+making use of a mixed higher-inductive/coinductive type and univalence to
 define and prove all the operations and equations of an exponential commutative
 semiring at once.
 
-\subsection{Formalization}
+\subsection{Formalisation}
 
 In vanilla Agda, it is not possible to prove non-trivial equations about
-conatural numbers using the Martin-Löf identity type (TODO: cite), one needs to
+conatural numbers using the Martin-Löf identity type \textbf{(TODO: cite)}, one needs to
 either postulate the coinduction principle, or instead use a coinductively
 defined equivalence relation, in which case one would need to prove that the
 operations preserve that relation. As such, in this paper we use Cubical Agda,

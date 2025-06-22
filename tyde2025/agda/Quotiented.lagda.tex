@@ -22,26 +22,26 @@ open import Cubical.Data.Maybe
 
 module E where
 \end{code}
-
-Since we are working in Cubical Agda, it allows proofs in datatypes,
-we can adapt the approach in Section~\ref{sec:dsl} to Cubical Agda.
-This means we can add all the needed proofs (associativity, commutativity,
-identity for both addition and multiplication) alongside
-with the operators and constants into the language.
+Since we are working in Cubical Agda, which has higher inductive types, that is
+datatypes with equality (path) constructors, we can adapt the approach in
+Section~\ref{sec:dsl} to add all the operations and equations we need into a
+single embedded language.
 
 \subsection{Commutative semiring}
 
-First, we will show that conatural numbers form a commutative semiring.
+We will first show that the conatural numbers form a commutative semiring.
 
 We mutually define expressions as an higher inductive type and head normal
-expressions as a coinductive type.
+expressions as a coinductive type. This is similar to the types in
+Section~\ref{sec:dsl-mul}, except we add equations as constructors for
+\AgdaDatatype{Expr}.
 \begin{AgdaAlign}
 \begin{code}
   data Expr : Type
   record NExpr : Type
 \end{code}
-Head normal expressions are represented as a coinductive record from which we can extract the
-predecessor.
+Head normal expressions are represented as a coinductive record from which we
+can extract the predecessor.
 \begin{code}
   record NExpr where
     coinductive
@@ -53,8 +53,8 @@ predecessor.
   infixl 6 _+_
   infixl 7 _×_
 \end{code}
-In \AgdaDatatype{Expr}, we include all of the commutative semiring equations, constants and
-make its equalities proof irrelevant, that is it is a set.
+In \AgdaDatatype{Expr}, we include all of the commutative semiring operations,
+constants, and equations.
 \begin{code}
   data Expr where
     _+_        : Expr → Expr → Expr
@@ -73,38 +73,35 @@ make its equalities proof irrelevant, that is it is a set.
 
     ×-distₗ-+  : ∀ x y z → (x + y) × z ≡ x × z + y × z
     ×-annihₗ   : ∀ x → zero × x ≡ zero
-
+\end{code}
+Since we are working in Cubical Agda, where equations/paths can have content, we
+need to also say that the equations of \AgdaDatatype{Expr} are proof irrelevant,
+that is, it is a set.
+\begin{code}
     isSetExpr  : isSet Expr
 \end{code}
-
-We add a constructor to embed head normal expressions into expressions, this way
-we can construct infinite expressions, as long as they are guarded.
-
+We add a constructor to embed head normal expressions into expressions as in
+Section~\ref{sec:dsl-mul}.
 \begin{code}
     embed : NExpr → Expr
 \end{code}
-
-We add equations to relate taking the predecessor on the head normal expression.
-
-Note that here we use the destructor \AgdaField{pred} of \AgdaRecord{NExpr}.
-
+In addition, we add equations to relate taking the predecessor on head normal
+expression. Note that here we depend on the destructor \AgdaField{pred} of
+\AgdaRecord{NExpr}.
 \begin{code}
     embed-zero  :
       ∀ x → pred x ≡ nothing → embed x ≡ zero
     embed-suc   :
       ∀ x x' → pred x ≡ just x' → embed x ≡ one + x'
 \end{code}
-
-Finally, a constructor for transitivity because the general transitivity
-function does not preserve guardedness.
-
+Finally, a constructor for transitivity is added because the general
+transitivity function does not preserve guardedness.
 \begin{code}
     trans : ∀ {x y z} → x ≡ y → y ≡ z → x ≡ z
 \end{code}
 \end{AgdaAlign}
 
-We introduce an abbreviation to \AgdaFunction{suc}, which is not part of the language.
-
+We introduce an abbreviation for adding one.
 \begin{code}
   suc : Expr → Expr
   suc x = one + x
@@ -239,9 +236,9 @@ We introduce an abbreviation to \AgdaFunction{suc}, which is not part of the lan
   open ℕ∞Reasoning
 \end{code}
 
-For convenience, we define an inductive predicate $\AgdaDatatype{IsPred}\ x'\ x$ which represents the
-$\AgdaField{pred}\ x \mathrel{\AgdaFunction{≡}} x'$ equality but it can be pattern matched on.
-
+For convenience, we define an inductive predicate $\AgdaDatatype{IsPred}\ x'\ x$
+which represents the $\AgdaField{pred}\ x \mathrel{\AgdaFunction{≡}} x'$
+equation, but it can be pattern matched on so it simplifies the proofs.
 \begin{code}
   data IsPred : Maybe Expr → Expr → Type where
     nothing  :         IsPred nothing    zero
@@ -273,12 +270,13 @@ $\AgdaField{pred}\ x \mathrel{\AgdaFunction{≡}} x'$ equality but it can be pat
   isPropIsPred _ _ (just x') q = isPropIsPred-suc x' refl refl q
 \end{code}
 
-We want to define the predecessor function on expressions by induction.
-We define the motive, so the termination checker doesn't get in our way.
-If we do recursion by pattern matching over a higher inductive type, some
-implicit arguments might get solved to an expression that is not reduced
-and the termination checker complains. We want to avoid that.
-
+We want to define the predecessor function on expressions by induction. We
+define the motive and methods, so the termination checker does not get in the
+way. If we do recursion by pattern matching over a higher inductive type, some
+implicit arguments get solved to an expression that is not reduced and the
+termination checker complains. For the motive, we want the predecessor of an
+expression and a proof that it is indeed the predecessor in terms of the
+semiring operations.
 \begin{code}
   record Pred (x : Expr) : Type where
     field
@@ -297,10 +295,9 @@ and the termination checker complains. We want to avoid that.
     isProp→PathP (λ i → isPropIsPred (q i) (p i)) (xᴾ .isPred) (yᴾ .isPred) i
 \end{code}
 
-We need \AgdaRecord{Pred} to be a set to be able to eliminate into it. Fortunately,
-this fact is easily provable using the Cubical library's
-\cite{The_Agda_Community_Cubical_Agda_Library_2025} functions.
-
+We need \AgdaRecord{Pred} to be a set to be able to eliminate into it.
+Fortunately, this fact is easily provable using the combinators provided by the
+Agda Cubical library~\cite{agda-cubical}.
 \begin{code}
   isSetPred : ∀ x → isSet (Pred x)
 \end{code}
@@ -311,34 +308,39 @@ this fact is easily provable using the Cubical library's
         isProp→isSet (isPropIsPred _ _))
 \end{code}
 
-We can define the functions of the motive each function corresponding to
-the functions in \AgdaDatatype{Expr}.
-
-If we know the predecessor of $x$ and $y$, then we can define the predecessor of $x + y$.
-
+We can define the methods for each constructor in \AgdaDatatype{Expr}. The one
+below is the method for addition:
+\begin{code}[hide]
+  mutual
+\end{code}
 \begin{code}
-  +-pred :
-    Maybe Expr → Expr → Maybe Expr → Maybe Expr
-  +-pred nothing    y y' = y'
-  +-pred (just x')  y y' = just (x' + y)
-
-  +-isPred :
-    ∀ {x x' y y'} → IsPred x' x → IsPred y' y →
-    IsPred (+-pred x' y y') (x + y)
-  +-isPred {y} nothing    p = subst (IsPred _) (sym (+-idₗ _)) p
-  +-isPred {y} (just x')  p =
-    subst (IsPred _) (sym (+-assoc _ _ _)) (just (x' + y))
-
-  infixl 6 _+ᴾ_
-  _+ᴾ_ : ∀ {x y} → Pred x → Pred y → Pred (x + y)
-  pred    (_+ᴾ_ {y}  xᴾ yᴾ) = +-pred (pred xᴾ) y (pred yᴾ)
-  isPred  (_+ᴾ_      xᴾ yᴾ) = +-isPred (isPred xᴾ) (isPred yᴾ)
+    infixl 6 _+ᴾ_
+    _+ᴾ_ : ∀ {x y} → Pred x → Pred y → Pred (x + y)
+    pred    (_+ᴾ_ {y}  xᴾ yᴾ) = +-pred (pred xᴾ) y (pred yᴾ)
+    isPred  (_+ᴾ_      xᴾ yᴾ) = +-isPred (isPred xᴾ) (isPred yᴾ)
+\end{code}
+If we know the predecessor of $x$ and $y$, then we can define the predecessor of
+$x + y$.
+\begin{code}
+    +-pred :
+      Maybe Expr → Expr → Maybe Expr → Maybe Expr
+    +-pred nothing    y y' = y'
+    +-pred (just x')  y y' = just (x' + y)
+\end{code}
+We then need to prove that it is actually the predecessor, which we do by using
+the equation constructors.
+\begin{code}
+    +-isPred :
+      ∀ {x x' y y'} → IsPred x' x → IsPred y' y →
+      IsPred (+-pred x' y y') (x + y)
+    +-isPred {y} nothing    p = subst (IsPred _) (sym (+-idₗ _)) p
+    +-isPred {y} (just x')  p =
+      subst (IsPred _) (sym (+-assoc _ _ _)) (just (x' + y))
 \end{code}
 
-We can do the same for multiplication as well. Note that from this point on
-we omit the $^P$ functions as those are going to be defined the previously
-shown way every time.
-
+We can do the same for multiplication as well, here we show how to define the
+predecessor. The structure is again the same as the one in
+Section~\ref{sec:problem} as we can reuse the existing constructors.
 \begin{code}
   ×-pred :
     Maybe Expr → Expr → Maybe Expr → Maybe Expr
@@ -378,11 +380,11 @@ shown way every time.
     Pred-path (+-assoc-pred (xᴾ .pred) y (yᴾ .pred) z (zᴾ .pred))
 \end{code}
 
-Now we are ready to prove the commutativity of addition.
-Note that we don't even need to define the \AgdaField{isPred} component
-because \AgdaRecord{IsPred} is a proposition. We also omit the uninteresting
-parts of the stepping function for the proof of commutativity.
-
+Below we show the method for the commutativity of addition, which has the same
+structure as the proof in Section~\ref{sec:problem}, and it has less steps due
+to pattern matching on \AgdaDatatype{IsPred}. Note that we do not need to define
+the \AgdaField{isPred} component because \AgdaRecord{IsPred} is a proposition.
+We also omit the less interesting parts.
 \begin{code}
   +-comm-pred :
     ∀ {x x' y y'} → IsPred x' x → IsPred y' y →
@@ -507,12 +509,11 @@ parts of the stepping function for the proof of commutativity.
       just (zero + x') ∎)
 \end{code}
 
-We define the rest of the functions, formalisation is available in our repository.
-
-Using the functions, we can recursively eliminate into \AgdaRecord{Pred}.
-
+We can define the rest of the methods in a similar manner as the ones above.
+Using these, we can recursively eliminate from expressions into
+\AgdaRecord{Pred}.
 \begin{code}
-  ⟦_⟧ᴾ : ∀ x → Pred x
+  ⟦_⟧ᴾ : (x : Expr) → Pred x
 \end{code}
 \begin{code}[hide]
   ⟦ isSetExpr x y p q i j ⟧ᴾ =
@@ -539,8 +540,8 @@ Using the functions, we can recursively eliminate into \AgdaRecord{Pred}.
   ⟦ embed-suc x x' p i ⟧ᴾ = embed-sucᴾ x ⟦ x' ⟧ᴾ p i
 \end{code}
 
-Now we can extract our well-known \AgdaFunction{predᴱ} from previous sections.
-
+Now we can extract the familiar \AgdaFunction{predᴱ} in
+Section~\ref{sec:dsl-mul}, but also the proof that it is the predecessor.
 \begin{code}
   predᴱ : Expr → Maybe Expr
   predᴱ x = pred ⟦ x ⟧ᴾ
@@ -561,33 +562,44 @@ Now we can extract our well-known \AgdaFunction{predᴱ} from previous sections.
 
   unpred-pred : ∀ x → matchMaybe zero suc (predᴱ x) ≡ x
   unpred-pred x = unpred-pred-pred (isPredᴱ x)
-
-  interp : Expr → NExpr
-  interp x .pred = predᴱ x
-
-  interp-embed : ∀ x → interp (embed x) ≡ x
-  interp-embed x i .pred = x .pred
-
-  embed-interp : ∀ x → embed (interp x) ≡ x
-  embed-interp-pred : ∀ {x x'} → IsPred x' x → embed (interp x) ≡ x
-
-  embed-interp x = embed-interp-pred (isPredᴱ x)
-  embed-interp-pred nothing = embed-zero (interp zero) refl
-  embed-interp-pred (just x') =
-    embed-suc (interp (suc x')) x' (congS just (+-idₗ _))
 \end{code}
 
+Using the new predecessor function, we can define a head normalisation function.
+\begin{code}
+  interpᴺ : Expr → NExpr
+  interpᴺ x .pred = predᴱ x
+\end{code}
+Then we can prove that it is an inverse of \AgdaInductiveConstructor{embed} and
+that \AgdaDatatype{Expr} and \AgdaRecord{NExpr} are isomorphic using
+\AgdaFunction{isPredᴱ} and the \AgdaInductiveConstructor{embed-zero} and
+\AgdaInductiveConstructor{embed-suc} constructors that we added to the language.
+\begin{AgdaSuppressSpace}
+\begin{code}
+  interpᴺ-embed : ∀ x → interpᴺ (embed x) ≡ x
+\end{code}
+\begin{code}[hide]
+  interpᴺ-embed x i .pred = x .pred
+\end{code}
+\begin{code}
+  embed-interpᴺ : ∀ x → embed (interpᴺ x) ≡ x
+\end{code}
+\begin{code}[hide]
+  embed-interpᴺ-pred : ∀ {x x'} → IsPred x' x → embed (interpᴺ x) ≡ x
 
-We can prove that \AgdaDatatype{Expr} is isomorphic to \AgdaRecord{NExpr}
-beause we added \AgdaInductiveConstructor{embed-zero} and \AgdaInductiveConstructor{embed-suc}
-to our language.
+  embed-interpᴺ x = embed-interpᴺ-pred (isPredᴱ x)
+  embed-interpᴺ-pred nothing = embed-zero (interpᴺ zero) refl
+  embed-interpᴺ-pred (just x') =
+    embed-suc (interpᴺ (suc x')) x' (congS just (+-idₗ _))
+\end{code}
 \begin{code}
   ExprIsoNExpr : Iso Expr NExpr
 \end{code}
 \begin{code}[hide]
-  ExprIsoNExpr = iso interp embed interp-embed embed-interp
-
-open E using (NExpr; Expr; pred; predᴱ)
+  ExprIsoNExpr = iso interpᴺ embed interpᴺ-embed embed-interpᴺ
+\end{code}
+\end{AgdaSuppressSpace}
+\begin{code}[hide]
+open E using (NExpr; Expr; pred; embed; trans; predᴱ; embed-interpᴺ; interpᴺ)
 
 record ℕ∞ : Type where
   coinductive
@@ -595,65 +607,92 @@ record ℕ∞ : Type where
 
 open ℕ∞ public
 \end{code}
-We can embed conatural numbers into expressions thanks to the
-\AgdaInductiveConstructor{embed} constructor
-\begin{code}
-embed : ℕ∞ → Expr
-\end{code}
+
+Now we define a function that embeds conatural numbers into expressions using
+the \AgdaInductiveConstructor{embedℕ∞} constructor.
 \begin{code}[hide]
-embedᴺ : ℕ∞ → NExpr
-embed-pred : Maybe ℕ∞ → Maybe Expr
-
-embed x = E.embed (embedᴺ x)
-pred (embedᴺ x) = embed-pred (pred x)
-embed-pred nothing = nothing
-embed-pred (just x') = just (embed x')
+mutual
 \end{code}
-Interpret expressions into conatural numbers using \AgdaFunction{predᴱ}
 \begin{code}
-interp : Expr → ℕ∞
-interp-pred : Maybe Expr → Maybe ℕ∞
+  embedℕ∞ : ℕ∞ → Expr
+  embedℕ∞ x = embed (embedℕ∞ᴺ x)
 
-pred (interp x) = interp-pred (predᴱ x)
-interp-pred nothing = nothing
-interp-pred (just x') = just (interp x')
+  embedℕ∞ᴺ : ℕ∞ → NExpr
+  pred (embedℕ∞ᴺ x) = embedℕ∞-match (pred x)
+
+  embedℕ∞-match : Maybe ℕ∞ → Maybe Expr
+  embedℕ∞-match nothing    = nothing
+  embedℕ∞-match (just x')  = just (embedℕ∞ x')
 \end{code}
-
-Stable
-
-\begin{code}
-interp-embed : ∀ x → interp (embed x) ≡ x
-\end{code}
+We can also interpret expressions into conatural numbers using
+\AgdaFunction{predᴱ} as in Section~\ref{sec:dsl-mul}.
 \begin{code}[hide]
-interp-embed-pred : ∀ x' → interp-pred (embed-pred x') ≡ x'
-
-pred (interp-embed x i) = interp-embed-pred (pred x) i
-interp-embed-pred nothing = refl
-interp-embed-pred (just x') = cong just (interp-embed x')
+mutual
 \end{code}
-
-Complete
-
 \begin{code}
-embed-interp : ∀ x → embed (interp x) ≡ x
-\end{code}
-\begin{code}[hide]
-embed-interpᴺ : ∀ x → embedᴺ (interp x) ≡ E.interp x
-embed-interp-pred : ∀ x' → embed-pred (interp-pred x') ≡ x'
+  interp : Expr → ℕ∞
+  pred (interp x) = interp-match (predᴱ x)
 
-embed-interp x = E.trans (cong E.embed (embed-interpᴺ x)) (E.embed-interp x)
-pred (embed-interpᴺ x i) = embed-interp-pred (predᴱ x) i
-embed-interp-pred nothing = refl
-embed-interp-pred (just x') = cong just (embed-interp x')
+  interp-match : Maybe Expr → Maybe ℕ∞
+  interp-match nothing    = nothing
+  interp-match (just x')  = just (interp x')
 \end{code}
-We get an isomorphism between \AgdaDatatype{Expr} and \AgdaRecord{ℕ∞}
+
+These turn out to be inverses. If we embed a conatural number in the language
+and then interpret it back to a conatural number, we get back the conatural
+number we started with.
+\begin{code}[hide]
+mutual
+\end{code}
+\begin{code}
+  interp-embedℕ∞ : ∀ x → interp (embedℕ∞ x) ≡ x
+  pred (interp-embedℕ∞ x i) =
+    interp-embedℕ∞-match (pred x) i
+
+  interp-embedℕ∞-match :
+    ∀ x' → interp-match (embedℕ∞-match x') ≡ x'
+  interp-embedℕ∞-match nothing    = refl
+  interp-embedℕ∞-match (just x')  =
+    cong just (interp-embedℕ∞ x')
+\end{code}
+If we interpret an expression from the language to conatural numbers and then we
+embed it back to the language, then we get an expression equal to the one we
+started with. Here is the point where we had to use of the embedded transitivity
+operation, because otherwise it would not be guarded.
+\begin{code}[hide]
+mutual
+\end{code}
+\begin{code}
+  embedℕ∞-interp : ∀ x → embedℕ∞ (interp x) ≡ x
+  embedℕ∞-interp x =
+    trans
+      (cong embed (embedℕ∞-interpᴺ x))
+      (embed-interpᴺ x)
+
+  embedℕ∞-interpᴺ :
+    ∀ x → embedℕ∞ᴺ (interp x) ≡ interpᴺ x
+  pred (embedℕ∞-interpᴺ x i) =
+    embedℕ∞-interp-match (predᴱ x) i
+
+  embedℕ∞-interp-match :
+    ∀ x' → embedℕ∞-match (interp-match x') ≡ x'
+  embedℕ∞-interp-match nothing    = refl
+  embedℕ∞-interp-match (just x')  =
+    cong just (embedℕ∞-interp x')
+\end{code}
+With the roundtrips, we get an isomorphism between \AgdaDatatype{Expr} and
+\AgdaRecord{ℕ∞}.
 \begin{code}
 ExprIsoℕ∞ : Iso Expr ℕ∞
 \end{code}
 \begin{code}[hide]
-ExprIsoℕ∞ = iso interp embed interp-embed embed-interp
+ExprIsoℕ∞ = iso interp embedℕ∞ interp-embedℕ∞ embedℕ∞-interp
 \end{code}
-Define a record with all the commutative semiring structure
+
+Now that we have an isomorphism, we get all the operations and equations in
+\AgdaDatatype{Expr} for \AgdaRecord{ℕ∞} by the univalence principle (TODO:
+cite?). To do that, we define a record with all the operations and equations of
+a commutative semiring.
 \begin{AgdaAlign}
 \begin{code}
 record ℕ∞Str (A : Type) (pred : A → Maybe A) : Type where
@@ -662,7 +701,7 @@ record ℕ∞Str (A : Type) (pred : A → Maybe A) : Type where
   infixl 6 _+_
   infixl 7 _×_
 \end{code}
-e.g.etc.
+For example, we add the following fields (the rest is omitted for brevity):
 \begin{code}
   field
     isSetA   : isSet A
@@ -687,7 +726,8 @@ e.g.etc.
   suc : A → A
   suc = one +_
 \end{code}
-And we can also relate pred of ring operations
+We can also add equations that relate the predecessor function with the semiring
+operations.
 \begin{code}
   field
     pred-zero    : pred zero ≡ nothing
@@ -696,7 +736,8 @@ And we can also relate pred of ring operations
       ∀ x → matchMaybe zero (one +_) (pred x) ≡ x
 \end{code}
 \end{AgdaAlign}
-We fill the record using expression
+
+With the record defined, we can easily define it for \AgdaDatatype{Expr}.
 \begin{code}
 ℕ∞StrExpr : ℕ∞Str Expr predᴱ
 \end{code}
@@ -709,8 +750,9 @@ We fill the record using expression
       pred-suc = E.pred-suc;
       unpred-pred = E.unpred-pred }
 \end{code}
-Using univalence we can transport over the isomorphism to get the record for
-\AgdaRecord{ℕ∞}
+Then, by transporting over the isomorphism using univalence, we get the same
+record for \AgdaRecord{ℕ∞}, and thus getting every single operation and equation
+in the record for conatural numbers at once.
 \begin{code}
 ℕ∞Strℕ∞ : ℕ∞Str ℕ∞ pred
 ℕ∞Strℕ∞ =
@@ -721,13 +763,14 @@ Using univalence we can transport over the isomorphism to get the record for
 \begin{code}[hide]
   where
   subst-Maybe :
-    ∀ x' → subst Maybe (isoToPath ExprIsoℕ∞) x' ≡ interp-pred x'
+    ∀ x' → subst Maybe (isoToPath ExprIsoℕ∞) x' ≡ interp-match x'
   subst-Maybe nothing = refl
   subst-Maybe (just x') = cong just (transportRefl _)
   predᴱ≡pred = ua→ λ x → toPathP (subst-Maybe _)
 
 open ℕ∞Str ℕ∞Strℕ∞ renaming (isSetA to isSetℕ∞) public
 \end{code}
+Hence we have shown that conatural numbers form a commutative semiring.
 
 \subsection{Exponentiation}
 \input{latex/QuotientedExp}

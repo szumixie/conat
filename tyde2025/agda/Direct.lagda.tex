@@ -190,8 +190,8 @@ We continue stepping through $y$ on both sides:
 When we reach the end of $y$, we only have $n$ on both sides, which we can
 immediately prove equal.
 
-In the formalization, we have two helper lemmas that correspond to the two
-diagrams. During corecursion, we generalize the resulting equation and add
+In the formalisation, we have two helper lemmas that correspond to the two
+diagrams. During corecursion, we generalise the resulting equation and add
 equality arguments to avoid using the transitivity operation after the
 corecursive call, since transitivity does not preserve guardedness in Agda. We omit
 the uninteresting equality proofs below for readability:
@@ -257,7 +257,7 @@ reaches zero first, which is why we switch to the other lemma. There is a
 symmetric case where $y$ reaches zero first which we omit. The last case is
 where we have the corecursive call, stepping through both $x$ and $y$.
 
-In the second lemma, we similarly have to generalize the equation to avoid the
+In the second lemma, we similarly have to generalise the equation to avoid the
 transitivity operation. The second branch is an impossible case where we have a
 contradiction from the equation assumptions.
 \begin{AgdaSuppressSpace}

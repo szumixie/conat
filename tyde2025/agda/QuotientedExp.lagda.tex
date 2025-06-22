@@ -256,7 +256,10 @@ module E where
   infixl 7 _×_
   infixr 8 _^_
 \end{code}
-For exponentiation, we add constructors
+Now we modify the proof to add exponentiation and its related equations. We have
+to extend our previous language by adding them as constructors.
+\begin{AgdaAlign}
+\begin{AgdaSuppressSpace}
 \begin{code}
   data Expr where
 \end{code}
@@ -291,9 +294,25 @@ For exponentiation, we add constructors
     ^-distₗ-×   : ∀ x y z → (x × y) ^ z ≡ x ^ z × y ^ z
     ^-annihₗ    : ∀ x → one ^ x ≡ one
 \end{code}
-\[\AgdaInductiveConstructor{block}\ x\ y = \sum_{i=0}^{y-1} x \times (1 + x)^i = (1+x)^y - 1\]
+\end{AgdaSuppressSpace}
 
-\[\AgdaInductiveConstructor{block}\ 9\ 3 = 9 \times 10^0 + 9 \times 10^1 + 9 \times 10^2 = 999\]
+However, the current method requires us to specify what the predecessor of
+exponentiating two numbers. To do this, we create a new operation that
+represents a ``block'' of digits, essentially representing $y$ number of the
+digit $x$ in base $x + 1$ (so $x$ is always the last digit in the base). This
+gives us the following equation:
+\[
+  \AgdaInductiveConstructor{block}\ x\ y = \sum_{i=0}^{y-1} x \times (1 + x)^i = (1+x)^y - 1
+\]
+For example if we want to calculate $10^3$ using the \AgdaInductiveConstructor{block}, we can
+do it like so:
+\[
+  \AgdaInductiveConstructor{block}\ 9\ 3 = 9 \times 10^0 + 9 \times 10^1 + 9 \times 10^2 = 999
+\]
+Then adding one gets us $1000$.
+
+We add this \AgdaInductiveConstructor{block} operation as a constructor to the
+language, and some equations that correspond to the ones for exponentiation.
 \begin{code}
     block : Expr → Expr → Expr
     block-assocᵣ-× :
@@ -311,11 +330,14 @@ For exponentiation, we add constructors
       block y z + block x z × suc y ^ z
     block-annihₗ : ∀ x → block zero x ≡ zero
 \end{code}
-Relate exponentiation and \AgdaInductiveConstructor{block}
+We also add the equation that relates exponentiation and
+\AgdaInductiveConstructor{block}.
 \begin{code}
     ^-sucₗ : ∀ x y → suc x ^ y ≡ suc (block x y)
 \end{code}
-We can also add some properties about infinity, the last one allows us to prove $x^\infty = \infty$ for $x \ge 2$
+Finally, we can add infinity as a constructor and add some properties about it.
+For example, the last equation allows us to prove $x^\infty = \infty$ for $x \ge
+2$.
 \begin{code}
     ∞ : Expr
     +-annihₗ : ∀ x → ∞ + x ≡ ∞
@@ -327,7 +349,9 @@ We can also add some properties about infinity, the last one allows us to prove 
     embed : NExpr → Expr
     embed-zero : ∀ x → x .pred ≡ nothing → embed x ≡ zero
     embed-suc : ∀ x x' → x .pred ≡ just x' → embed x ≡ suc x'
-
+\end{code}
+\end{AgdaAlign}
+\begin{code}[hide]
   suc = one +_
 
   conatStrExpr : ConatStr Expr
@@ -527,7 +551,9 @@ We can also add some properties about infinity, the last one allows us to prove 
   sucᴾ : ∀ {x} → Pred x → Pred (suc x)
   sucᴾ = oneᴾ +ᴾ_
 \end{code}
-Here we define the predecessor of exponentiation to use \AgdaInductiveConstructor{block}
+We then add the methods for the constructor we added. Here we define the
+predecessor of exponentiation using the aforementioned
+\AgdaInductiveConstructor{block} constructor.
 \begin{code}
   ^-pred :
     Maybe Expr → Expr → Maybe Expr → Maybe Expr
@@ -547,7 +573,7 @@ Here we define the predecessor of exponentiation to use \AgdaInductiveConstructo
       (just zero)
   ^-isPred nothing (just y') =
     subst (IsPred _)
-      ( zero              ≡⟨ sym (×-annihᵣ _) ⟩
+      ( zero             ≡⟨ sym (×-annihᵣ _) ⟩
         zero ^ y' × zero ≡⟨ sym (^-sucᵣ _ _) ⟩
         zero ^ suc y'    ∎)
       nothing
@@ -639,13 +665,11 @@ Here we define the predecessor of exponentiation to use \AgdaInductiveConstructo
   ^-annihₗᴾ : ∀ {x} xᴾ → PathP (λ i → Pred (^-annihₗ x i)) (oneᴾ ^ᴾ xᴾ) oneᴾ
   ^-annihₗᴾ {x} xᴾ = Pred-path (^-annihₗ-pred x (xᴾ .pred))
 \end{code}
-We can define the predecessor of \AgdaInductiveConstructor{block} using addition
-and multiplication
 
-in the case of the predecessor of $\AgdaInductiveConstructor{block}\ 9\ 3 =
-999$, we get $8 + 99 * 10$
-
-\[999-1 = (9-1) + 99 \times (1+9)\]
+We can also define the predecessor of \AgdaInductiveConstructor{block} itself
+using addition and multiplication from the langauge. For example, for the
+predecessor of $\AgdaInductiveConstructor{block}\ 9\ 3 = 999$ we would get
+$(9-1) + 99 * (1+9) = 8 + 99 * 10$.
 \begin{code}
   block-pred :
     Expr → Maybe Expr → Maybe Expr → Maybe Expr
@@ -654,9 +678,8 @@ in the case of the predecessor of $\AgdaInductiveConstructor{block}\ 9\ 3 =
   block-pred x (just x')  (just y')  =
     just (x' + block x y' × suc x)
 \end{code}
-
-After defining pred for the properties, it is straightforward to change the
-proof to derive exponentiation and its properties for \AgdaRecord{ℕ∞}
+The operations and equations that we have in \AgdaDatatype{Expr} is enough to
+define the rest of the methods.
 \begin{code}[hide]
   block-isPred :
     ∀ {x x' y y'} → IsPred x' x → IsPred y' y →
@@ -686,7 +709,7 @@ proof to derive exponentiation and its properties for \AgdaRecord{ℕ∞}
   block-assocᵣ-×-pred x (just x') (just y') nothing = refl
   block-assocᵣ-×-pred {z} x (just x') (just y') (just z') =
     congS just
-      ( x' + block x (z' + y' × z) × suc x                                       ≡⟨ refl ⟩+⟨ block-distᵣ-+ _ _ _ ⟩×⟨ refl ⟩
+      ( x' + block x (z' + y' × z) × suc x                                      ≡⟨ refl ⟩+⟨ block-distᵣ-+ _ _ _ ⟩×⟨ refl ⟩
         x' + (block x z' + block x (y' × z) × suc x ^ z') × suc x               ≡⟨ +-pushᵣ (×-distₗ-+ _ _ _) ⟩
         x' + block x z' × suc x + block x (y' × z) × suc x ^ z' × suc x         ≡⟨ refl ⟩+⟨ ×-pullᵣ (sym (^-sucᵣ _ _)) ⟩
         x' + block x z' × suc x + block x (y' × z) × suc x ^ suc z'             ≡⟨ refl ⟩+⟨ block-assocᵣ-× _ _ _ ⟩×⟨ ^-sucₗ _ _ ⟩
@@ -960,23 +983,23 @@ proof to derive exponentiation and its properties for \AgdaRecord{ℕ∞}
 
 open E using (NExpr; Expr; pred; predᴱ; conatStrPredExpr)
 
-record Conat : Type where
+record ℕ∞ : Type where
   coinductive
-  field pred : Maybe Conat
+  field pred : Maybe ℕ∞
 
-open Conat public
+open ℕ∞ public
 
-embed : Conat → Expr
-embedᴺ : Conat → NExpr
-embed-pred : Maybe Conat → Maybe Expr
+embed : ℕ∞ → Expr
+embedᴺ : ℕ∞ → NExpr
+embed-pred : Maybe ℕ∞ → Maybe Expr
 
 embed x = E.embed (embedᴺ x)
 embedᴺ x .pred = embed-pred (x .pred)
 embed-pred nothing = nothing
 embed-pred (just x') = just (embed x')
 
-interp : Expr → Conat
-interp-pred : Maybe Expr → Maybe Conat
+interp : Expr → ℕ∞
+interp-pred : Maybe Expr → Maybe ℕ∞
 
 interp x .pred = interp-pred (predᴱ x)
 interp-pred nothing = nothing
@@ -998,10 +1021,10 @@ embed-interpᴺ x i .pred = embed-interp-pred (predᴱ x) i
 embed-interp-pred nothing = refl
 embed-interp-pred (just x') = cong just (embed-interp x')
 
-ExprIsoConat : Iso Expr Conat
+ExprIsoConat : Iso Expr ℕ∞
 ExprIsoConat = iso interp embed interp-embed embed-interp
 
-conatStrPredConat : ConatStrPred Conat pred
+conatStrPredConat : ConatStrPred ℕ∞ pred
 conatStrPredConat =
   transport
     (cong₂ ConatStrPred
@@ -1019,7 +1042,28 @@ open ConatStrPred conatStrPredConat
 open ConatReasoning public
 
 private
-  example : Conat
+\end{code}
+
+The rest of the proof remains the same, we just add the new operations and
+equations to the \AgdaRecord{ℕ∞Str} record. The result is that we have the proof
+that \AgdaRecord{ℕ∞} forms an exponential commutative semiring.
+
+After defining the predecessors for the properties too, it is straightforward to
+change the proof to derive exponentiation and its properties for
+\AgdaRecord{ℕ∞}.
+
+Every other property from the commutative semiring section stays the same, the
+same proofs still work. It is also proven that extending the language with
+exponentiation still retains its stability and completeness. We had to also extend to motive
+and the structure to include exponentiation. Instantiating the structure with our new extended
+\AgdaDatatype{Expr} we get all the proofs contained in it for conatural numbers and concluding
+our proof that conatural numbers with $\AgdaFunction{\_+\_}$,$\AgdaFunction{\_\times\_}$ and
+$\AgdaFunction{\_\textasciicircum\_}$ form an exponential semiring.
+
+Here we can see an example proof of $2^\infty = \infty$ using conatural numbers
+and equational reasoning.
+\begin{code}
+  example : ℕ∞
   example = suc (suc zero) ^ ∞
 
   _ : example ≡ ∞
@@ -1028,7 +1072,8 @@ private
     suc (block (suc zero) ∞) ≡⟨ cong suc (block-∞ᵣ _) ⟩
     suc ∞                    ≡⟨ sym ∞-suc ⟩
     ∞                        ∎
-
+\end{code}
+\begin{code}[hide]
   _ : one .pred ≡ just zero
   _ =
     one .pred      ≡⟨ cong pred one-suc ⟩

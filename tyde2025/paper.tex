@@ -87,7 +87,7 @@ conference title from your rights confirmation email}{June 03--05,
 %%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title{The Name of the Title Is Hope}
+\title{The exponential commutative semiring of conatural numbers corecursively}
 
 %%
 %% The "author" command and its associated commands are used to define
@@ -125,7 +125,9 @@ conference title from your rights confirmation email}{June 03--05,
 %% The abstract is a short summary of the work to be presented in the
 %% article.
 \begin{abstract}
-  TODO
+  what is a conatural number
+  what are conatural numbers used for (i don't know, related work)
+  what did we do
 \end{abstract}
 
 %%
@@ -148,7 +150,7 @@ conference title from your rights confirmation email}{June 03--05,
 %% Keywords. The author(s) should pick words that accurately describe
 %% the work being presented. Separate the keywords with commas.
 \keywords{%
-  Conatural numbers, Coinduction, Corecursion, Exponential semiring,
+  Conatural numbers, Coinduction, Corecursion, Commutative semiring, Exponential semiring,
   Cubical Agda
 }
 %% A "teaser" image appears between the author and affiliation
@@ -177,7 +179,7 @@ conference title from your rights confirmation email}{June 03--05,
 \section{Naïve corecursion}\label{sec:problem}
 \input{latex/Problem}
 
-% TERMINATION CHECKING ERROR STUFF
+% Temintation checking error
 
 \section{Direct corecusion}\label{sec:direct}
 \input{latex/Direct}
@@ -197,13 +199,44 @@ conference title from your rights confirmation email}{June 03--05,
 % Mixed inductive and coinductive type
 % Make use of cubical agda's possibility to put proofs in data.
 
-\section{Conclusion}
+\section{Conclusion and Future work}
 
-\section{Future work}
+We presented three methods to formalise that conatural numbers form a commutative semiring. To conclude,
+we give a short comparison between them.
+
+In Section~\ref{sec:direct} we directly gave the proof. Using this method we did not have to think
+about creating an intermediate language. However, for every operation and proof we have to
+come up with a new state that can accurately describe the predecessor as the step of the proofs.
+% Use this method if you are a mazochist.
+
+In Section~\ref{sec:dsl-mul} we followed Danielsson's \cite{danielsson-beating} method and created a domain
+speific language (suited to Cubical Agda) to define the multiplication operation and later in Section~\ref{sec:dsl-comm} we
+defined a language for proofs only to obtain equational reasoning. Every other property still had to be
+proven over conatural numbers directly but we had the ability to do equational reasoning.
+Using this method allowed us to do corecusion and transitivity in the same proof making it compositional,
+hence we could reuse other properties and the corecursion principle to prove others
+just like during a proof over an inductive type. The problem is we have to define a new language for
+every new operation we want in which we have to include every operation as a constructor
+in order to make Agda see the definition as guarded which quickly leads to duplication.
+
+In Section~\ref{sec:quotiented} we extended our language with the idea of including proofs themselves using
+a mixed higher-inductive coinductive type, which is only allowed in Cubical Agda.
+Using this method we obtained equational reasoning, a direct way
+to prove some properties using transitivity over conatural numbers and we proved that conaturals with addition, multiplication,
+exponentiation form an exponential semiring using this method. The problem is that this method is not modular.
+During a proof we can only use the proofs embedded in the language. If we want to extend our structure
+to include more operations or properties, then we have to extend every already
+existing definition including the interpretation and embedding functions with the new operation.
+
+We believe the last method can be generalised to definitions and proofs about coinductive
+programs by somehow unifying the last two methods by embedding an already existing
+language into an other language.
 
 modularity
 
 hyperoperations
+
+mixed higher-inductive/coinductive types
 
 %%
 %% Print the bibliography

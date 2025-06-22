@@ -19,12 +19,8 @@ open import Cubical.Data.Empty
 open import Cubical.Data.Unit
 \end{code}
 
-In this section we show the usage of the domain specific language and
-equational reasoning to prove the commutativity property of addition
-over conatural numbers. Using the definition of \AgdaFunction{\_+\_}
-defined in Section~\ref{sec:problem}, the following properties can be proven
-directly without the language.
-
+With this we show the usage of the language and equational reasoning to prove
+commutativity of addition over conatural numbers.
 \begin{code}[hide]
 unpred∘pred : ∀{n} → unpred (pred n) ≡ n
 pred (unpred∘pred {n} i) = pred n
@@ -32,38 +28,29 @@ pred (unpred∘pred {n} i) = pred n
 unpred∘just : ∀{n} → unpred (just n) ≡ suc n
 pred (unpred∘just {n} i) = just n
 
-pred-inj : ∀{n k} → pred n ≡ pred k → n ≡ k
+pred-inj : ∀ {n k : ℕ∞} → pred n ≡ pred k → n ≡ k
 pred (pred-inj e i) = e i
-\end{code}
-\begin{code}[hide]
+
 +-idₗ : ∀ n → zero + n ≡ n
 pred (+-idₗ n i) = pred n
-\end{code}
-\begin{code}
+
 +-idᵣ : ∀ n → n + zero ≡ n
-\end{code}
-\begin{code}[hide]
 pred (+-idᵣ n i) with pred n
 ... | nothing = nothing
 ... | just n' = just (+-idᵣ n' i)
-\end{code}
-\begin{code}
+
 +-sucₗ : ∀ n k → suc n + k ≡ suc (n + k)
-\end{code}
-\begin{code}[hide]
 pred (+-sucₗ n k i) = just (n + k)
 \end{code}
 
-The addition is defined by pattern matching on the predecessor of the
-first parameter, so we cannot easily handle the case where the \AgdaFunction{suc}
-is on the second parameter. This is going to be the first property on which
-we are going to have to use our language.
-
+First, we prove that \AgdaFunction{suc} commutes with addition, in which we
+already need to use transitivity, thus we prove it in the language. We omit the
+proof here for brevity.
 \begin{code}
-`+-sucᵣ : ∀ n k → n + suc k `≈ suc (n + k)
+`+-suc : ∀ x y → x + suc y `≈ suc (x + y)
 \end{code}
 \begin{code}[hide]
-`prove (`+-sucᵣ n k) with pred n | inspect pred n
+pred (`+-suc n k) with pred n | inspect pred n
 ... | nothing | reveal eq1 = cong-just (
   k
     `≡⟨ +-idₗ k ⟨
@@ -73,7 +60,7 @@ we are going to have to use our language.
   )
 ... | just x  | reveal eq1 = cong-just (
   x + suc k
-    `↺⟨ `+-sucᵣ x k ⟩
+    `↺⟨ `+-suc x k ⟩
   suc (x + k)
     `≡⟨ +-sucₗ x k ⟨
   suc x + k
@@ -81,16 +68,10 @@ we are going to have to use our language.
   n + k `∎
   )
 \end{code}
-
-For brevity we omit the proofs here. However, they are formalised and available in our repository.
-
-After proving \AgdaFunction{`+-sucᵣ}, we still need to obtain the proof over equality.
-This is simply done by using the \AgdaFunction{run} function to turn the language's proof
-into an equality.
-
+We then interpret the proof in the language into an equality.
 \begin{code}
-+-sucᵣ : ∀ n k → n + suc k ≡ suc (n + k)
-+-sucᵣ n k = run (`+-sucᵣ n k)
++-suc : ∀ x y → x + suc y ≡ suc (x + y)
++-suc x y = interp (`step (`+-suc x y))
 \end{code}
 \begin{code}[hide]
 assoc+ : ∀ a b c → (a + b) + c ≡ a + (b + c)
@@ -99,50 +80,47 @@ pred (assoc+ a b c i) with pred a
 ... | nothing = +-match (pred b) c
 \end{code}
 
-With everything set up, we are now able to prove commutativity. One of the advantages
-of this method is that the proof is going to have nearly the same structure as the proof
-for the same property in Section~\ref{sec:problem}. However, now the definition is going to
-compile without any unsafe pragmas. We omit the uninteresting branches of the proof, namely when either
-\AgdaBound{a} or \AgdaBound{b} is \AgdaFunction{zero}.
-
+With everything set up, we are now able to prove commutativity. As in the
+definition in Section~\ref{sec:dsl-mul}, the proof here has almost the same
+structure as the one in Section~\ref{sec:problem}, but now it is guarded. We
+omit the non-recursive cases in \AgdaFunction{`+-comm-match}.
+\begin{code}[hide]
+mutual
+\end{code}
 \begin{code}
-`+-comm : ∀ a b → a + b `≈ b + a
-`+-comm-match :
-  ∀ a a' b b' → a' ≡ pred a → b' ≡ pred b →
-  Maybe~ _≈_ (+-match a' b) (+-match b' a)
+  `+-comm : ∀ x y → x + y `≈ y + x
+  pred (`+-comm x y) =
+    `+-comm-match x (pred x) y (pred y) refl refl
+
+  `+-comm-match :
+    ∀ x x' y y' → x' ≡ pred x → y' ≡ pred y →
+    Maybe~ _≈_ (+-match x' y) (+-match y' x)
+  `+-comm-match x (just x') y (just y') eq1 eq2 =
+    cong-just
+      ( x' + y         `≡⟨ cong (x' +_) (pred-inj (sym eq2)) ⟩
+        x' + suc y'    `↺⟨ `+-comm x' (suc y') ⟩
+        suc y' + x'    `≡⟨ pred-inj refl ⟩
+        suc (y' + x')  `≡⟨ sym (+-suc y' x') ⟩
+        y' + suc x'    `≡⟨ cong (y' +_) (pred-inj eq1) ⟩
+        y' + x         `∎)
 \end{code}
 \begin{code}[hide]
-`+-comm-match a nothing b nothing eq1 eq2 = subst2 (Maybe~ _≈_) eq2 eq1 nothing-refl
-`+-comm-match a nothing b (just b') eq1 eq2 = subst (λ x → Maybe~ _≈_ x (just (b' + a))) eq2 (cong-just (`path (sym (+-idᵣ b')) `∙ `path (cong (b' +_) (pred-inj eq1))))
-`+-comm-match a (just a') b nothing eq1 eq2 = subst (Maybe~ _≈_ (just (a' + b))) eq1 (cong-just (`path (cong (a' +_) (pred-inj (sym eq2))) `∙ `path (+-idᵣ a')))
+  `+-comm-match a nothing b nothing eq1 eq2 = subst2 (Maybe~ _≈_) eq2 eq1 refl-nothing
+  `+-comm-match a nothing b (just b') eq1 eq2 = subst (λ x → Maybe~ _≈_ x (just (b' + a))) eq2 (cong-just (`eq (sym (+-idᵣ b')) `∙ `eq (cong (b' +_) (pred-inj eq1))))
+  `+-comm-match a (just a') b nothing eq1 eq2 = subst (Maybe~ _≈_ (just (a' + b))) eq1 (cong-just (`eq (cong (a' +_) (pred-inj (sym eq2))) `∙ `eq (+-idᵣ a')))
 \end{code}
+There is one difference in this proof compared to the one in in
+Section~\ref{sec:problem}, which is that we need to switch up two steps. First,
+we need to use commutativity to switch the operands of \AgdaFunction{\_+\_}
+before making \AgdaFunction{suc} the outermost function. This is because we do
+not have congruence over \AgdaFunction{suc} in our language, but it could also
+be added to the language.
+
+The proof only exists in our language so again we convert it to an equality the
+same way as we did with the \AgdaFunction{+-suc} property.
 \begin{code}
-`+-comm-match a (just a') b (just b') eq1 eq2 =
-  cong-just
-    ( a' + b         `≡⟨ cong (a' +_) (pred-inj (sym eq2)) ⟩
-      a' + suc b'    `↺⟨ `+-comm a' (suc b') ⟩
-      suc b' + a'    `≡⟨ +-sucₗ b' a' ⟩
-      suc (b' + a')  `≡⟨ sym (+-sucᵣ b' a') ⟩
-      b' + suc a'    `≡⟨ cong (b' +_) (pred-inj eq1) ⟩
-      b' + a `∎)
-`prove (`+-comm a b) =
-  `+-comm-match a (pred a) b (pred b) refl refl
++-comm : ∀ x y → x + y ≡ y + x
++-comm x y = interp (`step (`+-comm x y))
 \end{code}
-
-The only change in this proof with respect to the one in Section~\ref{sec:problem} is that
-we need to switch up two steps. First, we need to use commutativity to switch the
-operands of \AgdaFunction{\_+\_} before making \AgdaFunction{suc} the outermost function.
-This is because we do not have the \AgdaFunction{cong} property in our language.
-However, this problem is easily solvable by just adding it to the language and
-prove that it behaves the same way as the \AgdaFunction{cong} function in Cubical Agda itself.
-
-Note that the proof only exists in our language so again we have to convert
-it to make it use the equality using the \AgdaFunction{run} function the same
-way as we did with the \AgdaFunction{+-sucᵣ} property.
-
-\begin{code}
-+-comm : ∀ a b → a + b ≡ b + a
-+-comm a b = run (`+-comm a b)
-\end{code}
-
-This way Agda sees the equational reasoning as being guarded, hence it accepts the proof.
+This way Agda sees the equational reasoning as being guarded, hence it accepts
+the proof.
