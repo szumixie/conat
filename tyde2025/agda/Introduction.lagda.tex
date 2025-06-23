@@ -132,7 +132,7 @@ method~\cite{danielsson-beating} to use an embedded language to define
 multiplication, and another language to the prove commutativity of addition.
 
 In section~\ref{sec:quotiented}, we adapt the previous method to Cubical Agda,
-making use of a mixed higher-inductive/coinductive type and the univalence
+making use of mixed higher-inductive/coinductive types and the univalence
 principle to define and prove all the operations and equations of an exponential
 commutative semiring at once.
 
@@ -142,8 +142,8 @@ In vanilla Agda, it is not possible to prove non-trivial equations about
 conatural numbers using the Martin-Löf identity type~\cite{mcbride-unfold}, one
 needs to either postulate the coinduction principle, or instead use a
 coinductively defined equivalence relation, in which case one would need to
-prove that the operations preserve that relation. As such, in this paper we use
-Cubical Agda, where the coinduction principle and other equations can be
+manually prove that operations preserve this relation. As such, in this paper we
+use Cubical Agda, where the coinduction principle and other equations can be
 directly proved thanks to the interaction between copattern matching and the
 interval~\cite{vezzosi-cubical}. As an example, the proof below that the
 predecessor function is injective cannot be done in vanilla Agda:

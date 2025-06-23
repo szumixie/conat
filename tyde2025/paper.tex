@@ -136,6 +136,8 @@ Bib\TeX}}}
   paper, we explore some methods to solving this issue using the running
   examples of multiplication and the commutativity of addition on conatural
   numbers, then we give comparisons between these methods.
+
+  % TODO: Main result: First time proving conat is an exp comm semiring
 \end{abstract}
 
 %%
@@ -212,6 +214,8 @@ Bib\TeX}}}
 We presented three methods to formalise that conatural numbers form a
 commutative semiring. To conclude, we give a short comparison between them.
 
+% TODO: actual formalization, 3rd method successful
+
 In Section~\ref{sec:direct} we directly used corecursion. Using this method we
 did not have to consider creating an intermediate language. However, for every
 operation and proof we have to come up with a new state that can accurately
@@ -228,15 +232,15 @@ see the definition as guarded which quickly leads to code duplication.
 
 In Section~\ref{sec:quotiented} we extended our language using the idea that we
 can include equations themselves using a mixed higher-inductive/coinductive
-type, which is only allowed in Cubical Agda. This method allows us to reuse any
-other algebraic operation and equation that we are defining at the same time.
-With it, we easily proved that conatural numbers form an exponential commutative
-semiring. The only problem with this method is that it is not modular. If we
-want to include more operations or properties that we define and proofs, then we
-have to extend the already existing datatype of expressions.
+definition, which is only allowed in Cubical Agda. This method allows us to
+reuse any other algebraic operation and equation that we are defining at the
+same time. With it, we easily proved that conatural numbers form an exponential
+commutative semiring. The only problem with this method is that it is not
+modular. If we want to include more operations or properties that we define and
+proofs, then we have to extend the already existing datatype of expressions.
 
 We believe the last method can be generalised to definitions and proofs about
-other coinductive type, so that one can easily reason about infinite programs.
+other coinductive types, so that one can easily reason about infinite programs.
 
 \section{Future work}
 
@@ -251,15 +255,16 @@ tetration or the Ackermann function, on conatural numbers. Since conatural
 numbers are a coinductive type, one defines operations by specifying the
 predecessor, however, it is not clear how one can specify the predecessors of
 the aforementioned operations.
+% Agda experimental features
 
 Lastly, in Section~\ref{sec:quotiented}, we used a mixed
 higher-inductive/coinductive type to specify the language of expressions, though
-it is not clear whether such a type is justified. Unlike a mixed
-inductive/coinductive type, we cannot directly write it as the terminal
-coalgebra of some functor. If we were to parametrise \AgdaDatatype{Expr} with
-\AgdaRecord{NExpr} and \AgdaField{pred}, then we would have $\AgdaField{pred} :
-\AgdaDatatype{Expr}\ \AgdaRecord{NExpr}\ \AgdaField{pred}$, where the type of
-\AgdaField{pred} depends on itself.
+it is not clear whether such a type is justified. Unlike mixed
+inductive/coinductive types~\cite{hancock-stream}, we cannot directly write it
+as the terminal coalgebra of some functor. If we were to parametrise
+\AgdaDatatype{Expr} with \AgdaRecord{NExpr} and \AgdaField{pred}, then we would
+have $\AgdaField{pred} : \AgdaDatatype{Expr}\ \AgdaRecord{NExpr}\
+\AgdaField{pred}$, where the type of \AgdaField{pred} depends on itself.
 
 %%
 %% Print the bibliography
