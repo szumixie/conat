@@ -135,7 +135,10 @@ Bib\TeX}}}
   corecursive occurrence to appear under previously defined operations. In this
   paper, we explore some methods to solving this issue using the running
   examples of multiplication and the commutativity of addition on conatural
-  numbers, then we give comparisons between these methods.
+  numbers, then we give comparisons between these methods. As the main result
+  this is the first time of proving that conatural numbers form an exponential
+  commutative semiring in vanilla cubical type theory using guardedness.
+
 
   % TODO: Main result: First time proving conat is an exp comm semiring
   % no extension, vanilla cubical type theory, guardedness
@@ -212,12 +215,13 @@ Bib\TeX}}}
 
 \section{Conclusion}
 
-% TODO: we studied methods of reasoning about coinductive types
-
-We presented three methods to formalise that conatural numbers form a
-commutative semiring. To conclude, we give a short comparison between them.
-
-% TODO: actual formalization, 3rd method successful
+We studied three methods of reasoning about coinductive types
+about circuventing the guardedness issue in Agda.
+We used cubical type theory because reasoning about coinductive
+types is simpler. The third method in Section~\ref{quotiented} is the successful
+one in formalising that conatural numbers form an exponential
+commutative semiring. To conclude, we give a short comparison between
+them.
 
 In Section~\ref{sec:direct} we directly used corecursion. Using this method we
 did not have to consider creating an intermediate language. However, for every
@@ -238,7 +242,9 @@ can include equations themselves using a mixed higher-inductive/coinductive
 definition, which is only allowed in Cubical Agda. This method allows us to
 reuse any other algebraic operation and equation that we are defining at the
 same time. With it, we easily proved that conatural numbers form an exponential
-commutative semiring. The only problem with this method is that it is not
+commutative semiring. In the example proof we take advantage of
+univalence to transport from our language to proofs on conatural numbers.
+The only problem with this method is that it is not
 modular. If we want to include more operations or properties that we define and
 proofs, then we have to extend the already existing datatype of expressions.
 
