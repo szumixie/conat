@@ -87,7 +87,7 @@ Bib\TeX}}}
 %%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title{The exponential commutative semiring of conatural numbers corecursively}
+\title{The conatural numbers form an exponential commutative semiring}
 
 %%
 %% The "author" command and its associated commands are used to define
@@ -138,6 +138,7 @@ Bib\TeX}}}
   numbers, then we give comparisons between these methods.
 
   % TODO: Main result: First time proving conat is an exp comm semiring
+  % no extension, vanilla cubical type theory, guardedness
 \end{abstract}
 
 %%
@@ -211,6 +212,8 @@ Bib\TeX}}}
 
 \section{Conclusion}
 
+% TODO: we studied methods of reasoning about coinductive types
+
 We presented three methods to formalise that conatural numbers form a
 commutative semiring. To conclude, we give a short comparison between them.
 
@@ -242,6 +245,11 @@ proofs, then we have to extend the already existing datatype of expressions.
 We believe the last method can be generalised to definitions and proofs about
 other coinductive types, so that one can easily reason about infinite programs.
 
+% TODO: application of cubical Agda and univalence
+
+% show case cubical type theory, reasoning about coinductive types simpler
+% explore circumvent guardedness issue
+
 \section{Future work}
 
 Some questions remain as future work. The method in Section~\ref{sec:dsl} can
@@ -258,12 +266,12 @@ the aforementioned operations.
 % Agda experimental features
 
 Lastly, in Section~\ref{sec:quotiented}, we used a mixed
-higher-inductive/coinductive type to specify the language of expressions, though
-it is not clear whether such a type is justified. Unlike mixed
-inductive/coinductive types~\cite{hancock-stream}, we cannot directly write it
-as the terminal coalgebra of some functor. If we were to parametrise
-\AgdaDatatype{Expr} with \AgdaRecord{NExpr} and \AgdaField{pred}, then we would
-have $\AgdaField{pred} : \AgdaDatatype{Expr}\ \AgdaRecord{NExpr}\
+higher-inductive/coinductive definition to specify the language of expressions,
+though it is not clear what its semantic justification is, even though Agda
+supports it. Unlike mixed inductive/coinductive types~\cite{hancock-stream}, we
+cannot directly write it as the terminal coalgebra of some functor. If we were
+to parametrise \AgdaDatatype{Expr} with \AgdaRecord{NExpr} and \AgdaField{pred},
+then we would have $\AgdaField{pred} : \AgdaDatatype{Expr}\ \AgdaRecord{NExpr}\
 \AgdaField{pred}$, where the type of \AgdaField{pred} depends on itself.
 
 %%
