@@ -138,10 +138,6 @@ Bib\TeX}}}
   numbers, then we give comparisons between these methods. As the main result,
   this is the first proof that conatural numbers form an exponential commutative
   semiring in cubical type theory without major extensions.
-
-
-  % TODO: Main result: First time proving conat is an exp comm semiring
-  % no extension, vanilla cubical type theory, guardedness
 \end{abstract}
 
 %%
@@ -217,8 +213,8 @@ Bib\TeX}}}
 
 We studied three methods of reasoning about coinductive types to circumvent the
 guardedness issue in Agda. We used cubical type theory because reasoning about
-coinductive types is simpler. The third method in Section~\ref{quotiented} is
-the one where we successfully formalised that conatural numbers form an
+coinductive types is simpler. The third method in Section~\ref{sec:quotiented}
+is the one where we successfully formalised that conatural numbers form an
 exponential commutative semiring. To conclude, we give a short comparison
 between the methods.
 
@@ -241,19 +237,13 @@ can include equations themselves using a mixed higher-inductive/coinductive
 definition, which is only allowed in Cubical Agda. This method allows us to
 reuse any other algebraic operation and equation that we are defining at the
 same time. With it, we easily proved that conatural numbers form an exponential
-commutative semiring. In the proof we take advantage of univalence to transport
-the exponential commutative semiring of expressions to conatural numbers. The
+commutative semiring, showcasing an application of the univalence principle. The
 only problem with this method is that it is not modular. If we want to include
 more operations or properties that we define and proofs, then we have to extend
 the already existing datatype of expressions.
 
 We believe the last method can be generalised to definitions and proofs about
 other coinductive types, so that one can easily reason about infinite programs.
-
-% TODO: application of cubical Agda and univalence
-
-% show case cubical type theory, reasoning about coinductive types simpler
-% explore circumvent guardedness issue
 
 \section{Future work}
 

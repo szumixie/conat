@@ -1,7 +1,7 @@
 # The conatural numbers form an exponential commutative semiring
 
 This is the formalization for the paper titled "The conatural numbers form an
-exponential commutative semiring". The files are compiled with Agda version
+exponential commutative semiring". The files are checked with Agda version
 2.7.0.1 and the Agda Cubical Library version 0.8.
 
 - agda/ConatDirect.agda: This file contains the
