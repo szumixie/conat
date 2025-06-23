@@ -24,8 +24,8 @@ module E where
 \end{code}
 Since we are working in Cubical Agda, which has higher inductive types, that is
 datatypes with equality (path) constructors, we can adapt the approach in
-Section~\ref{sec:dsl} to add all the operations and equations we need into a
-single embedded language.
+Section~\ref{sec:dsl} to add all the algebraic operations and equations that we
+are interested in into a single embedded language.
 
 \subsection{Commutative semiring}
 
@@ -272,12 +272,12 @@ equation, but it can be pattern matched on so it simplifies the proofs.
 \end{code}
 
 We want to define the predecessor function on expressions by induction. We
-define the motive and methods, so the termination checker does not get in the
-way. If we do recursion by pattern matching over a higher inductive type, some
-implicit arguments get solved to an expression that is not reduced and the
-termination checker complains. For the motive, we want the predecessor of an
-expression and a proof that it is indeed the predecessor in terms of the
-semiring operations.
+define the motive and methods (terminology from McBride~\cite{mcbride-view}), so
+the termination checker does not get in the way. If we do recursion by pattern
+matching over a higher inductive type, some implicit arguments get solved to an
+expression that is not reduced and the termination checker complains. For the
+motive, we want the predecessor of an expression and a proof that it is indeed
+the predecessor in terms of the semiring operations.
 \begin{code}
   record Pred (x : Expr) : Type where
     field
