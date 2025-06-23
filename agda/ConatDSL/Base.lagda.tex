@@ -1,0 +1,44 @@
+\begin{code}[hide]
+{-# OPTIONS --safe --guardedness --cubical --no-postfix-projection #-}
+
+module ConatDSL.Base where
+
+open import ConatDSL.Type
+
+open import Cubical.Data.Maybe
+open import Cubical.Data.Sum
+open import Cubical.Data.Sigma
+
+coite : ∀{i}{B : Set i} → (B → Maybe B) → B → ℕ∞
+pred (coite f b) with f b
+... | nothing = nothing
+... | just x  = just (coite f x)
+
+zero : ℕ∞
+zero = unpred nothing
+
+suc : ℕ∞ → ℕ∞
+pred (suc a) = just a
+
+infixl 6 _+_
+_+_ : ℕ∞ → ℕ∞ → ℕ∞
++-match : Maybe ℕ∞ → ℕ∞ → Maybe ℕ∞
++-match nothing    y = pred y
++-match (just x')  y = just (x' + y)
+pred (x + y) = +-match (pred x) y
+
+*-aux : ℕ∞ → ℕ∞ × ℕ∞ → Maybe (ℕ∞ × ℕ∞)
+*-aux restore (e1 , e2) with pred e1
+... | nothing = nothing
+... | just e1' with pred e2
+... | nothing = just (e1' , restore)
+... | just e2' = just (e1 , e2')
+
+infixl 7 _*_
+_*_ : ℕ∞ → ℕ∞ → ℕ∞
+n * k with pred n
+... | nothing = unpred nothing
+... | just n' with pred k
+... | nothing = unpred nothing
+... | just k' = coite (*-aux k') (n , k')
+\end{code}

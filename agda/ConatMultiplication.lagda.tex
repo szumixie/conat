@@ -1,0 +1,107 @@
+\begin{code}[hide]
+{-# OPTIONS --cubical --guardedness --no-postfix-projections #-}
+
+open import Cubical.Foundations.Prelude
+open import Cubical.Data.Maybe using (Maybe; nothing; just)
+
+record ℕ∞ : Type where
+  coinductive
+  field
+    pred : Maybe ℕ∞
+open ℕ∞ public
+\end{code}
+We define an embedded language where addition is a constructor, this way we can
+define multiplication in a similar way as in Section~\ref{sec:problem} and have
+Agda accept it without enabling unsafe features. In this language, we also add a
+way to embed conatural numbers and head normal expressions (\AgdaRecord{NExpr}).
+\begin{code}[hide]
+infixl 6 _`+_
+mutual
+\end{code}
+\begin{code}
+  data Expr : Type where
+    embedℕ∞  : ℕ∞ → Expr
+    embed    : NExpr → Expr
+    _`+_     : Expr → Expr → Expr
+\end{code}
+These head normal expressions are either zero or a successor of an expression.
+They are defined coinductively and mutually with \AgdaDatatype{Expr} to allow
+the definition of multiplication to be defined corecursively.
+\begin{code}
+  record NExpr : Type where
+    coinductive
+    field
+      pred : Maybe Expr
+\end{code}
+\begin{code}[hide]
+open NExpr public
+\end{code}
+Since \AgdaDatatype{Expr} is inductive and \AgdaRecord{NExpr} is coinductive,
+this is an instance of a mixed inductive/coinductive
+definition~\cite{hancock-stream}.
+
+Given this language, we can define multiplication. The structure of
+the definition is similar to the one in Section~\ref{sec:problem}, but here it
+is guarded, we just need to add some extra embeds:
+\begin{code}[hide]
+infixl 7 _`×_
+mutual
+\end{code}
+\begin{code}
+  _`×_ : ℕ∞ → ℕ∞ → NExpr
+  pred (x `× y) = `×-match (pred x) y (pred y)
+
+  `×-match :
+    Maybe ℕ∞ → ℕ∞ → Maybe ℕ∞ → Maybe Expr
+  `×-match nothing    y y'         = nothing
+  `×-match (just x')  y nothing    = nothing
+  `×-match (just x')  y (just y')  =
+    just (embedℕ∞ y' `+ embed (x' `× y))
+\end{code}
+However, this multiplication exists only as an expression, so we need to
+interpret this multiplication into actual conatural numbers.
+
+First, we need to define a predecessor function on expressions by recursion.
+\begin{code}[hide]
+mutual
+\end{code}
+\begin{code}
+  predᴱ : Expr → Maybe Expr
+  predᴱ (embedℕ∞ x)  = predᴱ-embedℕ∞-match (pred x)
+  predᴱ (embed x)    = pred x
+  predᴱ (x `+ y)     = predᴱ-+-match (predᴱ x) y
+
+  predᴱ-embedℕ∞-match : Maybe ℕ∞ → Maybe Expr
+  predᴱ-embedℕ∞-match nothing    = nothing
+  predᴱ-embedℕ∞-match (just x')  = just (embedℕ∞ x')
+
+  predᴱ-+-match : Maybe Expr → Expr → Maybe Expr
+  predᴱ-+-match nothing    y = predᴱ y
+  predᴱ-+-match (just x')  y = just (x' `+ y)
+\end{code}
+Then we can interpret the expressions into conatural numbers corecursively via
+the predecessor function above.
+\begin{code}[hide]
+mutual
+\end{code}
+\begin{code}
+  interp : Expr → ℕ∞
+  pred (interp x) = interp-match (predᴱ x)
+
+  interp-match : Maybe Expr → Maybe ℕ∞
+  interp-match nothing    = nothing
+  interp-match (just x')  = just (interp x')
+\end{code}
+Finally, we can define multiplication on conatural numbers by using the
+multiplication defined in the language, then interpret it back to conatural
+numbers.
+\begin{code}
+_×_ : ℕ∞ → ℕ∞ → ℕ∞
+x × y = interp (embed (x `× y))
+\end{code}
+
+This method can result in code duplication, as can be seen in the definition of
+\AgdaFunction{predᴱ} and \AgdaFunction{predᴱ-+-match}, where we had to duplicate
+the definition of addition. If we want to use this definition of multiplication
+and prove properties about it, we would need to separately prove how the
+addition within the language is related to the addition on conatural numbers.
