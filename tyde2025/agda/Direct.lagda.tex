@@ -13,7 +13,8 @@ open import Introduction using (ℕ∞; pred; zero; suc; pred-inj)
 open import Problem using (_+_; +-match)
 \end{code}
 In this section, we show some examples of how to do corecursion without running
-into the guardedness issue.
+into the guardedness issue by coming up with specific internal states for each
+corecursion, which allows us to define the functions in a guarded form.
 
 To avoid the guardedness issue in Section~\ref{sec:problem}, we define
 multiplication from scratch instead of reusing addition. First, we match to
@@ -105,8 +106,10 @@ coinductive and potentially infinite, as the last argument we keep an inductive
 natural number to track how deep we can go and use it to recurse into the
 colist.
 
-To prove the commutativity of addition, we introduce an operation for adding a
-finite natural number to a conatural number.
+To prove the commutativity of addition, we keep track of how many steps we have
+taken so far in the internal state of the corecursion using a finite natural
+number. For this, we introduce an operation for adding a finite natural number
+to a conatural number.
 \begin{code}
 infixl 6 _+ₗ_
 _+ₗ_ : ℕ → ℕ∞ → ℕ∞
@@ -114,7 +117,8 @@ _+ₗ_ : ℕ → ℕ∞ → ℕ∞
 ℕ.suc n +ₗ x = suc (n +ₗ x)
 \end{code}
 We can also prove that the successor operation can be moved from the right side
-of addition to the front of the whole exression.
+of addition to the front of the whole exression by simple induction on the
+natural number.
 \begin{code}
 +ₗ-suc : ∀ n x → n +ₗ suc x ≡ suc (n +ₗ x)
 \end{code}
@@ -122,13 +126,20 @@ of addition to the front of the whole exression.
 +ₗ-suc ℕ.zero x = refl
 +ₗ-suc (ℕ.suc n) x = cong suc (+ₗ-suc n x)
 \end{code}
+Now we prove the commutativity of addition which has the following type
+signature.
+\begin{code}[hide]
+mutual
+\end{code}
+\begin{code}
+  +-comm : ∀ x y → x + y ≡ y + x
+\end{code}
 
-The intuition for the commutativity proof is that we keep track of how many
-steps we have taken so far using a finite natural number. As we can see in the
-diagram below, where the top line is the left hand side, the botton line is the
-right hand side, at the beginning we go through $x$ and $y$ at the same time,
-while learning that both of them must be at least~$n$. At each step, we decrease
-$x$ and $y$ and increase $n$ by one.
+We illustrate the intuition of the proof using the diagram below. The top line
+is the left hand side of \AgdaFunction{+-comm}, and the botton line is the right
+hand side. At the beginning we go through $x$ and $y$ at the same time, while
+learning that both of them must be at least~$n$. At each step, we decrease $x$
+and $y$ and increase $n$ by one.
 \begin{center}
   \begin{tikzpicture}[xscale=8, yscale=.5]
     \draw (0,1) -- (1,1);
@@ -146,16 +157,16 @@ $x$ and $y$ and increase $n$ by one.
     \draw [-{To[length=1mm]}] (0,0) -- ($(2/9,0)$);
 
     \draw [decorate, decoration={brace, amplitude=2mm}]
-      (0,1.75) -- ($(2/9,1.75)$) node [midway, above=2mm] {$n$};
+    (0,1.75) -- ($(2/9,1.75)$) node [midway, above=2mm] {$n$};
     \draw [decorate, decoration={brace, amplitude=2mm}]
-      ($(2/9,1.75)$) -- ($(1/3,1.75)$) node [midway, above=2mm] {$x$};
+    ($(2/9,1.75)$) -- ($(1/3,1.75)$) node [midway, above=2mm] {$x$};
     \draw [decorate, decoration={brace, amplitude=2mm}]
-      ($(1/3,1.75)$) -- (1,1.75) node [midway, above=2mm] {$n+y=y_0$};
+    ($(1/3,1.75)$) -- (1,1.75) node [midway, above=2mm] {$n+y=y_0$};
 
     \draw [decorate, decoration={brace, mirror, amplitude=2mm}]
-      ($(2/9,-0.75)$) -- ($(2/3,-0.75)$) node [midway, below=2mm] {$y$};
+    ($(2/9,-0.75)$) -- ($(2/3,-0.75)$) node [midway, below=2mm] {$y$};
     \draw [decorate, decoration={brace, mirror, amplitude=2mm}]
-      ($(2/3,-0.75)$) -- (1,-0.75) node [midway, below=2mm] {$n+x=x_0$};
+    ($(2/3,-0.75)$) -- (1,-0.75) node [midway, below=2mm] {$n+x=x_0$};
   \end{tikzpicture}
 \end{center}
 When we reach the end of~$x$, we learn that it is finite and equals to some~$n$.
@@ -177,14 +188,14 @@ We continue stepping through $y$ on both sides.
     \draw [-{To[length=1mm]}] (0,0) -- ($(4/9,0)$);
 
     \draw [decorate, decoration={brace, amplitude=2mm}]
-      (0,1.75) -- ($(1/3,1.75)$) node [midway, above=2mm] {$n$};
+    (0,1.75) -- ($(1/3,1.75)$) node [midway, above=2mm] {$n$};
     \draw [decorate, decoration={brace, amplitude=2mm}]
-      ($(4/9,1.75)$) -- (1,1.75) node [midway, above=2mm] {$n+y=y_0$};
+    ($(4/9,1.75)$) -- (1,1.75) node [midway, above=2mm] {$n+y=y_0$};
 
     \draw [decorate, decoration={brace, mirror, amplitude=2mm}]
-      ($(4/9,-0.75)$) -- ($(2/3,-0.75)$) node [midway, below=2mm] {$y$};
+    ($(4/9,-0.75)$) -- ($(2/3,-0.75)$) node [midway, below=2mm] {$y$};
     \draw [decorate, decoration={brace, mirror, amplitude=2mm}]
-      ($(2/3,-0.75)$) -- (1,-0.75) node [midway, below=2mm] {$n+0$};
+    ($(2/3,-0.75)$) -- (1,-0.75) node [midway, below=2mm] {$n+0$};
   \end{tikzpicture}
 \end{center}
 When we reach the end of~$y$, we only have $n$ on both sides, which we can
@@ -196,11 +207,7 @@ equality arguments to avoid using the transitivity operation after the
 corecursive call, since transitivity does not preserve guardedness in Agda. We omit
 the uninteresting equality proofs below for readability.
 \begin{AgdaSuppressSpace}
-\begin{code}[hide]
-mutual
-\end{code}
 \begin{code}
-  +-comm : ∀ x y → x + y ≡ y + x
   +-comm x y = +-comm-helper₁ ℕ.zero x x y y refl refl
 
   +-comm-helper₁ :
@@ -312,6 +319,6 @@ steps taken using \AgdaFunction{\_+ₗ\_}.
 Defining and proving things directly by guarded corecursion is difficult, since
 we cannot reuse earlier definitions, such as addition in the case of the
 definition of multiplication. Defining the corecursion and coinduction
-principles then using them can help with managing the proofs. Using the
+principles and then using them can help with managing the proofs. Using the
 inductively defined identity type instead of the cubical path type for equality
 also helps, as we can pattern match on them.

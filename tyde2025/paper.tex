@@ -265,8 +265,9 @@ though it is not clear what its semantic justification is, even though Agda
 supports it. Unlike mixed inductive/coinductive types~\cite{hancock-stream}, we
 cannot directly write it as the terminal coalgebra of some functor. If we were
 to parametrise \AgdaDatatype{Expr} with \AgdaRecord{NExpr} and \AgdaField{pred},
-then we would have $\AgdaField{pred} : \AgdaDatatype{Expr}\ \AgdaRecord{NExpr}\
-\AgdaField{pred}$, where the type of \AgdaField{pred} depends on itself.
+then we would have $\AgdaField{pred} : \AgdaDatatype{Maybe}\
+(\AgdaDatatype{Expr}\ \AgdaRecord{NExpr}\ \AgdaField{pred})$, where the type of
+\AgdaField{pred} depends on itself.
 
 %%
 %% Print the bibliography

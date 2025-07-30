@@ -25,7 +25,7 @@ To prove the commutativity of addition, we also define an embedding language
 (based on Danielsson \cite{danielsson-beating} and Agda standard library's
 \AgdaRecord{Stream} reasoning combinators~\cite{agda-stdlib}) to make the equational
 reasoning possible by adding the symmetry and transitivity operations on
-equations be constructors in this language, including the possibility to use
+equations as constructors in this language, including the possibility to use
 corecursive steps in a proof.
 
 We define the language as an inductive relation indexed by conatural numbers.
@@ -42,7 +42,7 @@ mutual
     `sym    : x ≈ y → y ≈ x
     `trans  : x ≈ y → y ≈ z → x ≈ z
 \end{code}
-\begin{AgdaMultiCode}
+\begin{AgdaMultiCode}%
 We also mutually define a coinductive relation corresponding to
 \AgdaRecord{NExpr} in Section~\ref{sec:dsl-mul}.
 \begin{code}

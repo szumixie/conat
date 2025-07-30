@@ -139,7 +139,7 @@ commutative semiring at once.
 \subsection{Formalisation}
 
 In vanilla Agda, it is not possible to prove non-trivial equations about
-conatural numbers using the Martin-Löf identity type~\cite{mcbride-unfold}, one
+conatural numbers using the Martin-Löf identity type~\cite{mcbride-unfold}. One
 needs to either postulate the coinduction principle, or instead use a
 coinductively defined equivalence relation, in which case one would need to
 manually prove that operations preserve this relation. As such, in this paper we
@@ -159,7 +159,8 @@ Section~\ref{sec:dsl} we have proved the properties of addition. With the last
 method, in Section~\ref{sec:quotiented}, we have a full formalisation that the
 conatural numbers form an exponential commutative semiring.
 
-Our formalisation is available at \url{https://github.com/szumixie/conat}.
+Our formalisation is available at \url{https://github.com/szumixie/conat}, it
+depends on the Cubical Agda Library~\cite{agda-cubical}.
 
 \subsection{Related work}
 
@@ -175,7 +176,7 @@ inconsistent~\cite{abel-agda-sized}.
 Guarded recursion adds a modality to type theory and a fixed point operation
 which uses the modality to avoid allowing non-terminating
 programs~\cite{nakano-modality,atkey-productive}. There is an experimental
-extension of Agda that implements a version this~\cite{agda-pi-calculus}.
+extension of Agda that implements a version of this~\cite{agda-pi-calculus}.
 
 There is an equivalent non-coinductive representation of conatural numbers,
 which are monotonically decreasing (or increasing) Boolean
