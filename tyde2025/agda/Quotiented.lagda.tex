@@ -102,7 +102,8 @@ transitivity function does not preserve guardedness.
 \end{AgdaAlign}
 This is a mixed higher-inductive/coinductive definition.
 
-We introduce an abbreviation for adding one to expressions.
+We introduce an abbreviation for adding one to expressions, though it could also
+be added as a constructor and an equation.
 \begin{code}
   suc : Expr → Expr
   suc x = one + x
