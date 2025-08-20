@@ -82,8 +82,11 @@ pred (assoc+ a b c i) with pred a
 
 With everything set up, we are now able to prove commutativity. As in the
 definition in Section~\ref{sec:dsl-mul}, the proof here has almost the same
-structure as the one in Section~\ref{sec:problem}, but now it is guarded. We
-omit the non-recursive cases in \AgdaFunction{`+-comm-match}.
+structure as the one in Section~\ref{sec:problem}, but now it is guarded. The
+slight difference is the reordering of the proof steps, which is to avoid the
+need for congruence over \AgdaInductiveConstructor{suc}, though it is possible
+to add this congruence as a constructor in the language as well. We omit the
+non-recursive cases in \AgdaFunction{`+-comm-match}.
 \begin{code}[hide]
 mutual
 \end{code}
@@ -122,5 +125,24 @@ same way we did with the \AgdaFunction{+-suc} property.
 +-comm : ∀ x y → x + y ≡ y + x
 +-comm x y = interp (`step (`+-comm x y))
 \end{code}
-This way Agda sees the equational reasoning as being guarded, hence it accepts
+This way, Agda sees that the equational reasoning is guarded, hence it accepts
 the proof.
+
+We have seen how we can define functions and prove equations using the method in
+Danielsson~\cite{danielsson-beating}. However, this method can result in code
+duplication, as can be seen in the definition of \AgdaFunction{predᴱ} and
+\AgdaFunction{predᴱ-+-match} in Section~\ref{sec:dsl-mul}, where we had to
+duplicate the definition of addition. If we want to use this definition of
+multiplication and prove properties about it, we would need to separately prove
+how the addition within the language is related to the addition on conatural
+numbers.
+
+A way to avoid the code duplication is to define addition using
+\AgdaFunction{interp} and the \AgdaInductiveConstructor{\_`+\_} constructor.
+However, if a coinductive proof depends on the congruence of an operation such
+as addition, then we need to add the congruence of that operation to the proof
+language, which means that when interpreting the language into equality, we will
+have to explicitly prove the congruence of that operation. This proof of
+congruence duplicates the structure of the definition of the operation. In the
+next section, we merge operations and equality proofs into a single language to
+avoid this problem.

@@ -75,9 +75,9 @@ mutual
   +-assoc-match (just x')  y z = cong just (+-assoc x' y z)
 \end{code}
 This is again a nice instance of guarded corecusion and Agda happily accepts
-this as a proof. However, it is more difficult to prove that addition is
-commutative. Let us assume that we have the following equation to commute
-\AgdaFunction{suc} (which has the same problem):
+this as a proof. However, the proof that addition is commutative is problematic.
+Let us assume that we have the following equation to commute \AgdaFunction{suc}
+(whose definition is problematic for the same reason):
 \begin{code}[hide]
 postulate
 \end{code}

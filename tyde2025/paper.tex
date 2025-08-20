@@ -1,30 +1,24 @@
-\documentclass[sigplan, screen, natbib=false, review]{acmart}
+\documentclass[sigplan, screen, natbib=false]{acmart}
 %%
 %% \BibTeX command to typeset BibTeX logo in the docs
 \AtBeginDocument{%
   \providecommand\BibTeX{{%
 Bib\TeX}}}
 
-%% Rights management information.  This information is sent to you
-%% when you complete the rights form.  These commands have SAMPLE
-%% values in them; it is your responsibility as an author to replace
-%% the commands and values with those provided to you when you
-%% complete the rights form.
-\setcopyright{acmlicensed}
-\copyrightyear{2025}
+%%% The following is specific to TyDe '25 and the paper
+%%% 'The Conatural Numbers Form an Exponential Commutative Semiring'
+%%% by Szumi Xie and Viktor Bense.
+%%%
+\setcopyright{cc}
+\setcctype{by}
+\acmDOI{10.1145/3759538.3759654}
 \acmYear{2025}
-\acmDOI{XXXXXXX.XXXXXXX}
-%% These commands are for a PROCEEDINGS abstract or paper.
-% \acmConference[Conference acronym 'XX]{Make sure to enter the correct
-% conference title from your rights confirmation email}{June 03--05,
-% 2018}{Woodstock, NY}
-%%
-%%  Uncomment \acmBooktitle if the title of the proceedings is different
-%%  from ``Proceedings of ...''!
-%%
-%%\acmBooktitle{Woodstock '18: ACM Symposium on Neural Gaze Detection,
-%%  June 03--05, 2018, Woodstock, NY}
-% \acmISBN{978-1-4503-XXXX-X/2018/06}
+\copyrightyear{2025}
+\acmISBN{979-8-4007-2163-2/25/10}
+\acmConference[TyDe '25]{Proceedings of the 10th ACM SIGPLAN International Workshop on Type-Driven Development}{October 12--18, 2025}{Singapore, Singapore}
+\acmBooktitle{Proceedings of the 10th ACM SIGPLAN International Workshop on Type-Driven Development (TyDe '25), October 12--18, 2025, Singapore, Singapore}
+\received{2025-06-23}
+\received[accepted]{2025-07-23}
 
 %%
 %% Submission ID.
@@ -87,7 +81,7 @@ Bib\TeX}}}
 %%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title{The conatural numbers form an exponential commutative semiring}
+\title{The Conatural Numbers Form an Exponential Commutative Semiring}
 
 %%
 %% The "author" command and its associated commands are used to define
@@ -98,7 +92,7 @@ Bib\TeX}}}
 \author{Szumi Xie}
 \orcid{0009-0001-1355-1114}
 \affiliation{%
-  \institution{Eötvös Loránd University (ELTE)}
+  \institution{Eötvös Loránd University}
   \city{Budapest}
   \country{Hungary}
 }
@@ -107,7 +101,7 @@ Bib\TeX}}}
 \author{Viktor Bense}
 \orcid{0009-0005-9325-5225}
 \affiliation{%
-  \institution{Eötvös Loránd University (ELTE)}
+  \institution{Eötvös Loránd University}
   \city{Budapest}
   \country{Hungary}
 }
@@ -145,23 +139,53 @@ Bib\TeX}}}
 %% Please copy and paste the code instead of the example below.
 %%
 \begin{CCSXML}
-  <ccs2012>
-  <concept>
-  <concept_id>10003752.10003790.10011740</concept_id>
-  <concept_desc>Theory of computation~Type theory</concept_desc>
-  <concept_significance>500</concept_significance>
-  </concept>
-  </ccs2012>
+<ccs2012>
+   <concept>
+       <concept_id>10003752.10003790.10011740</concept_id>
+       <concept_desc>Theory of computation~Type theory</concept_desc>
+       <concept_significance>500</concept_significance>
+       </concept>
+   <concept>
+       <concept_id>10003752.10003790.10002990</concept_id>
+       <concept_desc>Theory of computation~Logic and verification</concept_desc>
+       <concept_significance>500</concept_significance>
+       </concept>
+   <concept>
+       <concept_id>10003752.10003790.10003796</concept_id>
+       <concept_desc>Theory of computation~Constructive mathematics</concept_desc>
+       <concept_significance>500</concept_significance>
+       </concept>
+   <concept>
+       <concept_id>10003752.10010124.10010138.10010142</concept_id>
+       <concept_desc>Theory of computation~Program verification</concept_desc>
+       <concept_significance>500</concept_significance>
+       </concept>
+   <concept>
+       <concept_id>10011007.10011006.10011008.10011024.10011033</concept_id>
+       <concept_desc>Software and its engineering~Recursion</concept_desc>
+       <concept_significance>100</concept_significance>
+       </concept>
+   <concept>
+       <concept_id>10011007.10011006.10011008.10011024.10011028</concept_id>
+       <concept_desc>Software and its engineering~Data types and structures</concept_desc>
+       <concept_significance>100</concept_significance>
+       </concept>
+ </ccs2012>
 \end{CCSXML}
 
 \ccsdesc[500]{Theory of computation~Type theory}
+\ccsdesc[500]{Theory of computation~Logic and verification}
+\ccsdesc[500]{Theory of computation~Constructive mathematics}
+\ccsdesc[500]{Theory of computation~Program verification}
+\ccsdesc[100]{Software and its engineering~Recursion}
+\ccsdesc[100]{Software and its engineering~Data types and structures}
 
 %%
 %% Keywords. The author(s) should pick words that accurately describe
 %% the work being presented. Separate the keywords with commas.
 \keywords{%
-  Conatural number, Corecursion, Coinduction, Commutative semiring, Exponential
-  semiring, Cubical Agda
+  conatural number, corecursion, coinduction, productivity, guardedness,
+  termination, semiring, cubical type theory, univalence
 }
 %% A "teaser" image appears between the author and affiliation
 %% information and the body of the document, and typically spans the
@@ -186,24 +210,24 @@ Bib\TeX}}}
 \section{Introduction}\label{sec:intro}
 \input{latex/Introduction}
 
-\section{Naïve corecursion}\label{sec:problem}
+\section{Naïve Corecursion}\label{sec:problem}
 \input{latex/Problem}
 
 % Temintation checking error
 
-\section{Direct corecusion}\label{sec:direct}
+\section{Direct Corecusion}\label{sec:direct}
 \input{latex/Direct}
 
 % Proving everything directly
 % using complicated states
 
-\section{The embedded languages approach}\label{sec:dsl}
+\section{The Embedded Languages Approach}\label{sec:dsl}
 \input{latex/CompBisim}
 
 % Compositionality
 % Nils' method: Define a DSL to make corecursion guarded.
 
-\section{A quotiented embedded language}\label{sec:quotiented}
+\section{A Quotiented Embedded Language}\label{sec:quotiented}
 \input{latex/Quotiented}
 
 % Mixed inductive and coinductive type
@@ -218,10 +242,10 @@ is the one where we successfully formalised that conatural numbers form an
 exponential commutative semiring. To conclude, we give a short comparison
 between the methods.
 
-In Section~\ref{sec:direct} we directly used corecursion. Using this method we
-did not have to consider creating an intermediate language. However, for every
-operation and proof we have to come up with a new state that can accurately
-describe the predecessor as the step of the proofs.
+In Section~\ref{sec:direct} we directly used corecursion with specific internal
+states. Using this method, we did not have to consider creating an intermediate
+language. However, for every operation and proof we have to come up with a new
+state that can accurately describe the predecessor as the step of the proofs.
 % Use this method if you are a masochist.
 
 In Section~\ref{sec:dsl-mul} we followed Danielsson's
@@ -233,19 +257,19 @@ include every operation we want to reuse as a constructor in order to make Agda
 see the definition as guarded which quickly leads to code duplication.
 
 In Section~\ref{sec:quotiented} we extended our language using the idea that we
-can include equations themselves using a mixed higher-inductive/coinductive
-definition, which is only allowed in Cubical Agda. This method allows us to
-reuse any other algebraic operation and equation that we are defining at the
-same time. With it, we easily proved that conatural numbers form an exponential
-commutative semiring, showcasing an application of the univalence principle. The
-only problem with this method is that it is not modular. If we want to include
-more operations or properties that we define and proofs, then we have to extend
-the already existing datatype of expressions.
+can include equations themselves using a mixed higher-inductive\slash
+coinductive definition, which is only allowed in Cubical Agda. This method
+allows us to reuse any other algebraic operation and equation that we are
+defining at the same time. With it, we easily proved that conatural numbers form
+an exponential commutative semiring, showcasing an application of the univalence
+principle. The only problem with this method is that it is not modular. If we
+want to include more operations or properties that we define and proofs, then we
+have to extend the already existing datatype of expressions.
 
 We believe the last method can be generalised to definitions and proofs about
 other coinductive types, so that one can easily reason about infinite programs.
 
-\section{Future work}
+\section{Future Work}
 
 Some questions remain as future work. The method in Section~\ref{sec:dsl} can
 introduce code duplication, while the method in Section~\ref{sec:quotiented} is
@@ -259,15 +283,31 @@ numbers are a coinductive type, one defines operations by specifying the
 predecessor, however, it is not clear how one can specify the predecessors of
 the aforementioned operations.
 
-Lastly, in Section~\ref{sec:quotiented}, we used a mixed
-higher-inductive/coinductive definition to specify the language of expressions,
-though it is not clear what its semantic justification is, even though Agda
-supports it. Unlike mixed inductive/coinductive types~\cite{hancock-stream}, we
-cannot directly write it as the terminal coalgebra of some functor. If we were
-to parametrise \AgdaDatatype{Expr} with \AgdaRecord{NExpr} and \AgdaField{pred},
-then we would have $\AgdaField{pred} : \AgdaDatatype{Maybe}\
-(\AgdaDatatype{Expr}\ \AgdaRecord{NExpr}\ \AgdaField{pred})$, where the type of
-\AgdaField{pred} depends on itself.
+Lastly, in Section~\ref{sec:quotiented}, we used a mixed higher-inductive\slash
+coinductive definition to specify the language of expressions, though it is not
+clear what its semantic justification is, even though Agda supports it. Unlike
+mixed inductive\slash coinductive types~\cite{ghani-stream}, we cannot directly
+write it as the terminal coalgebra of some functor. If we were to parametrise
+\AgdaDatatype{Expr} with \AgdaRecord{NExpr} and \AgdaField{pred}, then we would
+have $\AgdaField{pred} : \AgdaDatatype{Maybe}\ (\AgdaDatatype{Expr}\
+\AgdaRecord{NExpr}\ \AgdaField{pred})$, where the type of \AgdaField{pred}
+depends on itself.
+
+%%
+%% The acknowledgments section is defined using the "acks" environment
+%% (and NOT an unnumbered section). This ensures the proper
+%% identification of the section in the article metadata, and the
+%% consistent spelling of the heading.
+\begin{acks}
+  We thank the anonymous reviewers for their comments and suggestions, and
+  Thorsten Altenkirch for originally posing this problem to us as a challenge.
+
+  This work was co-funded by the European Union (ERC, HOTT, 101170308). Views
+  and opinions expressed are however those of the author(s) only and do not
+  necessarily reflect those of the European Union or the European Research
+  Council. Neither the European Union nor the granting authority can be held
+  responsible for them.
+\end{acks}
 
 %%
 %% Print the bibliography

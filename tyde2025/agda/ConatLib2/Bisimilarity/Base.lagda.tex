@@ -21,11 +21,11 @@ private variable
   n k : A
   x y z : A
 \end{code}
-To prove the commutativity of addition, we also define an embedding language
+To prove the commutativity of addition, we also define an embedded language
 (based on Danielsson \cite{danielsson-beating} and Agda standard library's
-\AgdaRecord{Stream} reasoning combinators~\cite{agda-stdlib}) to make the equational
-reasoning possible by adding the symmetry and transitivity operations on
-equations as constructors in this language, including the possibility to use
+\AgdaRecord{Stream} reasoning combinators~\cite{agda-stdlib}) to make the
+equational reasoning possible by adding the symmetry and transitivity operations
+on equations as constructors in this language, including the possibility to use
 corecursive steps in a proof.
 
 We define the language as an inductive relation indexed by conatural numbers.

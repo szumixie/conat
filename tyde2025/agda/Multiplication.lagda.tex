@@ -32,8 +32,8 @@ the definition of multiplication to be defined corecursively.
 open NExpr public
 \end{code}
 Since \AgdaDatatype{Expr} is inductive and \AgdaRecord{NExpr} is coinductive,
-this is an instance of a mixed inductive/coinductive
-definition~\cite{hancock-stream}.
+this is an instance of a mixed inductive\slash coinductive
+definition~\cite{ghani-stream}.
 
 Given this language, we can define multiplication. The structure of
 the definition is similar to the one in Section~\ref{sec:problem}, but here it
@@ -94,9 +94,3 @@ numbers.
 _×_ : ℕ∞ → ℕ∞ → ℕ∞
 x × y = interp (embed (x `× y))
 \end{code}
-
-This method can result in code duplication, as can be seen in the definition of
-\AgdaFunction{predᴱ} and \AgdaFunction{predᴱ-+-match}, where we had to duplicate
-the definition of addition. If we want to use this definition of multiplication
-and prove properties about it, we would need to separately prove how the
-addition within the language is related to the addition on conatural numbers.

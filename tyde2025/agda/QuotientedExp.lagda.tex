@@ -302,14 +302,17 @@ represents a ``block'' of digits, essentially representing $y$ number of the
 digit $x$ in base $x + 1$ (so $x$ is always the last digit in the base). This
 gives us the following equation:
 \[
-  \AgdaInductiveConstructor{block}\ x\ y = \sum_{i=0}^{y-1} x \times (1 + x)^i = (1+x)^y - 1
+  \AgdaInductiveConstructor{block}\ x\ y
+  = \sum_{i=0}^{y-1} x(1 + x)^i
+  = (1+x)^y - 1
 \]
-For example if we want to calculate $10^3$ using the \AgdaInductiveConstructor{block}, we can
-do it like so:
+For example, the predecessor of $10^3$ can be represented using
+\AgdaInductiveConstructor{block}.
 \[
-  \AgdaInductiveConstructor{block}\ 9\ 3 = 9 \times 10^0 + 9 \times 10^1 + 9 \times 10^2 = 999
+  \AgdaInductiveConstructor{block}\ 9\ 3
+  = 9 \times 10^0 + 9 \times 10^1 + 9 \times 10^2
+  = 999
 \]
-Then adding one gets us $1000$.
 
 We add this \AgdaInductiveConstructor{block} operation as a constructor to the
 language, and some equations that correspond to the ones for exponentiation.
@@ -678,7 +681,7 @@ $(9-1) + 99 * (1+9) = 8 + 99 * 10$.
   block-pred x (just x')  (just y')  =
     just (x' + block x y' × suc x)
 \end{code}
-The operations and equations that we have in \AgdaDatatype{Expr} are enough to
+The operations and equations that we added to \AgdaDatatype{Expr} are enough to
 define the rest of the methods.
 \begin{code}[hide]
   block-isPred :
@@ -1064,15 +1067,18 @@ that $2^\infty = \infty$.
     suc ∞                     ≡⟨ sym ∞-suc ⟩
     ∞                         ∎
 \end{code}
-\begin{code}[hide]
-  _ : one .pred ≡ just zero
+And below is another example which proves that the predecessor of one is zero,
+this shows that one can also reason about the predecessor of conatural numbers
+using the interface.
+\begin{code}
+  _ : pred one ≡ just zero
   _ =
-    one .pred      ≡⟨ cong pred one-suc ⟩
-    suc zero .pred ≡⟨ pred-suc _ ⟩
-    just zero      ∎
+    pred one           ≡⟨ cong pred (sym (+-idᵣ one)) ⟩
+    pred (one + zero)  ≡⟨ pred-suc _ ⟩
+    just zero          ∎
 \end{code}
 
-In this section we have seen how to add exponentiation to the proof, however, we
-had to modify the original \AgdaDatatype{Expr} datatype. As such, this method is
-not modular, as it is inconvenient to define and prove more operations and
+In this section, we have seen how to add exponentiation to the proof, however,
+we had to modify the original \AgdaDatatype{Expr} datatype. As such, this method
+is not modular, as it is inconvenient to define and prove more operations and
 equations without modifying the original datatype.

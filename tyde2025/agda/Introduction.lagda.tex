@@ -53,7 +53,8 @@ another conatural number.
 
 We can define elements of \AgdaRecord{ℕ∞} by copattern
 matching~\cite{abel-copatterns}, that is, we specify what the predecessor is for
-a particular element. As examples, zero does not have a predecessor:
+a particular element. As examples, we give the definitions of zero, successor,
+and infinity. Zero does not have a predecessor:
 \begin{code}
 zero : ℕ∞
 pred zero = nothing
@@ -132,7 +133,7 @@ method~\cite{danielsson-beating} to use an embedded language to define
 multiplication, and another language to the prove commutativity of addition.
 
 In section~\ref{sec:quotiented}, we adapt the previous method to Cubical Agda,
-making use of mixed higher-inductive/coinductive types and the univalence
+making use of mixed higher-inductive\slash coinductive types and the univalence
 principle to define and prove all the operations and equations of an exponential
 commutative semiring at once.
 
@@ -159,10 +160,11 @@ Section~\ref{sec:dsl} we have proved the properties of addition. With the last
 method, in Section~\ref{sec:quotiented}, we have a full formalisation that the
 conatural numbers form an exponential commutative semiring.
 
-Our formalisation is available at \url{https://github.com/szumixie/conat}, it
-depends on the Cubical Agda Library~\cite{agda-cubical}.
+For the details of our proofs, see our formalisation, which is available at
+\url{https://github.com/szumixie/conat}. It depends on the Cubical Agda
+Library~\cite{agda-cubical}.
 
-\subsection{Related work}
+\subsection{Related Work}
 
 There are some extensions to type theory that can make corecursive definitions
 easier to define.

@@ -116,9 +116,9 @@ _+ₗ_ : ℕ → ℕ∞ → ℕ∞
 ℕ.zero +ₗ x = x
 ℕ.suc n +ₗ x = suc (n +ₗ x)
 \end{code}
-We can also prove that the successor operation can be moved from the right side
-of addition to the front of the whole exression by simple induction on the
-natural number.
+We also prove that the successor operation can be moved from the right side of
+addition to the front of the whole exression by simple induction on the natural
+number.
 \begin{code}
 +ₗ-suc : ∀ n x → n +ₗ suc x ≡ suc (n +ₗ x)
 \end{code}
@@ -127,7 +127,7 @@ natural number.
 +ₗ-suc (ℕ.suc n) x = cong suc (+ₗ-suc n x)
 \end{code}
 Now we prove the commutativity of addition which has the following type
-signature.
+signature:
 \begin{code}[hide]
 mutual
 \end{code}
@@ -136,10 +136,13 @@ mutual
 \end{code}
 
 We illustrate the intuition of the proof using the diagram below. The top line
-is the left hand side of \AgdaFunction{+-comm}, and the botton line is the right
-hand side. At the beginning we go through $x$ and $y$ at the same time, while
-learning that both of them must be at least~$n$. At each step, we decrease $x$
-and $y$ and increase $n$ by one.
+is the left hand side of \AgdaFunction{+-comm}, and the bottom line is the right
+hand side. We use $x_0$ and $y_0$ to denote the starting $x$ and $y$ values. At
+the beginning, we set $n$ to be $0$, then at each step, if neither $x$ or $y$
+has ended, we decrease them and increase $n$ by one. The diagram illustrates the
+middle of this process. As we go through $x$ and $y$, we learn that both of them
+must be at least~$n$, and during the proof we keep the proof that adding $n$ to
+$x$ and $y$ gives us back the original values ($x_0$ and $y_0$).
 \begin{center}
   \begin{tikzpicture}[xscale=8, yscale=.5]
     \draw (0,1) -- (1,1);
@@ -204,8 +207,10 @@ immediately prove equal.
 In the formalisation, we have two helper lemmas that correspond to the two
 diagrams. During corecursion, we generalise the resulting equation and add
 equality arguments to avoid using the transitivity operation after the
-corecursive call, since transitivity does not preserve guardedness in Agda. We omit
-the uninteresting equality proofs below for readability.
+corecursive call, since transitivity does not preserve guardedness in Agda. We
+omit the uninteresting equality proofs below for readability, abbreviating them
+with their type (e.g.\ \AgdaFunction{y₀≡x₀} is a proof with type $\AgdaBound{y₀}
+\mathrel{\AgdaFunction{≡}} \AgdaBound{x₀}$).
 \begin{AgdaSuppressSpace}
 \begin{code}
   +-comm x y = +-comm-helper₁ ℕ.zero x x y y refl refl

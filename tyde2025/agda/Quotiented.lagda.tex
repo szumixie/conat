@@ -27,7 +27,7 @@ datatypes with equality (path) constructors, we can adapt the approach in
 Section~\ref{sec:dsl} to add all the algebraic operations and equations that we
 are interested in into a single embedded language.
 
-\subsection{Commutative semiring}
+\subsection{Commutative Semiring}
 
 We will first show that the conatural numbers form a commutative semiring.
 
@@ -74,9 +74,9 @@ constants, and equations.
     ×-distₗ-+  : ∀ x y z → (x + y) × z ≡ x × z + y × z
     ×-annihₗ   : ∀ x → zero × x ≡ zero
 \end{code}
-Since we are working in Cubical Agda, where equations/paths can have content, we
-need to also say that the equations of \AgdaDatatype{Expr} are proof irrelevant,
-that is, it is a set.
+Since we are working in Cubical Agda, where equations\slash paths can have content,
+we need to also say that the equations of \AgdaDatatype{Expr} are proof
+irrelevant, that is, it is a set.
 \begin{code}
     isSetExpr  : isSet Expr
 \end{code}
@@ -100,7 +100,7 @@ transitivity function does not preserve guardedness.
     trans : ∀ {x y z} → x ≡ y → y ≡ z → x ≡ z
 \end{code}
 \end{AgdaAlign}
-This is a mixed higher-inductive/coinductive definition.
+This is a mixed higher-inductive\slash coinductive definition.
 
 We introduce an abbreviation for adding one to expressions, though it could also
 be added as a constructor and an equation.
@@ -238,7 +238,7 @@ be added as a constructor and an equation.
   open ℕ∞Reasoning
 \end{code}
 
-For convenience, we define an inductive predicate $\AgdaDatatype{IsPred}\ x'\ x$
+We define an inductive predicate $\AgdaDatatype{IsPred}\ x'\ x$ for convenience,
 which represents the $\AgdaField{pred}\ x \mathrel{\AgdaFunction{≡}} x'$
 equation, but it can be pattern matched on so it simplifies the proofs.
 \begin{code}
@@ -277,8 +277,9 @@ define the motive and methods (terminology from McBride~\cite{mcbride-view}), so
 the termination checker does not get in the way. If we do recursion by pattern
 matching over a higher inductive type, some implicit arguments get solved to an
 expression that is not reduced and the termination checker complains. For the
-motive, we want the predecessor of an expression and a proof that it is indeed
-the predecessor in terms of the semiring operations.
+motive (the type for the result of the induction), we want the predecessor of an
+expression and a proof that it is indeed the predecessor in terms of the
+semiring operations.
 \begin{code}
   record Pred (x : Expr) : Type where
     field
@@ -310,8 +311,8 @@ Agda Cubical library~\cite{agda-cubical}.
         isProp→isSet (isPropIsPred _ _))
 \end{code}
 
-We can define the methods for each constructor in \AgdaDatatype{Expr}. The one
-below is the method for addition:
+We can define the methods (the cases of the induction) for each constructor in
+\AgdaDatatype{Expr}. The one below is the method for addition:
 \begin{code}[hide]
   mutual
 \end{code}
@@ -330,7 +331,7 @@ $x + y$.
     +-pred (just x')  y y' = just (x' + y)
 \end{code}
 We then need to prove that it is actually the predecessor, which we do by using
-the equation constructors.
+the equality constructors.
 \begin{code}
     +-isPred :
       ∀ {x x' y y'} → IsPred x' x → IsPred y' y →
@@ -386,7 +387,7 @@ Below we show the method for the commutativity of addition, which has the same
 structure as the proof in Section~\ref{sec:problem}, and it has less steps due
 to pattern matching on \AgdaDatatype{IsPred}. Note that we do not need to define
 the \AgdaField{isPred} component because \AgdaRecord{IsPred} is a proposition.
-We also omit the less interesting parts.
+We also omit the less interesting cases.
 \begin{code}
   +-comm-pred :
     ∀ {x x' y y'} → IsPred x' x → IsPred y' y →
@@ -542,8 +543,8 @@ Using these, we can recursively eliminate from expressions into
   ⟦ embed-suc x x' p i ⟧ᴾ = embed-sucᴾ x ⟦ x' ⟧ᴾ p i
 \end{code}
 
-Now we can extract the familiar \AgdaFunction{predᴱ} in
-Section~\ref{sec:dsl-mul}, but also the proof that it is the predecessor.
+With this, we can extract the familiar \AgdaFunction{predᴱ} in
+Section~\ref{sec:dsl-mul}, but we also get a proof that it is the predecessor.
 \begin{code}
   predᴱ : Expr → Maybe Expr
   predᴱ x = pred ⟦ x ⟧ᴾ
@@ -611,7 +612,7 @@ open ℕ∞ public
 \end{code}
 
 Now we define a function that embeds conatural numbers into expressions using
-the \AgdaInductiveConstructor{embedℕ∞} constructor.
+the \AgdaInductiveConstructor{embed} constructor.
 \begin{code}[hide]
 mutual
 \end{code}
@@ -659,8 +660,8 @@ mutual
 \end{code}
 If we interpret an expression from the language to conatural numbers and then we
 embed it back to the language, then we get an expression equal to the one we
-started with. Here is the point where we had to use the embedded transitivity
-operation, because otherwise it would not be guarded.
+started with. Here is where we had to use the transitivity constructor, because
+otherwise it would not be guarded.
 \begin{code}[hide]
 mutual
 \end{code}
