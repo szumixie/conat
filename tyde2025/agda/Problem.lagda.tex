@@ -116,5 +116,5 @@ mutual
 \end{code}
 The same problem arises here as in the definition of multiplication above. The
 definition here is productive but not guarded, because \AgdaFunction{+-comm} is
-used in the equational reasoning chain, which is just applications of the
-transitivity operation of equality, but they are not a constructor.
+used in the equational reasoning chain. The chain is composed of the transitivity
+operation for equations. However, the transitivity operation is not a constructor.
