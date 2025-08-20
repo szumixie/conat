@@ -82,11 +82,8 @@ pred (assoc+ a b c i) with pred a
 
 With everything set up, we are now able to prove commutativity. As in the
 definition in Section~\ref{sec:dsl-mul}, the proof here has almost the same
-structure as the one in Section~\ref{sec:problem}, but now it is guarded. The
-slight difference is the reordering of the proof steps, which is to avoid the
-need for congruence over \AgdaInductiveConstructor{suc}, though it is possible
-to add this congruence as a constructor in the language as well. We omit the
-non-recursive cases in \AgdaFunction{`+-comm-match}.
+structure as the one in Section~\ref{sec:problem}, but now it is guarded. We
+omit the non-recursive cases in \AgdaFunction{`+-comm-match}.
 \begin{code}[hide]
 mutual
 \end{code}
@@ -113,11 +110,11 @@ mutual
   `+-comm-match a (just a') b nothing eq1 eq2 = subst (Maybe~ _≈_ (just (a' + b))) eq1 (cong-just (`eq (cong (a' +_) (pred-inj (sym eq2))) `∙ `eq (+-idᵣ a')))
 \end{code}
 There is one difference in this proof compared to the one in
-Section~\ref{sec:problem}, which is that we need to switch up two steps. First,
-we need to use commutativity to switch the operands of \AgdaFunction{\_+\_}
-before making \AgdaFunction{suc} the outermost function. This is because we do
-not have congruence over \AgdaFunction{suc} in our language, but it could also
-be added to the language.
+Section~\ref{sec:problem}, which is that we need to swap two steps. First, we
+need to use commutativity to switch the operands of \AgdaFunction{\_+\_} before
+making \AgdaFunction{suc} the outermost function. This is because we do not have
+congruence over \AgdaFunction{suc} in our language, but it could also be added
+to the language as a constructor.
 
 The proof only exists in our language so again we convert it to an equality the
 same way we did with the \AgdaFunction{+-suc} property.
@@ -128,7 +125,7 @@ same way we did with the \AgdaFunction{+-suc} property.
 This way, Agda sees that the equational reasoning is guarded, hence it accepts
 the proof.
 
-We have seen how we can define functions and prove equations using the method in
+We have seen how we can define functions and prove equations using the method by
 Danielsson~\cite{danielsson-beating}. However, this method can result in code
 duplication, as can be seen in the definition of \AgdaFunction{predᴱ} and
 \AgdaFunction{predᴱ-+-match} in Section~\ref{sec:dsl-mul}, where we had to

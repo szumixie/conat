@@ -570,7 +570,7 @@ Section~\ref{sec:dsl-mul}, but we also get a proof that it is the predecessor.
 Using the new predecessor function, we can define a head normalisation function.
 \begin{code}
   interpᴺ : Expr → NExpr
-  interpᴺ x .pred = predᴱ x
+  pred (interpᴺ x) = predᴱ x
 \end{code}
 Then we can prove that it is an inverse of \AgdaInductiveConstructor{embed} and
 that \AgdaDatatype{Expr} and \AgdaRecord{NExpr} are isomorphic using
